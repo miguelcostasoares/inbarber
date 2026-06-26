@@ -176,13 +176,259 @@ $$('[data-count]').forEach(el => countIO.observe(el));
 })();
 
 /* ════════════════════════════════════════
-   GALERIA touch (grade)
+   GALERIA — Filtro + Lightbox + Vídeo
 ════════════════════════════════════════ */
-if (window.matchMedia('(hover: none)').matches) {
-  $$('.g-overlay').forEach(el => {
-    el.style.opacity = '0.4';
+(function initGaleria() {
+
+  const section   = $('#galeria');
+  if (!section) return;
+
+  const pills     = $$('.gf-pill', section);
+  const cells     = $$('.b-cell', section);
+
+  /* ── Utilitário: categorias de uma célula ── */
+  function getCategories(cell) {
+    const cats = [cell.dataset.category];
+    if (cell.dataset.category2) cats.push(cell.dataset.category2);
+    return cats;
+  }
+
+  /* ════════════════════════════════════════
+     FILTRO DE CATEGORIAS
+  ════════════════════════════════════════ */
+  let activeFilter = 'todos';
+
+  function applyFilter(filter) {
+    activeFilter = filter;
+
+    cells.forEach(cell => {
+      const match = filter === 'todos' || getCategories(cell).includes(filter);
+
+      if (match) {
+        /* mostra */
+        cell.classList.remove('is-hidden');
+        cell.removeAttribute('aria-hidden');
+      } else {
+        /* esconde — a classe gf-hidden deve ter:
+           opacity:0; pointer-events:none; transform:scale(.95);
+           com transition no CSS */
+        cell.classList.add('is-hidden');
+        cell.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      /* Atualiza pills */
+      pills.forEach(p => {
+        p.classList.remove('active');
+        p.setAttribute('aria-selected', 'false');
+      });
+      pill.classList.add('active');
+      pill.setAttribute('aria-selected', 'true');
+
+      applyFilter(pill.dataset.filter);
+    });
+
+    /* Acessibilidade: setas entre tabs */
+    pill.addEventListener('keydown', e => {
+      const idx  = pills.indexOf(pill);
+      if (e.key === 'ArrowRight') { e.preventDefault(); pills[(idx + 1) % pills.length].focus(); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); pills[(idx - 1 + pills.length) % pills.length].focus(); }
+    });
   });
-}
+
+  /* ════════════════════════════════════════
+     VÍDEO — play/pause ao clicar no botão
+  ════════════════════════════════════════ */
+  $$('.b-cell-video', section).forEach(cell => {
+    const playBtn = $('.b-play-btn', cell);
+    const video   = $('video', cell);
+    if (!playBtn) return;
+
+    playBtn.addEventListener('click', e => {
+      e.stopPropagation(); /* não abre lightbox */
+      if (!video) return;  /* placeholder: sem vídeo real, não faz nada */
+
+      if (video.paused) {
+        video.play();
+        playBtn.classList.add('playing');
+        playBtn.setAttribute('aria-label', 'Pausar vídeo');
+      } else {
+        video.pause();
+        playBtn.classList.remove('playing');
+        playBtn.setAttribute('aria-label', 'Play vídeo');
+      }
+    });
+  });
+
+  /* ════════════════════════════════════════
+     LIGHTBOX — apenas para fotos (não vídeo)
+  ════════════════════════════════════════ */
+
+  /* Cria o lightbox no DOM uma única vez */
+  const lb = document.createElement('div');
+  lb.id = 'gallery-lightbox';
+  lb.className = 'lb-backdrop';
+  lb.setAttribute('role', 'dialog');
+  lb.setAttribute('aria-modal', 'true');
+  lb.setAttribute('aria-label', 'Visualizar imagem');
+  lb.setAttribute('aria-hidden', 'true');
+  lb.innerHTML = `
+    <button class="lb-close" aria-label="Fechar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <button class="lb-nav lb-prev" aria-label="Anterior">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="lb-nav lb-next" aria-label="Próximo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 6 15 12 9 18"/>
+      </svg>
+    </button>
+    <div class="lb-stage">
+      <div class="lb-media"></div>
+      <div class="lb-caption">
+        <span class="lb-tag"></span>
+        <p class="lb-name"></p>
+        <p class="lb-desc"></p>
+      </div>
+    </div>`;
+  document.body.appendChild(lb);
+
+  const lbMedia   = $('.lb-media', lb);
+  const lbTag     = $('.lb-tag', lb);
+  const lbName    = $('.lb-name', lb);
+  const lbDesc    = $('.lb-desc', lb);
+  const lbClose   = $('.lb-close', lb);
+  const lbPrev    = $('.lb-prev', lb);
+  const lbNext    = $('.lb-next', lb);
+
+  /* Células abertas no lightbox (só fotos, exclui vídeos) */
+  function getPhotoCells() {
+    return cells.filter(c =>
+      !c.classList.contains('b-cell-video') &&
+      !c.classList.contains('is-hidden')
+    );
+  }
+
+  let lbOpen       = false;
+  let lbCurrent    = 0;
+  let lbTouchStart = 0;
+  let lastFocused  = null;
+
+  function openLb(cell) {
+    const photos = getPhotoCells();
+    lbCurrent = photos.indexOf(cell);
+    if (lbCurrent === -1) return;
+
+    lastFocused = document.activeElement;
+    renderLb(lbCurrent);
+
+    lb.setAttribute('aria-hidden', 'false');
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    lbOpen = true;
+
+    /* Foco no fechar para acessibilidade */
+    requestAnimationFrame(() => lbClose.focus());
+  }
+
+  function closeLb() {
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    lbOpen = false;
+    if (lastFocused) lastFocused.focus();
+  }
+
+  function renderLb(idx) {
+    const photos  = getPhotoCells();
+    const cell    = photos[idx];
+    if (!cell) return;
+
+    const img     = $('img', cell);
+    const tag     = $('.b-tag', cell)?.textContent  || '';
+    const name    = $('.b-name', cell)?.textContent || '';
+    const desc    = $('.b-desc', cell)?.textContent || '';
+
+    /* Troca com fade */
+    lbMedia.classList.add('swapping');
+
+    setTimeout(() => {
+      lbMedia.innerHTML = img
+        ? `<img src="${img.src}" alt="${img.alt}">`
+        : `<div class="lb-placeholder">${$('.b-ph', cell).innerHTML}</div>`;
+
+      lbTag.textContent  = tag;
+      lbName.textContent = name;
+      lbDesc.textContent = desc;
+      lbDesc.style.display = desc ? '' : 'none';
+
+      lbMedia.classList.remove('swapping');
+    }, 150);
+
+    /* Esconde setas se só há 1 foto */
+    const alone = photos.length <= 1;
+    lbPrev.style.display = alone ? 'none' : '';
+    lbNext.style.display = alone ? 'none' : '';
+  }
+
+  function lbGo(dir) {
+    const photos = getPhotoCells();
+    lbCurrent = ((lbCurrent + dir) + photos.length) % photos.length;
+    renderLb(lbCurrent);
+  }
+
+  /* Eventos do lightbox */
+  lbClose.addEventListener('click', closeLb);
+  lbPrev.addEventListener('click',  () => lbGo(-1));
+  lbNext.addEventListener('click',  () => lbGo(+1));
+
+  lb.addEventListener('click', e => {
+    /* Fecha ao clicar no backdrop (fora do stage) */
+    if (e.target === lb) closeLb();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!lbOpen) return;
+    if (e.key === 'Escape')     closeLb();
+    if (e.key === 'ArrowLeft')  lbGo(-1);
+    if (e.key === 'ArrowRight') lbGo(+1);
+  });
+
+  /* Swipe mobile no lightbox */
+  lb.addEventListener('touchstart', e => {
+    lbTouchStart = e.touches[0].clientX;
+  }, { passive: true });
+
+  lb.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - lbTouchStart;
+    if (Math.abs(dx) > 44) lbGo(dx < 0 ? +1 : -1);
+  }, { passive: true });
+
+  /* Abre lightbox ao clicar em células de foto */
+  cells.forEach(cell => {
+    if (cell.classList.contains('b-cell-video')) return;
+
+    cell.setAttribute('tabindex', '0');
+    cell.setAttribute('role', 'button');
+    cell.setAttribute('aria-label',
+      `Ver ${$('.b-name', cell)?.textContent || 'imagem'}`
+    );
+
+    cell.addEventListener('click', () => openLb(cell));
+    cell.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLb(cell); }
+    });
+  });
+
+})();
 
 /* ════════════════════════════════════════
    BOOKING
@@ -394,3 +640,116 @@ if (stickyCta && ctaFinal) {
     }
   }).observe(ctaFinal);
 }
+
+/* ════════════════════════════════════════
+   MAPA DE LOCALIZAÇÃO — Leaflet + CartoDB
+   (gratuito, sem API key)
+════════════════════════════════════════ */
+(function () {
+  "use strict";
+
+  // TROQUE pelas coordenadas reais do seu endereço.
+  // Como pegar: abra o local no Google Maps, clique com o botão direito
+  // no pin exato e copie os números que aparecem (lat, lng).
+  const LOCATION = {
+    lat: -23.5530,
+    lng: -46.6620,
+    name: "InBarber Barbearia",
+    address: "Rua Augusta, 1200 — Consolação, São Paulo / SP",
+    mapsUrl: "https://www.google.com/maps/dir/?api=1&destination=Rua+Augusta+1200+São+Paulo",
+  };
+
+  const mapEl = document.getElementById("loc-map");
+  const expandBtn = document.getElementById("loc-map-expand");
+  if (!mapEl || typeof L === "undefined") return;
+
+  const map = L.map(mapEl, {
+    center: [LOCATION.lat, LOCATION.lng],
+    zoom: 15,
+    zoomControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    touchZoom: false,
+    attributionControl: false,
+  });
+
+  // Tile escuro gratuito (CartoDB Dark Matter) — combina com a paleta do site
+  L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+    }
+  ).addTo(map);
+
+  // Pin customizado (sem ping, sem pulse)
+  const goldIcon = L.divIcon({
+    className: "loc-pin-icon",
+    html: `
+      <div style="
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: var(--gold, #bfa06a);
+        border: 2px solid #0a0a0a;
+        box-shadow: 0 0 0 1px rgba(191,160,106,0.4);
+      "></div>
+    `,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -10],
+  });
+
+  const marker = L.marker([LOCATION.lat, LOCATION.lng], { icon: goldIcon }).addTo(map);
+
+  marker.bindPopup(`
+    <div class="map-popup">
+      <div class="map-popup-title">${LOCATION.name}</div>
+      <div class="map-popup-address">${LOCATION.address}</div>
+      <a class="map-popup-link" href="${LOCATION.mapsUrl}" target="_blank" rel="noopener">Traçar rota →</a>
+    </div>
+  `);
+
+  // Liga/desliga a interação ao clicar em "Interagir"
+  if (expandBtn) {
+    let interactive = false;
+
+    expandBtn.addEventListener("click", function () {
+      interactive = !interactive;
+      mapEl.classList.toggle("is-static", !interactive);
+
+      if (interactive) {
+        map.dragging.enable();
+        map.scrollWheelZoom.enable();
+        map.doubleClickZoom.enable();
+        map.touchZoom.enable();
+        map.zoomControl.addTo(map);
+        expandBtn.textContent = "";
+        expandBtn.innerHTML = `
+          <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l8 8M13 5l-8 8"/></svg>
+          Fechar
+        `;
+      } else {
+        map.dragging.disable();
+        map.scrollWheelZoom.disable();
+        map.doubleClickZoom.disable();
+        map.touchZoom.disable();
+        map.zoomControl.remove();
+        expandBtn.innerHTML = `
+          <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h5v5M7 16H2v-5M16 2l-6 6M2 16l6-6"/></svg>
+          Interagir
+        `;
+      }
+    });
+  }
+
+  // Garante que o mapa renderize certo dentro do grid responsivo
+  window.addEventListener("resize", function () {
+    map.invalidateSize();
+  });
+
+  // Reabre o tamanho correto após fontes/layout assentarem
+  setTimeout(function () {
+    map.invalidateSize();
+  }, 300);
+})();

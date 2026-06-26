@@ -58,7 +58,6 @@
 <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
 <section class="hero" aria-label="Apresentação">
 
-  <!-- Foto de fundo -->
   <div class="hero-img" aria-hidden="true">
     <!-- TROQUE por: <img src="hero.jpg" alt=""> ou <video autoplay muted loop playsinline src="hero.mp4"></video> -->
     <div class="hero-img-ph">
@@ -67,15 +66,12 @@
     </div>
   </div>
 
-  <!-- Overlay gradiente -->
   <div class="hero-overlay" aria-hidden="true"></div>
 
-  <!-- Tipografia assinatura — letras gigantes como moldura -->
   <div class="hero-title-wrap" aria-hidden="true">
     <span class="hero-big-word">BARBER</span>
   </div>
 
-  <!-- Conteúdo principal -->
   <div class="hero-content">
     <p class="hero-eyebrow">
       <span class="hero-eyebrow-line"></span>
@@ -96,7 +92,6 @@
     </div>
   </div>
 
-  <!-- Stats flutuantes -->
   <div class="hero-stats" aria-label="Números">
     <div class="hero-stat">
       <strong data-count="14" data-suffix="+">0+</strong>
@@ -119,7 +114,6 @@
 <section class="about" id="sobre" aria-labelledby="about-h">
   <div class="about-inner">
 
-    <!-- Coluna imagem -->
     <div class="about-visual">
       <div class="about-img-wrap">
         <!-- TROQUE: <img src="sobre.jpg" alt="Interior da barbearia"> -->
@@ -134,7 +128,6 @@
       </div>
     </div>
 
-    <!-- Coluna texto -->
     <div class="about-copy">
       <p class="label-tag">Nossa história</p>
       <h2 class="section-h" id="about-h">
@@ -321,82 +314,226 @@
 
 <!-- ═══════════════════════════════ GALERIA ═══════════════════════════════ -->
 <section class="gallery" id="galeria" aria-labelledby="gal-h">
+
+  <!-- Cabeçalho -->
   <div class="gallery-hd">
     <p class="label-tag">Nosso trabalho</p>
     <h2 class="section-h" id="gal-h">Cada corte,<br><em>uma obra.</em></h2>
   </div>
 
-  <div class="gallery-grid" role="list">
-    <div class="g-cell g-tall" role="listitem">
-      <div class="g-ph">
-        <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><circle cx="11" cy="13" r="3" stroke-width="1"/><path d="M3 27l7-8 5 5 6-7 8 10" stroke-width="1"/></svg>
-        <span>Foto 1</span>
-      </div>
-      <div class="g-info">
-        <span class="g-tag">Cabelo</span>
-        <p class="g-name">Degradê Clássico</p>
-      </div>
-    </div>
+  <!-- ══ CAROUSEL BANNER ══ -->
+  <div class="carousel" id="carousel" role="region" aria-label="Galeria em destaque" aria-roledescription="carrossel">
 
-    <div class="g-cell" role="listitem">
-      <div class="g-ph">
-        <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><circle cx="11" cy="13" r="3" stroke-width="1"/><path d="M3 27l7-8 5 5 6-7 8 10" stroke-width="1"/></svg>
-        <span>Foto 2</span>
-      </div>
-      <div class="g-info">
-        <span class="g-tag">Barba</span>
-        <p class="g-name">Delineado</p>
-      </div>
-    </div>
-
-    <div class="g-cell g-video" role="listitem">
-      <div class="g-ph">
-        <div class="g-play-btn" aria-label="Play vídeo">
-          <svg viewBox="0 0 20 20" fill="none"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
+    <!-- Slide 1 -->
+    <div class="carousel-slide active" role="group" aria-label="Slide 1 de 4" aria-roledescription="slide">
+      <div class="carousel-slide-bg">
+        <!--
+          TROQUE pelo seu conteúdo:
+          <img src="galeria/destaque-1.jpg" alt="Degradê Clássico">
+          ou
+          <video autoplay muted loop playsinline src="galeria/video-1.mp4"></video>
+        -->
+        <div class="carousel-ph">
+          <svg viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="28" rx="1" stroke-width="1"/><circle cx="18" cy="20" r="4" stroke-width="1"/><path d="M6 38l10-10 7 7 8-10 11 13" stroke-width="1"/></svg>
+          <span>Foto / Vídeo em destaque</span>
         </div>
-        <span>Vídeo</span>
       </div>
-      <div class="g-info">
-        <span class="g-tag">Processo</span>
-        <p class="g-name">Barba Completa</p>
-      </div>
-    </div>
-
-    <div class="g-cell g-wide" role="listitem">
-      <div class="g-ph">
-        <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><circle cx="11" cy="13" r="3" stroke-width="1"/><path d="M3 27l7-8 5 5 6-7 8 10" stroke-width="1"/></svg>
-        <span>Foto 3</span>
-      </div>
-      <div class="g-info">
-        <span class="g-tag">Ambiente</span>
-        <p class="g-name">Nossa Barbearia</p>
+      <div class="carousel-overlay" aria-hidden="true"></div>
+      <div class="carousel-content">
+        <p class="carousel-tag">✦ Cabelo</p>
+        <h3 class="carousel-title">Degradê<br>Clássico</h3>
+        <p class="carousel-desc">Fade impecável do zero ao comprimento certo.</p>
       </div>
     </div>
 
-    <div class="g-cell" role="listitem">
-      <div class="g-ph">
-        <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><circle cx="11" cy="13" r="3" stroke-width="1"/><path d="M3 27l7-8 5 5 6-7 8 10" stroke-width="1"/></svg>
-        <span>Foto 4</span>
-      </div>
-      <div class="g-info">
-        <span class="g-tag">Cabelo</span>
-        <p class="g-name">Texturizado</p>
-      </div>
-    </div>
-
-    <div class="g-cell g-video" role="listitem">
-      <div class="g-ph">
-        <div class="g-play-btn" aria-label="Play vídeo">
-          <svg viewBox="0 0 20 20" fill="none"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
+    <!-- Slide 2 -->
+    <div class="carousel-slide" role="group" aria-label="Slide 2 de 4" aria-roledescription="slide">
+      <div class="carousel-slide-bg">
+        <!-- TROQUE: <img src="galeria/destaque-2.jpg" alt="Hot Towel Shave"> -->
+        <div class="carousel-ph">
+          <svg viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="28" rx="1" stroke-width="1"/><circle cx="18" cy="20" r="4" stroke-width="1"/><path d="M6 38l10-10 7 7 8-10 11 13" stroke-width="1"/></svg>
+          <span>Foto / Vídeo em destaque</span>
         </div>
-        <span>Vídeo</span>
       </div>
-      <div class="g-info">
-        <span class="g-tag">Tutorial</span>
-        <p class="g-name">Hot Towel Shave</p>
+      <div class="carousel-overlay" aria-hidden="true"></div>
+      <div class="carousel-content">
+        <p class="carousel-tag">✦ Barba</p>
+        <h3 class="carousel-title">Hot Towel<br>Shave</h3>
+        <p class="carousel-desc">Ritual completo com toalha quente e navalha reta.</p>
       </div>
     </div>
-  </div>
+
+    <!-- Slide 3 -->
+    <div class="carousel-slide" role="group" aria-label="Slide 3 de 4" aria-roledescription="slide">
+      <div class="carousel-slide-bg">
+        <!-- TROQUE: <img src="galeria/destaque-3.jpg" alt="Nossa barbearia"> -->
+        <div class="carousel-ph">
+          <svg viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="28" rx="1" stroke-width="1"/><circle cx="18" cy="20" r="4" stroke-width="1"/><path d="M6 38l10-10 7 7 8-10 11 13" stroke-width="1"/></svg>
+          <span>Foto / Vídeo em destaque</span>
+        </div>
+      </div>
+      <div class="carousel-overlay" aria-hidden="true"></div>
+      <div class="carousel-content">
+        <p class="carousel-tag">✦ Ambiente</p>
+        <h3 class="carousel-title">Nossa<br>Barbearia</h3>
+        <p class="carousel-desc">Um espaço pensado para você relaxar e sair renovado.</p>
+      </div>
+    </div>
+
+    <!-- Slide 4 -->
+    <div class="carousel-slide" role="group" aria-label="Slide 4 de 4" aria-roledescription="slide">
+      <div class="carousel-slide-bg">
+        <!-- TROQUE: <img src="galeria/destaque-4.jpg" alt="Pigmentação"> -->
+        <div class="carousel-ph">
+          <svg viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="28" rx="1" stroke-width="1"/><circle cx="18" cy="20" r="4" stroke-width="1"/><path d="M6 38l10-10 7 7 8-10 11 13" stroke-width="1"/></svg>
+          <span>Foto / Vídeo em destaque</span>
+        </div>
+      </div>
+      <div class="carousel-overlay" aria-hidden="true"></div>
+      <div class="carousel-content">
+        <p class="carousel-tag">✦ Barba</p>
+        <h3 class="carousel-title">Pigmentação<br>Perfeita</h3>
+        <p class="carousel-desc">Cobertura de falhas e uniformização da cor.</p>
+      </div>
+    </div>
+
+    <!-- Hint de arraste -->
+    <div class="carousel-swipe-hint" aria-hidden="true">
+      <svg viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      Arraste para o lado para passar as imagens
+    </div>
+
+    <!-- Dots -->
+    <div class="carousel-dots" role="tablist" aria-label="Navegação dos slides">
+      <button class="carousel-dot active" role="tab" aria-selected="true"  aria-label="Slide 1" data-idx="0"></button>
+      <button class="carousel-dot"        role="tab" aria-selected="false" aria-label="Slide 2" data-idx="1"></button>
+      <button class="carousel-dot"        role="tab" aria-selected="false" aria-label="Slide 3" data-idx="2"></button>
+      <button class="carousel-dot"        role="tab" aria-selected="false" aria-label="Slide 4" data-idx="3"></button>
+    </div>
+
+    <!-- Barra de progresso -->
+    <div class="carousel-progress-bar" aria-hidden="true">
+      <div class="carousel-progress-fill" id="carousel-progress"></div>
+    </div>
+
+  </div><!-- /carousel -->
+
+  <!-- ══ GRADE: Cortes & Vídeos ══ -->
+  <div class="gallery-grid-section">
+    <p class="gallery-grid-label">Cortes &amp; Vídeos</p>
+
+    <div class="gallery-grid" role="list">
+
+      <!-- Item 1 — foto -->
+      <div class="g-cell" role="listitem">
+        <div class="g-thumb">
+          <!--
+            TROQUE: <img src="galeria/corte-1.jpg" alt="Degradê Clássico">
+          -->
+          <div class="g-ph">
+            <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><circle cx="11" cy="13" r="3" stroke-width="1"/><path d="M3 27l7-8 5 5 6-7 8 10" stroke-width="1"/></svg>
+            <span>Foto</span>
+          </div>
+          <div class="g-overlay" aria-hidden="true"></div>
+        </div>
+        <div class="g-info">
+          <span class="g-tag">Cabelo</span>
+          <p class="g-name">Degradê Clássico</p>
+        </div>
+      </div>
+
+      <!-- Item 2 — vídeo (proporção 9:16) -->
+      <div class="g-cell g-cell-video" role="listitem">
+        <div class="g-thumb">
+          <!--
+            TROQUE: <video autoplay muted loop playsinline src="galeria/video-barba.mp4"></video>
+            ou:     <img src="galeria/thumb-video-1.jpg" alt="Barba Completa">
+          -->
+          <div class="g-ph">
+            <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><path d="M12 10l10 6-10 6z" stroke-width="1" fill="none"/></svg>
+            <span>Vídeo</span>
+          </div>
+          <div class="g-play-btn" aria-label="Play vídeo">
+            <svg viewBox="0 0 20 20" fill="none"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
+          </div>
+          <div class="g-overlay" aria-hidden="true"></div>
+        </div>
+        <div class="g-info">
+          <span class="g-tag">Processo</span>
+          <p class="g-name">Barba Completa</p>
+        </div>
+      </div>
+
+      <!-- Item 3 — foto -->
+      <div class="g-cell" role="listitem">
+        <div class="g-thumb">
+          <!-- TROQUE: <img src="galeria/corte-2.jpg" alt="Delineado"> -->
+          <div class="g-ph">
+            <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><circle cx="11" cy="13" r="3" stroke-width="1"/><path d="M3 27l7-8 5 5 6-7 8 10" stroke-width="1"/></svg>
+            <span>Foto</span>
+          </div>
+          <div class="g-overlay" aria-hidden="true"></div>
+        </div>
+        <div class="g-info">
+          <span class="g-tag">Barba</span>
+          <p class="g-name">Delineado</p>
+        </div>
+      </div>
+
+      <!-- Item 4 — foto -->
+      <div class="g-cell" role="listitem">
+        <div class="g-thumb">
+          <!-- TROQUE: <img src="galeria/corte-3.jpg" alt="Texturizado"> -->
+          <div class="g-ph">
+            <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><circle cx="11" cy="13" r="3" stroke-width="1"/><path d="M3 27l7-8 5 5 6-7 8 10" stroke-width="1"/></svg>
+            <span>Foto</span>
+          </div>
+          <div class="g-overlay" aria-hidden="true"></div>
+        </div>
+        <div class="g-info">
+          <span class="g-tag">Cabelo</span>
+          <p class="g-name">Texturizado</p>
+        </div>
+      </div>
+
+      <!-- Item 5 — vídeo -->
+      <div class="g-cell g-cell-video" role="listitem">
+        <div class="g-thumb">
+          <!-- TROQUE: <video autoplay muted loop playsinline src="galeria/video-hot-towel.mp4"></video> -->
+          <div class="g-ph">
+            <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><path d="M12 10l10 6-10 6z" stroke-width="1" fill="none"/></svg>
+            <span>Vídeo</span>
+          </div>
+          <div class="g-play-btn" aria-label="Play vídeo">
+            <svg viewBox="0 0 20 20" fill="none"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
+          </div>
+          <div class="g-overlay" aria-hidden="true"></div>
+        </div>
+        <div class="g-info">
+          <span class="g-tag">Tutorial</span>
+          <p class="g-name">Hot Towel Shave</p>
+        </div>
+      </div>
+
+      <!-- Item 6 — foto -->
+      <div class="g-cell" role="listitem">
+        <div class="g-thumb">
+          <!-- TROQUE: <img src="galeria/ambiente.jpg" alt="Nossa Barbearia"> -->
+          <div class="g-ph">
+            <svg viewBox="0 0 32 32" fill="none"><rect x="3" y="5" width="26" height="22" rx="1" stroke-width="1"/><circle cx="11" cy="13" r="3" stroke-width="1"/><path d="M3 27l7-8 5 5 6-7 8 10" stroke-width="1"/></svg>
+            <span>Foto</span>
+          </div>
+          <div class="g-overlay" aria-hidden="true"></div>
+        </div>
+        <div class="g-info">
+          <span class="g-tag">Ambiente</span>
+          <p class="g-name">Nossa Barbearia</p>
+        </div>
+      </div>
+
+    </div><!-- /gallery-grid -->
+  </div><!-- /gallery-grid-section -->
+
 </section>
 
 <!-- ═══════════════════════════════ AVALIAÇÕES ═══════════════════════════════ -->
@@ -468,7 +605,6 @@
     <h2 class="section-h" id="loc-h">Venha nos<br><em>visitar.</em></h2>
   </div>
 
-  <!-- Mapa placeholder -->
   <div class="map-box" role="img" aria-label="Mapa de localização">
     <div class="map-grid-bg" aria-hidden="true"></div>
     <!-- TROQUE por: <iframe src="https://maps.google.com/..." loading="lazy" ...></iframe> -->
@@ -480,7 +616,6 @@
     </div>
   </div>
 
-  <!-- Infos em grade -->
   <dl class="loc-grid">
     <div class="loc-item">
       <dt>
@@ -527,7 +662,6 @@
     <p class="cta-sub">Escolha seu horário e deixa o resto com a gente.</p>
     <a href="#agendar" class="btn-fill-dark">Agendar meu horário →</a>
   </div>
-  <!-- Decoração textual de fundo -->
   <div class="cta-bg-word" aria-hidden="true">BOOK</div>
 </section>
 
@@ -561,26 +695,46 @@
   </div>
 </footer>
 
-<!-- Barra de seleção de serviços -->
+<!-- ═══════════════════════════════ BOOKING BAR ═══════════════════════════════ -->
 <div class="booking-bar" id="booking-bar" aria-label="Serviços selecionados">
 
   <div class="booking-bar-slide">
 
-    <!-- Dropdown — acima da barra no fluxo flex -->
     <div class="booking-dropdown" id="booking-dropdown" aria-hidden="true">
       <div class="booking-dropdown-inner">
-        <p class="booking-dropdown-title">Seu atendimento</p>
+
+        <div class="booking-dropdown-header">
+          <p class="booking-dropdown-title">Seu atendimento</p>
+          <button class="booking-clear-btn" id="booking-clear-btn" aria-label="Cancelar todos os serviços">
+            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Cancelar tudo
+          </button>
+        </div>
+
         <ul class="booking-dropdown-list" id="booking-dropdown-list"></ul>
+
         <div class="booking-dropdown-footer">
-          <span class="booking-dropdown-label">Total</span>
+          <div class="booking-footer-left">
+            <span class="booking-dropdown-label">Total</span>
+            <span class="booking-footer-duration" id="booking-footer-duration">
+              <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M9 5v4l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              <span id="booking-duration-text">0 min</span>
+            </span>
+          </div>
           <span class="booking-dropdown-total" id="booking-dropdown-total">R$ 0</span>
         </div>
+
       </div>
     </div>
 
     <div class="booking-bar-inner">
 
-      <!-- Carrinho com badge -->
       <button class="booking-cart-btn" id="booking-cart-btn"
               aria-label="Ver serviços selecionados"
               aria-expanded="false"
@@ -593,12 +747,10 @@
         <span class="cart-badge" id="cart-badge" aria-label="0 itens">0</span>
       </button>
 
-      <!-- Resumo textual -->
       <div class="booking-summary" id="booking-summary" aria-live="polite">
         <span class="booking-summary-text" id="booking-summary-text"></span>
       </div>
 
-      <!-- CTA Agendar -->
       <a href="#agendar" class="booking-bar-cta" id="booking-bar-cta">
         <span class="booking-total" id="booking-total">R$ 0</span>
         <span class="booking-cta-label">Agendar</span>
@@ -609,7 +761,7 @@
   </div>
 </div>
 
-<!-- Sticky CTA mobile (some quando booking-bar aparece) -->
+<!-- Sticky CTA mobile -->
 <div class="sticky-cta" id="sticky-cta">
   <a href="#agendar">
     Agendar horário

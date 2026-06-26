@@ -7,9 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-
 <link rel="stylesheet" href="/css/style.css">
-
 </head>
 <body>
 
@@ -185,25 +183,38 @@
 <section class="services" id="servicos" aria-labelledby="svc-h">
   <div class="services-top">
     <p class="label-tag">O que oferecemos</p>
-    <h2 class="section-h" id="svc-h">Serviços<br><em>para você.</em></h2>
+    <h2 class="section-h" id="svc-h">Monte seu<br><em>atendimento.</em></h2>
+    <p class="svc-hint">Toque nos serviços que deseja e veja o total na hora.</p>
   </div>
 
-  <ul class="svc-list" role="list">
-    <li class="svc-card svc-featured" role="listitem">
+  <ul class="svc-list" role="list" id="svc-list">
+
+    <li class="svc-card" role="listitem"
+        data-id="corte-barba" data-name="Corte + Barba" data-price="65" data-dur="60 min"
+        tabindex="0" aria-pressed="false">
       <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
         <div class="svc-meta">
           <span class="svc-badge">Mais pedido</span>
           <h3 class="svc-name">Corte + Barba</h3>
-          <p class="svc-desc">Combo completo com lavagem, corte, barba na navalha e finalização com produtos premium.</p>
+          <p class="svc-desc">Combo completo com lavagem, corte, barba na navalha e finalização.</p>
         </div>
         <div class="svc-foot">
-          <span class="svc-price">A partir de R$ 65</span>
+          <span class="svc-price">R$ 65</span>
           <span class="svc-dur">60 min</span>
         </div>
       </div>
     </li>
-    <li class="svc-card" role="listitem">
+
+    <li class="svc-card" role="listitem"
+        data-id="corte" data-name="Corte Social" data-price="35" data-dur="40 min"
+        tabindex="0" aria-pressed="false">
       <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
         <div class="svc-meta">
           <h3 class="svc-name">Corte Social</h3>
           <p class="svc-desc">Corte clássico com tesoura e máquina, acabamento impecável.</p>
@@ -214,8 +225,14 @@
         </div>
       </div>
     </li>
-    <li class="svc-card" role="listitem">
+
+    <li class="svc-card" role="listitem"
+        data-id="barba" data-name="Barba Clássica" data-price="30" data-dur="35 min"
+        tabindex="0" aria-pressed="false">
       <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
         <div class="svc-meta">
           <h3 class="svc-name">Barba Clássica</h3>
           <p class="svc-desc">Barba modelada com navalha, toalha quente e hidratação.</p>
@@ -226,8 +243,14 @@
         </div>
       </div>
     </li>
-    <li class="svc-card" role="listitem">
+
+    <li class="svc-card" role="listitem"
+        data-id="degrade" data-name="Degradê" data-price="40" data-dur="45 min"
+        tabindex="0" aria-pressed="false">
       <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
         <div class="svc-meta">
           <h3 class="svc-name">Degradê</h3>
           <p class="svc-desc">Fade perfeito do zero ao comprimento desejado, sem marcas.</p>
@@ -238,8 +261,14 @@
         </div>
       </div>
     </li>
-    <li class="svc-card" role="listitem">
+
+    <li class="svc-card" role="listitem"
+        data-id="pigmentacao" data-name="Pigmentação" data-price="45" data-dur="50 min"
+        tabindex="0" aria-pressed="false">
       <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
         <div class="svc-meta">
           <h3 class="svc-name">Pigmentação</h3>
           <p class="svc-desc">Cobertura de falhas e uniformização da cor da barba.</p>
@@ -250,8 +279,14 @@
         </div>
       </div>
     </li>
-    <li class="svc-card" role="listitem">
+
+    <li class="svc-card" role="listitem"
+        data-id="hot-towel" data-name="Hot Towel Shave" data-price="55" data-dur="55 min"
+        tabindex="0" aria-pressed="false">
       <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
         <div class="svc-meta">
           <h3 class="svc-name">Hot Towel Shave</h3>
           <p class="svc-desc">Ritual completo com toalha quente, espuma e navalha reta.</p>
@@ -262,6 +297,25 @@
         </div>
       </div>
     </li>
+
+    <li class="svc-card" role="listitem"
+        data-id="sobrancelha" data-name="Sobrancelha" data-price="15" data-dur="20 min"
+        tabindex="0" aria-pressed="false">
+      <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="svc-meta">
+          <h3 class="svc-name">Sobrancelha</h3>
+          <p class="svc-desc">Design e definição com linha, pinça ou navalha.</p>
+        </div>
+        <div class="svc-foot">
+          <span class="svc-price">R$ 15</span>
+          <span class="svc-dur">20 min</span>
+        </div>
+      </div>
+    </li>
+
   </ul>
 </section>
 
@@ -507,8 +561,56 @@
   </div>
 </footer>
 
-<!-- Sticky CTA mobile -->
-<div class="sticky-cta" aria-hidden="true">
+<!-- Barra de seleção de serviços -->
+<div class="booking-bar" id="booking-bar" aria-label="Serviços selecionados">
+
+  <div class="booking-bar-slide">
+
+    <!-- Dropdown — acima da barra no fluxo flex -->
+    <div class="booking-dropdown" id="booking-dropdown" aria-hidden="true">
+      <div class="booking-dropdown-inner">
+        <p class="booking-dropdown-title">Seu atendimento</p>
+        <ul class="booking-dropdown-list" id="booking-dropdown-list"></ul>
+        <div class="booking-dropdown-footer">
+          <span class="booking-dropdown-label">Total</span>
+          <span class="booking-dropdown-total" id="booking-dropdown-total">R$ 0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="booking-bar-inner">
+
+      <!-- Carrinho com badge -->
+      <button class="booking-cart-btn" id="booking-cart-btn"
+              aria-label="Ver serviços selecionados"
+              aria-expanded="false"
+              aria-controls="booking-dropdown">
+        <svg class="cart-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="cart-badge" id="cart-badge" aria-label="0 itens">0</span>
+      </button>
+
+      <!-- Resumo textual -->
+      <div class="booking-summary" id="booking-summary" aria-live="polite">
+        <span class="booking-summary-text" id="booking-summary-text"></span>
+      </div>
+
+      <!-- CTA Agendar -->
+      <a href="#agendar" class="booking-bar-cta" id="booking-bar-cta">
+        <span class="booking-total" id="booking-total">R$ 0</span>
+        <span class="booking-cta-label">Agendar</span>
+        <span class="booking-arrow">→</span>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<!-- Sticky CTA mobile (some quando booking-bar aparece) -->
+<div class="sticky-cta" id="sticky-cta">
   <a href="#agendar">
     Agendar horário
     <span class="sticky-arrow">→</span>
@@ -516,6 +618,5 @@
 </div>
 
 <script src="/js/main.js" defer></script>
-
 </body>
 </html>

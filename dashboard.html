@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barbearia — Arte &amp; Tradição</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       SIDEBAR NAV
+  ═══════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
+
+    <div class="sidebar__brand">
+      <div class="sidebar__logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect width="28" height="28" rx="7" fill="var(--gold)"/>
+          <path d="M9 7L19 21M19 7L9 21" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="sidebar__name">InBarber</span>
+    </div>
+
+    <nav class="sidebar__nav">
+      <ul class="nav-list" role="list">
+        <li>
+          <a href="#" class="nav-item nav-item--active" aria-current="page">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2 8h16" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7 1v4M13 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Agenda</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Clientes</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4 4h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M3 8h14" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7 12l1.5 1.5L11 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Serviços</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>Barbeiros</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M6 10h8M6 6h4M6 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Financeiro</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item nav-item--pipeline">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="3" width="4" height="14" rx="1" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="8" y="6" width="4" height="11" rx="1" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="14" y="9" width="4" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <span>Pipeline Kanban</span>
+            <span class="nav-badge">Novo</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar__bottom">
+      <a href="#" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 6v4l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>Configurações</span>
+      </a>
+      <div class="sidebar__user">
+        <div class="sidebar__avatar">RC</div>
+        <div class="sidebar__user-info">
+          <span class="sidebar__user-name">Rafael Costa</span>
+          <span class="sidebar__user-role">Proprietário</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Overlay mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════ -->
+  <main class="main" id="main">
+
+    <!-- ── TOPBAR (mobile) ── -->
+    <div class="topbar">
+      <button class="topbar__burger" id="burgerBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar__logo">
+        <svg width="22" height="22" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect width="28" height="28" rx="7" fill="var(--gold)"/>
+          <path d="M9 7L19 21M19 7L9 21" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        InBarber
+      </div>
+      <button class="topbar__new-btn" id="topbarNewBtn" aria-label="Novo agendamento">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── HEADER ── -->
+    <header class="dash-header" id="dashHeader">
+      <div class="dash-header__left">
+        <p class="dash-header__greeting" id="greeting">Bom dia, Rafael</p>
+        <p class="dash-header__date" id="currentDate">Carregando data...</p>
+
+        <div class="dash-header__revenue">
+          <span class="dash-header__revenue-label">Faturamento do mês</span>
+          <div class="dash-header__revenue-row">
+            <span class="dash-header__revenue-value" id="monthlyRevenue">R$ 0</span>
+            <span class="dash-header__revenue-badge dash-header__revenue-badge--up" id="monthlyVariation">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                <path d="M5 1L9 5H1L5 1Z" fill="currentColor"/>
+              </svg>
+              +0%
+            </span>
+          </div>
+          <span class="dash-header__revenue-sub">vs. mês anterior</span>
+        </div>
+      </div>
+
+      <div class="dash-header__right">
+        <a href="#" class="btn-pipeline">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <rect x="2" y="3" width="4" height="14" rx="1" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="8" y="6" width="4" height="11" rx="1" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="14" y="9" width="4" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          Ver Pipeline Kanban
+        </a>
+        <button class="btn-primary" id="newAppointmentBtn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Novo Agendamento
+        </button>
+      </div>
+    </header>
+
+    <!-- ── KPI GRID ── -->
+    <section class="kpi-grid" aria-label="Indicadores principais">
+
+      <article class="kpi-card" id="kpi-today-revenue">
+        <div class="kpi-card__head">
+          <span class="kpi-card__label">Faturamento Hoje</span>
+          <div class="kpi-card__icon kpi-card__icon--gold">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10 6v1.5M10 12.5V14M7.5 8.5c0-.83.67-1.5 1.5-1.5h1.5a1.5 1.5 0 0 1 0 3h-1a1.5 1.5 0 0 0 0 3H11a1.5 1.5 0 0 0 1.5-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-card__value" id="kpiTodayRevenue">R$ 0</div>
+        <div class="kpi-card__meta">
+          <span class="kpi-card__trend kpi-card__trend--up" id="kpiTodayRevenueTrend">+0%</span>
+          <span class="kpi-card__meta-text">vs. ontem</span>
+        </div>
+      </article>
+
+      <article class="kpi-card" id="kpi-today-appts">
+        <div class="kpi-card__head">
+          <span class="kpi-card__label">Agendamentos Hoje</span>
+          <div class="kpi-card__icon kpi-card__icon--blue">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2 8h16" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7 1v4M13 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-card__value" id="kpiTodayAppts">0</div>
+        <div class="kpi-card__meta">
+          <span class="kpi-card__meta-detail" id="kpiTodayApptsValue">R$ 0 em serviços</span>
+        </div>
+      </article>
+
+      <article class="kpi-card" id="kpi-occupancy">
+        <div class="kpi-card__head">
+          <span class="kpi-card__label">Taxa de Ocupação</span>
+          <div class="kpi-card__icon kpi-card__icon--green">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M6 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-card__value" id="kpiOccupancy">0%</div>
+        <div class="kpi-card__occupancy-bar">
+          <div class="kpi-card__occupancy-fill" id="kpiOccupancyFill" style="width:0%"></div>
+        </div>
+      </article>
+
+      <article class="kpi-card" id="kpi-ticket">
+        <div class="kpi-card__head">
+          <span class="kpi-card__label">Ticket Médio</span>
+          <div class="kpi-card__icon kpi-card__icon--gold">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M3 10h14M3 6h8M3 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-card__value" id="kpiTicket">R$ 0</div>
+        <div class="kpi-card__meta">
+          <span class="kpi-card__trend kpi-card__trend--up" id="kpiTicketTrend">+0%</span>
+          <span class="kpi-card__meta-text">vs. semana passada</span>
+        </div>
+      </article>
+
+      <article class="kpi-card kpi-card--alert" id="kpi-noshows">
+        <div class="kpi-card__head">
+          <span class="kpi-card__label">No-Shows Hoje</span>
+          <div class="kpi-card__icon kpi-card__icon--red">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10 6v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="10" cy="14" r="1" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-card__value" id="kpiNoShows">0</div>
+        <div class="kpi-card__meta">
+          <span class="kpi-card__meta-detail" id="kpiNoShowsValue">R$ 0 perdidos</span>
+        </div>
+      </article>
+
+      <article class="kpi-card" id="kpi-new-clients">
+        <div class="kpi-card__head">
+          <span class="kpi-card__label">Novos Clientes</span>
+          <div class="kpi-card__icon kpi-card__icon--purple">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="8" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2 18c0-3.314 2.686-6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M15 12v6M12 15h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi-card__value" id="kpiNewClients">0</div>
+        <div class="kpi-card__meta">
+          <span class="kpi-card__meta-detail">esta semana</span>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- ── CHARTS + AGENDA ── -->
+    <div class="content-grid">
+
+      <!-- Coluna esquerda: gráficos + agenda -->
+      <div class="content-grid__main">
+
+        <!-- Gráfico: Faturamento 30 dias -->
+        <section class="chart-card" aria-label="Faturamento dos últimos 30 dias">
+          <div class="chart-card__header">
+            <div>
+              <h2 class="chart-card__title">Faturamento</h2>
+              <p class="chart-card__sub">Últimos 30 dias</p>
+            </div>
+            <div class="chart-card__legend">
+              <span class="legend-dot legend-dot--gold"></span>
+              <span class="legend-label">Receita</span>
+            </div>
+          </div>
+          <div class="chart-card__body">
+            <canvas id="revenueChart" role="img" aria-label="Gráfico de faturamento dos últimos 30 dias"></canvas>
+          </div>
+        </section>
+
+        <!-- Gráficos menores lado a lado -->
+        <div class="charts-row">
+
+          <!-- Gráfico: Distribuição de Serviços -->
+          <section class="chart-card chart-card--half" aria-label="Distribuição de serviços">
+            <div class="chart-card__header">
+              <div>
+                <h2 class="chart-card__title">Serviços</h2>
+                <p class="chart-card__sub">Distribuição do mês</p>
+              </div>
+            </div>
+            <div class="chart-card__body chart-card__body--donut">
+              <canvas id="servicesChart" role="img" aria-label="Gráfico de distribuição de serviços"></canvas>
+              <div class="donut-legend" id="donutLegend"></div>
+            </div>
+          </section>
+
+          <!-- Gráfico: Ocupação por horário -->
+          <section class="chart-card chart-card--half" aria-label="Ocupação por horário">
+            <div class="chart-card__header">
+              <div>
+                <h2 class="chart-card__title">Ocupação</h2>
+                <p class="chart-card__sub">Por faixa de horário</p>
+              </div>
+            </div>
+            <div class="chart-card__body">
+              <canvas id="occupancyChart" role="img" aria-label="Gráfico de ocupação por horário"></canvas>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- ════════════════════════════════════════
+             METAS DOS BARBEIROS
+        ════════════════════════════════════════ -->
+        <section class="goals-card" aria-label="Metas dos barbeiros">
+          <div class="goals-card__header">
+            <div>
+              <h2 class="goals-card__title">Metas dos Barbeiros</h2>
+              <p class="goals-card__sub">Acompanhamento de desempenho individual</p>
+            </div>
+            <!-- Pills de filtro período -->
+            <div class="goals-filters" role="group" aria-label="Filtrar período das metas">
+              <button class="goals-filter goals-filter--active" data-goals-period="week">Semanal</button>
+              <button class="goals-filter" data-goals-period="month">Mensal</button>
+            </div>
+          </div>
+
+          <!-- Visão geral da equipe -->
+          <div class="goals-team-overview" id="goalsTeamOverview">
+            <!-- Gerado via JS -->
+          </div>
+
+          <!-- Lista individual dos barbeiros -->
+          <div class="goals-list" id="goalsList" role="list">
+            <!-- Gerado via JS -->
+          </div>
+        </section>
+
+        <!-- Agenda do Dia -->
+        <section class="agenda-card" aria-label="Agenda do dia">
+          <div class="agenda-card__header">
+            <div>
+              <h2 class="agenda-card__title">Agenda de Hoje</h2>
+              <p class="agenda-card__sub" id="agendaSub">Carregando...</p>
+            </div>
+            <div class="agenda-filters">
+              <button class="agenda-filter agenda-filter--active" data-filter="all">Todos</button>
+              <button class="agenda-filter" data-filter="confirmado">Confirmados</button>
+              <button class="agenda-filter" data-filter="pendente">Pendentes</button>
+            </div>
+          </div>
+
+          <div class="agenda-list" id="agendaList" role="list">
+            <!-- Gerado via JS -->
+          </div>
+        </section>
+
+        <!-- ════════════════════════════════════════
+             NOVA SEÇÃO 1: LOYALTY PROGRAM BARBEIROS
+        ════════════════════════════════════════ -->
+        <section class="loyalty-card" aria-label="Programa de fidelidade dos barbeiros">
+          <div class="loyalty-card__header">
+            <div>
+              <h2 class="loyalty-card__title">Loyalty Program</h2>
+              <p class="loyalty-card__sub">Ranking e pontuação dos barbeiros</p>
+            </div>
+            <div class="loyalty-card__badge-wrap">
+              <span class="loyalty-period-badge">Junho 2025</span>
+            </div>
+          </div>
+
+          <div class="loyalty-ranking" id="loyaltyRanking" role="list">
+            <!-- Gerado via JS -->
+          </div>
+        </section>
+
+        <!-- ════════════════════════════════════════
+             NOVA SEÇÃO 2: GESTÃO DE COMISSÕES
+        ════════════════════════════════════════ -->
+        <section class="commission-card" aria-label="Gestão de comissões">
+          <div class="commission-card__header">
+            <div>
+              <h2 class="commission-card__title">Comissões</h2>
+              <p class="commission-card__sub">Performance e repasses dos barbeiros</p>
+            </div>
+            <!-- Filtros rápidos -->
+            <div class="commission-filters" role="group" aria-label="Filtrar período de comissões">
+              <button class="commission-filter commission-filter--active" data-period="today">Hoje</button>
+              <button class="commission-filter" data-period="week">Semana</button>
+              <button class="commission-filter" data-period="month">Mês</button>
+            </div>
+          </div>
+
+          <!-- Totais -->
+          <div class="commission-totals" id="commissionTotals">
+            <!-- Gerado via JS -->
+          </div>
+
+          <!-- Lista de barbeiros -->
+          <div class="commission-list" id="commissionList" role="list">
+            <!-- Gerado via JS -->
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Coluna direita: alertas / oportunidades -->
+      <aside class="content-grid__side" aria-label="Alertas e oportunidades">
+
+        <!-- Clientes para reativar -->
+        <section class="alert-card" id="alertReactivate">
+          <div class="alert-card__header">
+            <div class="alert-card__icon alert-card__icon--orange">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 3v9M10 16v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M5.34 5.34A7 7 0 1 0 14.66 14.66" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="alert-card__title">Reativar Clientes</h3>
+            <span class="alert-card__badge" id="reactivateBadge">0</span>
+          </div>
+          <ul class="alert-list" id="reactivateList" role="list">
+            <!-- Gerado via JS -->
+          </ul>
+        </section>
+
+        <!-- Aniversariantes -->
+        <section class="alert-card" id="alertBirthdays">
+          <div class="alert-card__header">
+            <div class="alert-card__icon alert-card__icon--gold">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4 10h12a2 2 0 0 1 2 2v5H2v-5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M7 10V7.5a3 3 0 0 1 6 0V10" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="10" cy="5" r="1.5" fill="currentColor"/>
+              </svg>
+            </div>
+            <h3 class="alert-card__title">Aniversariantes</h3>
+            <span class="alert-card__badge alert-card__badge--gold" id="birthdayBadge">0</span>
+          </div>
+          <ul class="alert-list" id="birthdayList" role="list">
+            <!-- Gerado via JS -->
+          </ul>
+        </section>
+
+        <!-- Estoque baixo -->
+        <section class="alert-card" id="alertStock">
+          <div class="alert-card__header">
+            <div class="alert-card__icon alert-card__icon--red">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M3 17l1.5-9h11L17 17H3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M7 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="alert-card__title">Estoque Baixo</h3>
+            <span class="alert-card__badge alert-card__badge--red" id="stockBadge">0</span>
+          </div>
+          <ul class="alert-list" id="stockList" role="list">
+            <!-- Gerado via JS -->
+          </ul>
+        </section>
+
+        <!-- Pendentes de confirmação -->
+        <section class="alert-card" id="alertPending">
+          <div class="alert-card__header">
+            <div class="alert-card__icon alert-card__icon--blue">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2z" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M10 6v4l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="alert-card__title">Aguardando Confirmação</h3>
+            <span class="alert-card__badge alert-card__badge--blue" id="pendingBadge">0</span>
+          </div>
+          <ul class="alert-list" id="pendingList" role="list">
+            <!-- Gerado via JS -->
+          </ul>
+        </section>
+
+      </aside>
+    </div><!-- /.content-grid -->
+
+    <!-- ════════════════════════════════════════════════════════
+         NOVA SEÇÃO 3: RELATÓRIOS RÁPIDOS (largura total)
+    ════════════════════════════════════════════════════════ -->
+    <section class="reports-section" aria-label="Relatórios rápidos" id="reportsSection">
+      <div class="reports-section__header">
+        <div>
+          <h2 class="reports-section__title">Relatórios Rápidos</h2>
+          <p class="reports-section__sub">Exporte e compartilhe os dados do seu negócio</p>
+        </div>
+      </div>
+
+      <!-- Tabs de período -->
+      <div class="reports-tabs" role="tablist" aria-label="Período do relatório">
+        <button class="reports-tab reports-tab--active" role="tab" aria-selected="true"  data-report-period="today" id="tab-today">Hoje</button>
+        <button class="reports-tab" role="tab" aria-selected="false" data-report-period="week"  id="tab-week">Esta Semana</button>
+        <button class="reports-tab" role="tab" aria-selected="false" data-report-period="month" id="tab-month">Este Mês</button>
+      </div>
+
+      <!-- Grid de cards de relatório -->
+      <div class="reports-grid" id="reportsGrid" role="tabpanel" aria-labelledby="tab-today">
+        <!-- Gerado via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: NOVO AGENDAMENTO
+  ═══════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-label="Novo agendamento" hidden>
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title">Novo Agendamento</h2>
+        <button class="modal__close" id="modalClose" aria-label="Fechar">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal__body">
+        <div class="form-group">
+          <label class="form-label" for="apptClient">Cliente</label>
+          <input class="form-input" id="apptClient" type="text" placeholder="Nome do cliente" autocomplete="off" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="apptDate">Data</label>
+            <input class="form-input" id="apptDate" type="date" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="apptTime">Horário</label>
+            <input class="form-input" id="apptTime" type="time" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="apptService">Serviço</label>
+          <select class="form-input form-select" id="apptService">
+            <option value="">Selecionar serviço</option>
+            <option value="corte">Corte Masculino — R$ 45</option>
+            <option value="barba">Barba — R$ 35</option>
+            <option value="combo">Corte + Barba — R$ 70</option>
+            <option value="pigmentacao">Pigmentação — R$ 90</option>
+            <option value="relaxamento">Relaxamento — R$ 80</option>
+            <option value="sobrancelha">Sobrancelha — R$ 20</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="apptBarber">Barbeiro</label>
+          <select class="form-input form-select" id="apptBarber">
+            <option value="">Selecionar barbeiro</option>
+            <option value="marcos">Marcos Silva</option>
+            <option value="joao">João Pereira</option>
+            <option value="andre">André Santos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="apptNotes">Observações</label>
+          <textarea class="form-input form-textarea" id="apptNotes" placeholder="Preferências, alergias, etc."></textarea>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn-ghost" id="modalCancel">Cancelar</button>
+        <button class="btn-primary">Agendar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

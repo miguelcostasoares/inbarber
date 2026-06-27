@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbeiro — Barbearia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/barbeiro.css">
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<header class="topbar">
+  <button class="back-btn" id="back-btn" aria-label="Voltar">
+    <span class="back-arrow">
+      <svg viewBox="0 0 16 16" fill="none"><polyline points="10,3 5,8 10,13" stroke-width="1.8"/></svg>
+    </span>
+    Voltar
+  </button>
+  <div class="topbar-title" aria-hidden="true">
+    <span class="topbar-title-name">Barbearia</span>
+    <span class="topbar-title-sub">Profissional</span>
+  </div>
+  <div class="topbar-spacer" aria-hidden="true"></div>
+</header>
+
+<!-- ══ CONTEÚDO ══ -->
+<main class="page-content">
+  <div class="page-hd">
+    <p class="label-tag">Etapa 2 de 3</p>
+    <h1>Escolha seu<br><em>barbeiro.</em></h1>
+    <p class="page-hd-hint">Selecione quem vai atender você — toque na foto para ver o perfil completo.</p>
+  </div>
+
+  <ul class="barbers-grid" role="list" id="barbers-grid">
+
+    <li class="barber-card" role="listitem" tabindex="0" aria-pressed="false" data-id="daniel">
+      <div class="barber-check" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="avatar-wrap" data-id="daniel" role="button" aria-label="Ver perfil de Daniel" tabindex="0">
+        <div class="avatar-initials">D</div>
+        <div class="avatar-rating">
+          <svg viewBox="0 0 12 12"><path d="M6 1l1.3 2.7L10 4.1 7.8 6.3l.5 3.1L6 8l-2.3 1.4.5-3.1L2 4.1l2.7-.4z"/></svg>5,0
+        </div>
+      </div>
+      <p class="barber-name">Daniel</p>
+      <p class="barber-role">Sênior · 4 anos</p>
+      <div class="barber-stats">
+        <span class="barber-stat">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>390 cortes
+        </span>
+        <span class="barber-stat">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2l3 2 3-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/></svg>51 av.
+        </span>
+      </div>
+
+    </li>
+
+    <li class="barber-card" role="listitem" tabindex="0" aria-pressed="false" data-id="rafael">
+      <div class="barber-check" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="avatar-wrap" data-id="rafael" role="button" aria-label="Ver perfil de Rafael" tabindex="0">
+        <div class="avatar-initials">R</div>
+        <div class="avatar-rating">
+          <svg viewBox="0 0 12 12"><path d="M6 1l1.3 2.7L10 4.1 7.8 6.3l.5 3.1L6 8l-2.3 1.4.5-3.1L2 4.1l2.7-.4z"/></svg>4,9
+        </div>
+      </div>
+      <p class="barber-name">Rafael</p>
+      <p class="barber-role">Sênior · 6 anos</p>
+      <div class="barber-stats">
+        <span class="barber-stat">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>520 cortes
+        </span>
+        <span class="barber-stat">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2l3 2 3-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/></svg>38 av.
+        </span>
+      </div>
+
+    </li>
+
+    <li class="barber-card" role="listitem" tabindex="0" aria-pressed="false" data-id="marcos">
+      <div class="barber-check" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="avatar-wrap" data-id="marcos" role="button" aria-label="Ver perfil de Marcos" tabindex="0">
+        <div class="avatar-initials">M</div>
+        <div class="avatar-rating">
+          <svg viewBox="0 0 12 12"><path d="M6 1l1.3 2.7L10 4.1 7.8 6.3l.5 3.1L6 8l-2.3 1.4.5-3.1L2 4.1l2.7-.4z"/></svg>4,8
+        </div>
+      </div>
+      <p class="barber-name">Marcos</p>
+      <p class="barber-role">Pleno · 3 anos</p>
+      <div class="barber-stats">
+        <span class="barber-stat">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>210 cortes
+        </span>
+        <span class="barber-stat">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2l3 2 3-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/></svg>22 av.
+        </span>
+      </div>
+
+    </li>
+
+    <li class="barber-card barber-card--any" role="listitem" tabindex="0" aria-pressed="false" data-id="qualquer">
+      <div class="barber-check" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="avatar-wrap avatar-wrap--static" aria-hidden="true">
+        <div class="avatar-initials avatar-initials--any">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <!-- dois perfis sobrepostos, mais limpos -->
+            <circle cx="9" cy="7" r="3"/>
+            <path d="M3 19c0-3.3 2.7-6 6-6"/>
+            <circle cx="16" cy="7" r="3" opacity=".5"/>
+            <path d="M13 19c0-3.3 2.7-6 6-6" opacity=".5"/>
+            <!-- seta de shuffle no canto -->
+            <path d="M19 13l2 2-2 2" stroke-width="1.2"/>
+            <path d="M5 15h4" stroke-width="1.2" opacity=".5"/>
+          </svg>
+        </div>
+      </div>
+      <p class="barber-name barber-name--sm">Sem preferência</p>
+      <p class="barber-role">Primeiro disponível</p>
+      <div class="barber-stats">
+        <span class="barber-stat barber-stat--hint">qualquer horário</span>
+      </div>
+    </li>
+
+  </ul>
+</main>
+
+<!-- ══ BARRA FLUTUANTE ══ -->
+<div class="summary-bar" id="summary-bar" aria-label="Profissional selecionado">
+  <div class="summary-bar-inner">
+    <div class="summary-bar-row">
+      <div class="summary-meta">
+        <span class="summary-services" id="bar-name"></span>
+        <span class="summary-sub" id="bar-sub"></span>
+      </div>
+      <button class="summary-cta" id="summary-cta" aria-label="Confirmar profissional">
+        <span class="summary-cta-label">Confirmar →</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SHEET DE PERFIL ══ -->
+<div class="profile-overlay" id="profile-overlay" role="dialog" aria-modal="true" aria-label="Perfil do barbeiro">
+  <div class="profile-sheet" id="profile-sheet">
+
+    <div class="sheet-handle"><div class="sheet-handle-bar"></div></div>
+    <button class="sheet-close" id="sheet-close" aria-label="Fechar perfil">×</button>
+
+    <!-- Scroll container único -->
+    <div class="sheet-scroll" id="sheet-scroll">
+
+      <!-- ── HERO centrado ── -->
+      <div class="profile-hero">
+        <div class="profile-avatar-ph" id="profile-avatar-ph"></div>
+        <p class="profile-name"  id="profile-name"></p>
+        <div class="profile-rating-row">
+          <div class="profile-stars" id="profile-stars"></div>
+          <span class="profile-rating-num"   id="profile-rating-num"></span>
+          <span class="profile-rating-count" id="profile-rating-count"></span>
+        </div>
+        <p class="profile-role-tag" id="profile-role-tag"></p>
+      </div>
+
+      <!-- ── STATS ── -->
+      <div class="profile-stats-row">
+        <div class="profile-stat-item">
+          <span class="profile-stat-num" id="ps-cortes">—</span>
+          <span class="profile-stat-label">Agendamentos<br>concluídos</span>
+        </div>
+        <div class="profile-stat-item">
+          <span class="profile-stat-num" id="ps-clientes">—</span>
+          <span class="profile-stat-label">Clientes<br>atendidos</span>
+        </div>
+        <div class="profile-stat-item">
+          <span class="profile-stat-num" id="ps-anos">—</span>
+          <span class="profile-stat-label">Anos de<br>experiência</span>
+        </div>
+      </div>
+
+      <!-- ── TABS ── -->
+      <div class="profile-tabs" role="tablist">
+        <button class="tab-btn tab-btn--active" role="tab" aria-selected="true"  data-tab="perfil">Perfil</button>
+        <button class="tab-btn"                 role="tab" aria-selected="false" data-tab="portfolio">Portfólio</button>
+        <button class="tab-btn"                 role="tab" aria-selected="false" data-tab="avaliacoes">Avaliações</button>
+        <span class="tab-indicator" id="tab-indicator"></span>
+      </div>
+
+      <!-- ── CONTEÚDO DAS TABS (sem slide — cada painel é escondido/mostrado) ── -->
+      <div class="tab-panels">
+
+        <!-- TAB: Perfil -->
+        <div class="tab-panel" id="tab-perfil" role="tabpanel">
+
+          <!-- Bio -->
+          <div class="profile-section">
+            <p class="profile-section-title">Sobre</p>
+            <p class="profile-bio" id="profile-bio"></p>
+          </div>
+
+          <!-- Idiomas -->
+          <div class="profile-section">
+            <p class="profile-section-title">Idiomas</p>
+            <div class="lang-pills" id="profile-langs"></div>
+          </div>
+
+          <!-- Portfólio inline (3 primeiros) -->
+          <div class="profile-section">
+            <p class="profile-section-title profile-section-title--link">
+              Portfólio
+              <button class="section-link-btn" id="goto-portfolio" aria-label="Ver portfólio completo">Ver todos</button>
+            </p>
+            <div class="portfolio-grid portfolio-grid--inline" id="portfolio-inline"></div>
+          </div>
+
+          <!-- Avaliações inline (2 primeiras) -->
+          <div class="profile-section">
+            <p class="profile-section-title profile-section-title--link">
+              Avaliações
+              <button class="section-link-btn" id="goto-avaliacoes" aria-label="Ver todas as avaliações">Ver todas</button>
+            </p>
+            <ul class="review-list" id="profile-reviews-inline"></ul>
+          </div>
+
+        </div>
+
+        <!-- TAB: Portfólio -->
+        <div class="tab-panel tab-panel--hidden" id="tab-portfolio" role="tabpanel">
+          <div class="portfolio-grid" id="portfolio-grid"></div>
+        </div>
+
+        <!-- TAB: Avaliações -->
+        <div class="tab-panel tab-panel--hidden" id="tab-avaliacoes" role="tabpanel">
+          <div class="rating-summary" id="rating-summary"></div>
+          <ul class="review-list review-list--padded" id="profile-reviews"></ul>
+        </div>
+
+      </div><!-- /tab-panels -->
+
+      <!-- Espaço para o CTA fixo -->
+      <div class="sheet-cta-spacer"></div>
+
+    </div><!-- /sheet-scroll -->
+
+    <!-- ── Lightbox de portfólio (fora do scroll) ── -->
+    <div class="portfolio-lightbox" id="portfolio-lightbox" aria-hidden="true">
+      <button class="lightbox-close" id="lightbox-close" aria-label="Fechar imagem">×</button>
+      <div class="lightbox-img-wrap">
+        <div class="lightbox-placeholder" id="lightbox-img"></div>
+      </div>
+      <p class="lightbox-caption" id="lightbox-caption"></p>
+    </div>
+
+    <!-- ── CTA fixo ── -->
+    <div class="profile-cta-wrap">
+      <button class="profile-select-btn" id="profile-select-btn">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,8 6.5,11.5 13,4.5"/></svg>
+        Selecionar este barbeiro
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/barbeiro.js" defer></script>
+</body>
+</html>

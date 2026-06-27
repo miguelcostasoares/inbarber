@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serviços — Barbearia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/servicos.css">
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<header class="topbar">
+  <button class="back-btn" id="back-btn" aria-label="Voltar para a página principal">
+    <span class="back-arrow">
+      <svg viewBox="0 0 16 16" fill="none"><polyline points="10,3 5,8 10,13" stroke-width="1.8"/></svg>
+    </span>
+    Voltar
+  </button>
+
+  <div class="topbar-title" aria-hidden="true">
+    <span class="topbar-title-name">Barbearia</span>
+    <span class="topbar-title-sub">Serviços</span>
+  </div>
+
+  <div class="topbar-spacer" aria-hidden="true"></div>
+</header>
+
+<!-- ══ CONTEÚDO ══ -->
+<main class="page-content">
+
+  <div class="page-hd">
+    <p class="label-tag">O que oferecemos</p>
+    <h1>Monte seu<br><em>atendimento.</em></h1>
+    <p class="page-hd-hint">Selecione os serviços desejados — o total é calculado na hora.</p>
+  </div>
+
+  <!-- Combos -->
+  <p class="svc-group-label">Combos</p>
+  <ul class="svc-list" role="list">
+
+    <li class="svc-card" role="listitem"
+        data-id="corte-barba" data-name="Corte + Barba" data-price="65" data-dur="60 min"
+        tabindex="0" aria-pressed="false">
+      <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="svc-meta">
+          <span class="svc-badge">Mais pedido</span>
+          <h2 class="svc-name">Corte + Barba</h2>
+          <p class="svc-desc">Combo completo com lavagem, corte, barba na navalha e finalização.</p>
+        </div>
+        <div class="svc-foot">
+          <span class="svc-price">R$ 65</span>
+          <span class="svc-dur">60 min</span>
+        </div>
+      </div>
+    </li>
+
+  </ul>
+
+  <!-- Cabelo -->
+  <p class="svc-group-label">Cabelo</p>
+  <ul class="svc-list" role="list">
+
+    <li class="svc-card" role="listitem"
+        data-id="corte" data-name="Corte Social" data-price="35" data-dur="40 min"
+        tabindex="0" aria-pressed="false">
+      <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="svc-meta">
+          <h2 class="svc-name">Corte Social</h2>
+          <p class="svc-desc">Corte clássico com tesoura e máquina, acabamento impecável.</p>
+        </div>
+        <div class="svc-foot">
+          <span class="svc-price">R$ 35</span>
+          <span class="svc-dur">40 min</span>
+        </div>
+      </div>
+    </li>
+
+    <li class="svc-card" role="listitem"
+        data-id="degrade" data-name="Degradê" data-price="40" data-dur="45 min"
+        tabindex="0" aria-pressed="false">
+      <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="svc-meta">
+          <h2 class="svc-name">Degradê</h2>
+          <p class="svc-desc">Fade perfeito do zero ao comprimento desejado, sem marcas.</p>
+        </div>
+        <div class="svc-foot">
+          <span class="svc-price">R$ 40</span>
+          <span class="svc-dur">45 min</span>
+        </div>
+      </div>
+    </li>
+
+  </ul>
+
+  <!-- Barba & Pele -->
+  <p class="svc-group-label">Barba &amp; Pele</p>
+  <ul class="svc-list" role="list">
+
+    <li class="svc-card" role="listitem"
+        data-id="barba" data-name="Barba Clássica" data-price="30" data-dur="35 min"
+        tabindex="0" aria-pressed="false">
+      <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="svc-meta">
+          <h2 class="svc-name">Barba Clássica</h2>
+          <p class="svc-desc">Barba modelada com navalha, toalha quente e hidratação.</p>
+        </div>
+        <div class="svc-foot">
+          <span class="svc-price">R$ 30</span>
+          <span class="svc-dur">35 min</span>
+        </div>
+      </div>
+    </li>
+
+    <li class="svc-card" role="listitem"
+        data-id="pigmentacao" data-name="Pigmentação" data-price="45" data-dur="50 min"
+        tabindex="0" aria-pressed="false">
+      <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="svc-meta">
+          <h2 class="svc-name">Pigmentação</h2>
+          <p class="svc-desc">Cobertura de falhas e uniformização da cor da barba.</p>
+        </div>
+        <div class="svc-foot">
+          <span class="svc-price">R$ 45</span>
+          <span class="svc-dur">50 min</span>
+        </div>
+      </div>
+    </li>
+
+    <li class="svc-card" role="listitem"
+        data-id="hot-towel" data-name="Hot Towel Shave" data-price="55" data-dur="55 min"
+        tabindex="0" aria-pressed="false">
+      <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="svc-meta">
+          <h2 class="svc-name">Hot Towel Shave</h2>
+          <p class="svc-desc">Ritual completo com toalha quente, espuma e navalha reta.</p>
+        </div>
+        <div class="svc-foot">
+          <span class="svc-price">R$ 55</span>
+          <span class="svc-dur">55 min</span>
+        </div>
+      </div>
+    </li>
+
+    <li class="svc-card" role="listitem"
+        data-id="sobrancelha" data-name="Sobrancelha" data-price="15" data-dur="20 min"
+        tabindex="0" aria-pressed="false">
+      <div class="svc-card-inner">
+        <div class="svc-check" aria-hidden="true">
+          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="svc-meta">
+          <h2 class="svc-name">Sobrancelha</h2>
+          <p class="svc-desc">Design e definição com linha, pinça ou navalha.</p>
+        </div>
+        <div class="svc-foot">
+          <span class="svc-price">R$ 15</span>
+          <span class="svc-dur">20 min</span>
+        </div>
+      </div>
+    </li>
+
+  </ul>
+
+</main>
+
+<!-- ══ BARRA DE RESUMO FLUTUANTE ══ -->
+<div class="summary-bar" id="summary-bar" aria-label="Resumo do atendimento">
+  <div class="summary-bar-inner">
+
+    <!-- Estado: vazio -->
+    <p class="summary-empty-msg" id="summary-empty">
+      Selecione ao menos um serviço para continuar
+    </p>
+
+    <!-- Estado: com serviços selecionados -->
+    <div class="summary-bar-row" id="summary-filled" style="display:none">
+      <div class="summary-meta">
+        <span class="summary-services" id="summary-services-text"></span>
+        <div class="summary-dur">
+          <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M9 5v4l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span id="summary-dur-text">0 min</span>
+        </div>
+      </div>
+      <button class="summary-cta" id="summary-cta" aria-label="Avançar para escolha do barbeiro">
+        <span class="summary-total" id="summary-total">R$ 0</span>
+        <span class="summary-cta-label">Próximo →</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/servicos.js" defer></script>
+
+</body>
+</html>

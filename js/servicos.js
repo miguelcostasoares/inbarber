@@ -124,15 +124,16 @@
     if (backBtn) {
       backBtn.addEventListener('click', () => {
         persist();
-        window.history.back();
+        window.location.href = 'index.html';
       });
     }
 
-    /* ─── CTA próximo — navega para escolha do barbeiro ─── */
+    /* ─── CTA agendar → página de barbeiros ─── */
     if (summaryCta) {
       summaryCta.addEventListener('click', () => {
+        if (selected.size === 0) return;
         persist();
-        window.location.href = '/barbeiro.html';
+        window.location.href = 'barbeiro.html';
       });
     }
 

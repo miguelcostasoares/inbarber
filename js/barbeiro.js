@@ -113,8 +113,18 @@
   ════════════════════════════════════════ */
   function persist() {
     try {
-      if (selectedId) sessionStorage.setItem('barber_selected', selectedId);
-      else sessionStorage.removeItem('barber_selected');
+      if (selectedId) {
+        sessionStorage.setItem('barber_selected', selectedId);
+        // Formato lido pelo agendar.js
+        const b = BARBERS[selectedId];
+        sessionStorage.setItem('selected_barber', JSON.stringify({
+          id: selectedId,
+          name: b ? b.name : selectedId
+        }));
+      } else {
+        sessionStorage.removeItem('barber_selected');
+        sessionStorage.removeItem('selected_barber');
+      }
     } catch (_) {}
   }
   function restore() {
@@ -379,12 +389,12 @@
     /* Confirmar */
     document.getElementById('summary-cta').addEventListener('click', () => {
       if (!selectedId) return;
-      /* window.location.href = `/horarios?barbeiro=${selectedId}`; */
-      alert(`Barbeiro "${BARBERS[selectedId].name}" confirmado!\nPróximo passo: escolher o horário.`);
+      persist();
+      window.location.href = 'agendar.html';
     });
 
     /* Voltar */
-    document.getElementById('back-btn').addEventListener('click', () => { persist(); window.history.back(); });
+    document.getElementById('back-btn').addEventListener('click', () => { persist(); window.location.href = 'servicos.html'; });
 
     restore();
   });

@@ -37,8 +37,79 @@
     <a href="#localizacao">Localização</a>
   </nav>
 
-  <a href="#agendar" class="nav-cta">Agendar</a>
+  <!-- Botões lado direito -->
+  <div class="nav-actions">
+    <button class="nav-icon-btn" id="nav-profile-btn" aria-label="Perfil">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="10" cy="7" r="3.5"/>
+        <path d="M2.5 17.5c0-4 3.36-7 7.5-7s7.5 3 7.5 7"/>
+      </svg>
+    </button>
+    <button class="nav-icon-btn nav-hamburger" id="nav-menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+      <span class="ham-bar"></span>
+      <span class="ham-bar"></span>
+      <span class="ham-bar"></span>
+    </button>
+  </div>
 </header>
+
+<!-- ═══ DRAWER — fora do header para não ser cortado ═══ -->
+<div class="nav-drawer" id="nav-drawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Menu">
+  <div class="nav-drawer-overlay" id="nav-drawer-overlay"></div>
+  <div class="nav-drawer-panel">
+    <div class="nav-drawer-header">
+      <span class="nav-drawer-title">Menu</span>
+      <button class="nav-drawer-close" id="nav-drawer-close" aria-label="Fechar menu">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="3" y1="3" x2="15" y2="15"/><line x1="15" y1="3" x2="3" y2="15"/>
+        </svg>
+      </button>
+    </div>
+    <div class="nav-drawer-body">
+
+      <!-- Perfil -->
+      <a href="perfil.html" class="nav-drawer-item">
+        <span class="nav-drawer-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="7" r="3.5"/>
+            <path d="M2.5 17.5c0-4 3.36-7 7.5-7s7.5 3 7.5 7"/>
+          </svg>
+        </span>
+        <span class="nav-drawer-item-text">
+          <strong data-i18n="drawer.profile">Perfil</strong>
+          <small data-i18n="drawer.profile_sub">Gerir a sua conta</small>
+        </span>
+        <svg class="nav-drawer-arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 2l5 5-5 5"/>
+        </svg>
+      </a>
+
+      <div class="nav-drawer-divider"></div>
+
+      <!-- Idioma -->
+      <div class="nav-drawer-item nav-drawer-lang-item">
+        <span class="nav-drawer-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="10" r="7.5"/>
+            <path d="M10 2.5C10 2.5 7 6 7 10s3 7.5 3 7.5M10 2.5C10 2.5 13 6 13 10s-3 7.5-3 7.5M2.5 10h15"/>
+          </svg>
+        </span>
+        <div class="nav-drawer-lang-content">
+          <span class="nav-drawer-item-text">
+            <strong data-i18n="drawer.language">Idioma</strong>
+            <small class="lang-current-label">Português</small>
+          </span>
+          <div class="lang-pills" role="group" aria-label="Selecionar idioma">
+            <button class="lang-pill active" data-lang="pt" aria-pressed="true">PT</button>
+            <button class="lang-pill" data-lang="en" aria-pressed="false">EN</button>
+            <button class="lang-pill" data-lang="es" aria-pressed="false">ES</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════ TICKER ═══════════════════════════════ -->
 <div class="ticker" aria-hidden="true">
@@ -565,56 +636,122 @@
 <!-- ═══════════════════════════════ AVALIAÇÕES ═══════════════════════════════ -->
 <section class="reviews" aria-labelledby="rev-h">
   <div class="reviews-hd">
-    <p class="label-tag">O que dizem</p>
-    <h2 class="section-h" id="rev-h">Clientes que<br><em>voltam sempre.</em></h2>
-    <div class="reviews-score" aria-label="Nota média 4.9 de 5">
-      <span class="rs-num">4.9</span>
-      <div class="rs-right">
-        <span class="rs-stars" aria-hidden="true">★★★★★</span>
-        <span class="rs-count">+8.000 clientes</span>
+    <div class="reviews-intro">
+      <p class="label-tag">O que dizem</p>
+      <h2 class="section-h" id="rev-h">Clientes que<br><em>voltam sempre.</em></h2>
+    </div>
+
+    <div class="reviews-panel" aria-label="Estatísticas de avaliação">
+      <div class="rp-stats-row">
+        <div class="rp-stat rp-stat-score">
+          <span class="rp-score" data-count="4.9">4.9</span>
+          <div class="rp-top-info">
+            <span class="rp-stars" aria-hidden="true">★★★★★</span>
+            <span class="rp-total">+8.200 avaliações</span>
+          </div>
+        </div>
+
+        <span class="rp-divider" aria-hidden="true"></span>
+
+        <div class="rp-stat">
+          <span class="rp-stat-val" data-count="98" data-suffix="%">0%</span>
+          <span class="rp-stat-label">Recomendam</span>
+        </div>
+
+        <span class="rp-divider" aria-hidden="true"></span>
+
+        <div class="rp-stat">
+          <span class="rp-stat-val" data-count="8.2" data-suffix="k">0k</span>
+          <span class="rp-stat-label">Clientes</span>
+        </div>
+      </div>
+
+      <div class="rp-bars">
+        <div class="rp-chart-hd">
+          <span class="rp-chart-label">Satisfação dos clientes</span>
+          <span class="rp-chart-delta">+14% em 90 dias</span>
+        </div>
+        <div class="rp-spark-wrap">
+          <canvas id="rpSparkline" class="rp-spark" role="img" aria-label="Gráfico de satisfação dos clientes nos últimos 90 dias, em tendência de alta">Satisfação dos clientes subiu 14% nos últimos 90 dias.</canvas>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="reviews-track" role="list">
     <article class="rv-card" role="listitem">
-      <p class="rv-txt">"Melhor barbearia que já fui. Atenção incrível aos detalhes — o barbeiro entendeu exatamente o que eu queria."</p>
+      <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
+
+      <p class="rv-txt">Melhor barbearia que já fui. Atenção incrível aos detalhes — o barbeiro entendeu exatamente o que eu queria.</p>
+
+      <span class="rv-verified">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
+        Avaliação verificada
+      </span>
+
       <footer class="rv-foot">
-        <div class="rv-av">RM</div>
-        <div>
+        <img class="rv-av" src="https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="Rafael Mendes" width="40" height="40" loading="lazy">
+        <div class="rv-id">
           <strong class="rv-name">Rafael Mendes</strong>
           <span class="rv-date">há 3 dias</span>
         </div>
         <span class="rv-stars" aria-label="5 estrelas">★★★★★</span>
       </footer>
     </article>
+
     <article class="rv-card" role="listitem">
-      <p class="rv-txt">"Ambiente super aconchegante, atendimento impecável. Já é minha barbearia fixa. Recomendo demais!"</p>
+      <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
+
+      <p class="rv-txt">Ambiente super aconchegante, atendimento impecável. Já é minha barbearia fixa. Recomendo demais!</p>
+
+      <span class="rv-verified">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
+        Avaliação verificada
+      </span>
+
       <footer class="rv-foot">
-        <div class="rv-av">CS</div>
-        <div>
+        <img class="rv-av" src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="Carlos Santos" width="40" height="40" loading="lazy">
+        <div class="rv-id">
           <strong class="rv-name">Carlos Santos</strong>
           <span class="rv-date">há 1 semana</span>
         </div>
         <span class="rv-stars" aria-label="5 estrelas">★★★★★</span>
       </footer>
     </article>
+
     <article class="rv-card" role="listitem">
-      <p class="rv-txt">"Fiz corte + barba e saí completamente diferente. Profissionalismo do início ao fim, sem pressa."</p>
+      <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
+
+      <p class="rv-txt">Fiz corte + barba e saí completamente diferente. Profissionalismo do início ao fim, sem pressa.</p>
+
+      <span class="rv-verified">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
+        Avaliação verificada
+      </span>
+
       <footer class="rv-foot">
-        <div class="rv-av">LP</div>
-        <div>
+        <img class="rv-av" src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="Lucas Pereira" width="40" height="40" loading="lazy">
+        <div class="rv-id">
           <strong class="rv-name">Lucas Pereira</strong>
           <span class="rv-date">há 2 semanas</span>
         </div>
         <span class="rv-stars" aria-label="5 estrelas">★★★★★</span>
       </footer>
     </article>
+
     <article class="rv-card" role="listitem">
-      <p class="rv-txt">"O agendamento online é prático demais. Fácil de usar e sempre tem horário disponível. 10/10."</p>
+      <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
+
+      <p class="rv-txt">O agendamento online é prático demais. Fácil de usar e sempre tem horário disponível. 10/10.</p>
+
+      <span class="rv-verified">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
+        Avaliação verificada
+      </span>
+
       <footer class="rv-foot">
-        <div class="rv-av">FO</div>
-        <div>
+        <img class="rv-av" src="https://images.pexels.com/photos/15946547/pexels-photo-15946547.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="Felipe Oliveira" width="40" height="40" loading="lazy">
+        <div class="rv-id">
           <strong class="rv-name">Felipe Oliveira</strong>
           <span class="rv-date">há 1 mês</span>
         </div>
@@ -752,7 +889,7 @@
 
   <div class="footer-bottom">
     <p>© 2026 Barbearia. Todos os direitos reservados.</p>
-    <p>Powered by <strong>BarberOS</strong></p>
+    <p>Powered by <strong><a href="www.incode.com" target="_blank">InCode</a></strong></p>
   </div>
 </footer>
 
@@ -830,8 +967,9 @@
   </a>
 </div>
 
-<script src="/js/main.js" defer></script>
+<script src="/js/main.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="/js/servicos.js"></script>
 <script src="/js/app.js"></script>
 

@@ -13,12 +13,13 @@
 
 <!-- ══ TOPBAR ══ -->
 <header class="topbar">
-  <button class="back-btn" id="back-btn" aria-label="Voltar">
+  <button class="back-btn" id="back-btn" aria-label="Voltar para serviços">
     <span class="back-arrow">
       <svg viewBox="0 0 16 16" fill="none"><polyline points="10,3 5,8 10,13" stroke-width="1.8"/></svg>
     </span>
     Voltar
   </button>
+  
   <div class="topbar-title" aria-hidden="true">
     <span class="topbar-title-name">Barbearia</span>
     <span class="topbar-title-sub">Profissional</span>
@@ -26,10 +27,29 @@
   <div class="topbar-spacer" aria-hidden="true"></div>
 </header>
 
+<!-- ══ STEPS ══ -->
+<div class="steps-bar" aria-label="Progresso do agendamento">
+  <div class="steps-inner">
+    <div class="step done">
+      <span class="step-dot"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="step-label">Serviços</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step active">
+      <span class="step-dot"></span>
+      <span class="step-label">Profissional</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <span class="step-dot"></span>
+      <span class="step-label">Data & Hora</span>
+    </div>
+  </div>
+</div>
+
 <!-- ══ CONTEÚDO ══ -->
 <main class="page-content">
   <div class="page-hd">
-    <p class="label-tag">Etapa 2 de 3</p>
     <h1>Escolha seu<br><em>barbeiro.</em></h1>
     <p class="page-hd-hint">Selecione quem vai atender você — toque na foto para ver o perfil completo.</p>
   </div>

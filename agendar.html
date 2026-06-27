@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data & Hora — Barbearia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/agendar.css">
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<header class="topbar">
+  <button class="back-btn" id="back-btn" aria-label="Voltar para profissional">
+    <span class="back-arrow">
+      <svg viewBox="0 0 16 16" fill="none"><polyline points="10,3 5,8 10,13" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    Voltar
+  </button>
+  <div class="topbar-title" aria-hidden="true">
+    <span class="topbar-title-name">Barbearia</span>
+    <span class="topbar-title-sub">Agendamento</span>
+  </div>
+  <div class="topbar-spacer" aria-hidden="true"></div>
+</header>
+
+<!-- ══ STEPS ══ -->
+<div class="steps-bar" aria-label="Progresso do agendamento">
+  <div class="steps-inner">
+    <div class="step done">
+      <span class="step-dot"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="step-label">Serviços</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step done">
+      <span class="step-dot"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="step-label">Profissional</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step active">
+      <span class="step-dot"></span>
+      <span class="step-label">Data & Hora</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONTEÚDO ══ -->
+<main class="page-content">
+
+  <!-- ══ RECAP ══ -->
+  <div class="recap-card" id="recap-card">
+    <!-- Avatar + nome do barbeiro -->
+    <div class="recap-who">
+      <div class="recap-av" id="recap-barber-av">D</div>
+      <div class="recap-who-text">
+        <span class="recap-barber-name" id="recap-barber-name">Daniel</span>
+        <span class="recap-barber-role" id="recap-barber-role">Sênior · 4 anos</span>
+      </div>
+    </div>
+
+    <!-- Divisor vertical -->
+    <div class="recap-vdiv" aria-hidden="true"></div>
+
+    <!-- Serviços empilhados -->
+    <div class="recap-svcs" id="recap-svcs-list"></div>
+
+    <!-- Divisor vertical -->
+    <div class="recap-vdiv" aria-hidden="true"></div>
+
+    <!-- Total -->
+    <div class="recap-total-block">
+      <span class="recap-total-price" id="recap-price">R$ 0</span>
+      <span class="recap-total-dur" id="recap-dur">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3l2 1.5" stroke-linecap="round"/></svg>
+        <span id="recap-dur-text">0 min</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ══ CALENDÁRIO ══ -->
+  <section class="cal-section" aria-label="Calendário">
+
+    <!-- Cabeçalho: mês + botão próxima data -->
+    <div class="cal-header">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" id="cal-prev" aria-label="Mês anterior">
+          <svg viewBox="0 0 16 16" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="10,3 5,8 10,13"/></svg>
+        </button>
+        <h2 class="cal-month" id="cal-month" aria-live="polite">Junho 2026</h2>
+        <button class="cal-nav-btn" id="cal-next" aria-label="Próximo mês">
+          <svg viewBox="0 0 16 16" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,3 11,8 6,13"/></svg>
+        </button>
+      </div>
+      <button class="cal-next-avail-btn" id="cal-next-avail" aria-label="Ir para próxima data disponível">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1v12M7 13l4-4M7 13l-4-4"/></svg>
+        Próximo disponível
+      </button>
+    </div>
+
+    <!-- Dias da semana -->
+    <div class="cal-weekdays" aria-hidden="true">
+      <span>Dom</span><span>Seg</span><span>Ter</span>
+      <span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+    </div>
+
+    <!-- Grid -->
+    <div class="cal-grid" id="cal-grid" role="grid" aria-label="Dias do mês"></div>
+
+  </section>
+
+  <!-- ══ HORÁRIOS ══ -->
+  <section class="slots-section" id="slots-section" aria-label="Horários disponíveis">
+
+    <!-- Header dos slots -->
+    <div class="slots-header">
+      <div class="slots-header-left">
+        <h3 class="slots-title" id="slots-title">Horários disponíveis</h3>
+        <span class="slots-count" id="slots-count"></span>
+      </div>
+      <span class="slots-date-chip" id="slots-date-label"></span>
+    </div>
+
+    <!-- Loading shimmer -->
+    <div class="slots-loading" id="slots-loading" aria-live="polite">
+      <div class="slots-shimmer"></div><div class="slots-shimmer"></div>
+      <div class="slots-shimmer"></div><div class="slots-shimmer"></div>
+      <div class="slots-shimmer"></div><div class="slots-shimmer"></div>
+    </div>
+
+    <!-- Grid de horários -->
+    <div class="slots-body" id="slots-grid" role="group" aria-label="Horários"></div>
+
+    <!-- Vazio -->
+    <div class="slots-empty" id="slots-empty" style="display:none">
+      <div class="slots-empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="16" cy="16" r="12"/><path d="M16 10v6l3.5 2.5"/></svg>
+      </div>
+      <p>Nenhum horário disponível<br>neste dia.</p>
+      <button class="slots-next-day-btn" id="slots-next-day-btn">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><polyline points="3,7 11,7 8,4"/><polyline points="8,10 11,7"/></svg>
+        Ir para o próximo dia disponível
+      </button>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ══ BARRA FLUTUANTE ══ -->
+<div class="summary-bar" id="summary-bar">
+  <div class="summary-bar-inner">
+    <div class="summary-left">
+      <p class="summary-empty" id="summary-empty">Selecione um horário</p>
+      <div class="summary-chosen" id="summary-chosen" style="display:none">
+        <div class="summary-datetime">
+          <span class="summary-date" id="summary-date">Seg, 30 Jun</span>
+          <span class="summary-sep" aria-hidden="true">·</span>
+          <span class="summary-time" id="summary-time">14:30</span>
+        </div>
+        <span class="summary-sub" id="summary-sub">Daniel · 60 min</span>
+      </div>
+    </div>
+    <button class="summary-cta" id="summary-cta" disabled aria-disabled="true">
+      <span class="summary-cta-price" id="summary-cta-price">R$ 0</span>
+      <span class="summary-cta-label">Confirmar</span>
+      <span class="summary-arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<script src="/js/agendar.js" defer></script>
+</body>
+</html>

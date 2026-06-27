@@ -2,6 +2,79 @@ var $ = (sel, ctx = document) => ctx.querySelector(sel);
 var $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
 
 /* ════════════════════════════════════════
+   i18n — Traduções
+════════════════════════════════════════ */
+const i18n = {
+  pt: { 'drawer.profile': 'Perfil', 'drawer.profile_sub': 'Gerir a sua conta', 'drawer.language': 'Idioma', 'lang.label': 'Português' },
+  en: { 'drawer.profile': 'Profile', 'drawer.profile_sub': 'Manage your account', 'drawer.language': 'Language', 'lang.label': 'English' },
+  es: { 'drawer.profile': 'Perfil', 'drawer.profile_sub': 'Gestionar tu cuenta', 'drawer.language': 'Idioma', 'lang.label': 'Español' },
+};
+let currentLang = localStorage.getItem('lang') || 'pt';
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : lang;
+  const t = i18n[lang] || i18n.pt;
+  document.querySelectorAll('[data-i18n]').forEach(el => { if (t[el.dataset.i18n]) el.textContent = t[el.dataset.i18n]; });
+  const label = document.querySelector('.lang-current-label');
+  if (label) label.textContent = t['lang.label'];
+  document.querySelectorAll('.lang-pill').forEach(p => {
+    const active = p.dataset.lang === lang;
+    p.classList.toggle('active', active);
+    p.setAttribute('aria-pressed', String(active));
+  });
+}
+
+/* ════════════════════════════════════════
+   NAV DRAWER
+════════════════════════════════════════ */
+(function initNavDrawer() {
+  const menuBtn    = document.getElementById('nav-menu-btn');
+  const profileBtn = document.getElementById('nav-profile-btn');
+  const drawer     = document.getElementById('nav-drawer');
+  const overlay    = document.getElementById('nav-drawer-overlay');
+  const closeBtn   = document.getElementById('nav-drawer-close');
+  if (!menuBtn || !drawer) return;
+
+  function openDrawer() {
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+    menuBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => { if (closeBtn) closeBtn.focus(); }, 60);
+  }
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    menuBtn.focus();
+  }
+
+  menuBtn.addEventListener('click', () => drawer.classList.contains('open') ? closeDrawer() : openDrawer());
+  if (overlay) overlay.addEventListener('click', closeDrawer);
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  if (profileBtn) profileBtn.addEventListener('click', () => { window.location.href = 'perfil.html'; });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer(); });
+
+  drawer.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const focusable = [...drawer.querySelectorAll('a[href], button:not([disabled])')].filter(el => el.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
+  document.querySelectorAll('.lang-pill').forEach(pill => {
+    pill.addEventListener('click', () => applyLang(pill.dataset.lang));
+  });
+
+  applyLang(currentLang);
+})();
+
+/* ════════════════════════════════════════
    NAV
 ════════════════════════════════════════ */
 const nav = $('#nav');
@@ -37,6 +110,114 @@ const countIO = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { animCount(e.target); countIO.unobserve(e.target); } });
 }, { threshold: 0.6 });
 $$('[data-count]').forEach(el => countIO.observe(el));
+
+/* ════════════════════════════════════════
+   AVALIAÇÕES — sparkline + count-up
+════════════════════════════════════════ */
+(function () {
+  const reviewsSection = document.querySelector('.reviews');
+  if (!reviewsSection) return;
+
+  let hasAnimated = false;
+
+  function initReviewsSparkline() {
+    const canvas = document.getElementById('rpSparkline');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const gold = getComputedStyle(document.documentElement).getPropertyValue('--gold').trim() || '#BFA06A';
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.offsetHeight);
+    gradient.addColorStop(0, hexToRgba(gold, 0.22));
+    gradient.addColorStop(1, hexToRgba(gold, 0));
+
+    const dataPoints = [78, 80, 79, 83, 85, 84, 88, 91, 90, 94];
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: dataPoints.map((_, i) => i),
+        datasets: [{
+          data: dataPoints,
+          borderColor: gold,
+          backgroundColor: gradient,
+          borderWidth: 1.6,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 900, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false }
+        },
+        scales: {
+          x: { display: false },
+          y: { display: false }
+        },
+        elements: {
+          point: { radius: 0 }
+        }
+      }
+    });
+  }
+
+  function hexToRgba(hex, alpha) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) {
+      hex = hex.split('').map(c => c + c).join('');
+    }
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  function animateCount(el) {
+    const target = parseFloat(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const isDecimal = el.dataset.count.includes('.');
+    const duration = 1400;
+    const start = performance.now();
+
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = target * eased;
+      el.textContent = (isDecimal ? current.toFixed(1) : Math.round(current)) + suffix;
+
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        el.textContent = (isDecimal ? target.toFixed(1) : target) + suffix;
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  function initReviewsCountUp() {
+    document.querySelectorAll('.rp-stat-val[data-count]').forEach(animateCount);
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && !hasAnimated) {
+        hasAnimated = true;
+        initReviewsSparkline();
+        initReviewsCountUp();
+        observer.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+
+  observer.observe(reviewsSection);
+})();
 
 /* ════════════════════════════════════════
    CAROUSEL BANNER (Galeria)

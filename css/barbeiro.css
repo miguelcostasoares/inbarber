@@ -88,6 +88,31 @@ button { font-family: var(--ff-b); cursor: pointer; border: none; background: no
 .page-hd-hint { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
 /* ════════════════════════════════════════
+   STEPS BAR
+════════════════════════════════════════ */
+.steps-bar {
+  background: var(--bg-2); border-bottom: 1px solid var(--divider); padding: 12px 1.25rem;
+}
+.steps-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; }
+.step { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+.step-dot {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.12); background: var(--bg-3);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: all 240ms var(--ease-out);
+}
+.step-dot svg { width: 10px; height: 10px; display: none; }
+.step.done .step-dot { background: var(--gold-dim); border-color: var(--gold-dim); }
+.step.done .step-dot svg { display: block; stroke: var(--gold); }
+.step.active .step-dot { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 3px rgba(191,160,106,0.2); }
+.step-label { font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 0.3px; }
+.step.active .step-label { color: var(--cream); font-weight: 600; }
+.step.done .step-label { color: var(--gold-dim); }
+.step-line { flex: 1; height: 1px; background: var(--divider); margin: 0 8px; min-width: 16px; }
+@media(min-width:640px){ .steps-bar { padding: 12px 2rem; } }
+@media(min-width:1024px){ .steps-bar { padding: 12px 4rem; } }
+
+/* ════════════════════════════════════════
    GRID BARBEIROS
 ════════════════════════════════════════ */
 .barbers-grid {

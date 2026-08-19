@@ -8,12 +8,12 @@
 
 /* ─── 1. CONFIG ─────────────────────────────────────────── */
 const CFG = {
-  barbershopName : 'Barbearia do Rafael',
-  ownerName      : 'Rafael',
-  openHour       : 8,
-  closeHour      : 20,
-  slotMinutes    : 30,
-  currency       : 'BRL',
+  barbershopName: 'Barbearia do Rafael',
+  ownerName: 'Rafael',
+  openHour: 8,
+  closeHour: 20,
+  slotMinutes: 30,
+  currency: 'BRL',
 };
 
 
@@ -25,91 +25,91 @@ const CFG = {
 
 // GET /api/services
 const SERVICES = [
-  { id: 'corte',        name: 'Corte Masculino',  price: 45,  duration: 30, color: '#BFA06A' },
-  { id: 'barba',        name: 'Barba',             price: 35,  duration: 30, color: '#5B8DEF' },
-  { id: 'combo',        name: 'Corte + Barba',     price: 70,  duration: 60, color: '#9B72CF' },
-  { id: 'pigmentacao',  name: 'Pigmentação',       price: 90,  duration: 60, color: '#4CAF79' },
-  { id: 'relaxamento',  name: 'Relaxamento',       price: 80,  duration: 60, color: '#E0924A' },
-  { id: 'sobrancelha',  name: 'Sobrancelha',       price: 20,  duration: 20, color: '#E05454' },
+  { id: 'corte', name: 'Corte Masculino', price: 45, duration: 30, color: '#BFA06A' },
+  { id: 'barba', name: 'Barba', price: 35, duration: 30, color: '#5B8DEF' },
+  { id: 'combo', name: 'Corte + Barba', price: 70, duration: 60, color: '#9B72CF' },
+  { id: 'pigmentacao', name: 'Pigmentação', price: 90, duration: 60, color: '#4CAF79' },
+  { id: 'relaxamento', name: 'Relaxamento', price: 80, duration: 60, color: '#E0924A' },
+  { id: 'sobrancelha', name: 'Sobrancelha', price: 20, duration: 20, color: '#E05454' },
 ];
 
 // GET /api/barbers
 const BARBERS = [
-  { id: 'marcos', name: 'Marcos Silva',  avatar: 'MS', rating: 4.9 },
-  { id: 'joao',   name: 'João Pereira',  avatar: 'JP', rating: 4.7 },
-  { id: 'andre',  name: 'André Santos',  avatar: 'AS', rating: 4.8 },
+  { id: 'marcos', name: 'Marcos Silva', avatar: 'MS', rating: 4.9 },
+  { id: 'joao', name: 'João Pereira', avatar: 'JP', rating: 4.7 },
+  { id: 'andre', name: 'André Santos', avatar: 'AS', rating: 4.8 },
 ];
 
 // GET /api/clients (lista para autocomplete)
 const CLIENTS_DB = [
-  { name: 'Lucas Andrade',     phone: '84999990001' },
-  { name: 'Felipe Rocha',      phone: '84999990002' },
-  { name: 'Gabriel Souza',     phone: '84999990003' },
-  { name: 'Matheus Lima',      phone: '84999990004' },
-  { name: 'Ricardo Ferreira',  phone: '84999990005' },
-  { name: 'Bruno Carvalho',    phone: '84999990006' },
-  { name: 'Diego Martins',     phone: '84999990007' },
-  { name: 'Thiago Oliveira',   phone: '84999990008' },
-  { name: 'Cauã Ribeiro',      phone: '84999990009' },
-  { name: 'Vinicius Alves',    phone: '84999990010' },
-  { name: 'Leonardo Costa',    phone: '84999990011' },
-  { name: 'Samuel Pereira',    phone: '84999990012' },
+  { name: 'Lucas Andrade', phone: '84999990001' },
+  { name: 'Felipe Rocha', phone: '84999990002' },
+  { name: 'Gabriel Souza', phone: '84999990003' },
+  { name: 'Matheus Lima', phone: '84999990004' },
+  { name: 'Ricardo Ferreira', phone: '84999990005' },
+  { name: 'Bruno Carvalho', phone: '84999990006' },
+  { name: 'Diego Martins', phone: '84999990007' },
+  { name: 'Thiago Oliveira', phone: '84999990008' },
+  { name: 'Cauã Ribeiro', phone: '84999990009' },
+  { name: 'Vinicius Alves', phone: '84999990010' },
+  { name: 'Leonardo Costa', phone: '84999990011' },
+  { name: 'Samuel Pereira', phone: '84999990012' },
   { name: 'Rafael Nascimento', phone: '84999990013' },
-  { name: 'Igor Campos',       phone: '84999990014' },
-  { name: 'Henrique Duarte',   phone: '84999990015' },
-  { name: 'Gustavo Mendes',    phone: '84999990016' },
-  { name: 'Pedro Linhares',    phone: '84999990017' },
-  { name: 'Rodrigo Fonseca',   phone: '84999990018' },
+  { name: 'Igor Campos', phone: '84999990014' },
+  { name: 'Henrique Duarte', phone: '84999990015' },
+  { name: 'Gustavo Mendes', phone: '84999990016' },
+  { name: 'Pedro Linhares', phone: '84999990017' },
+  { name: 'Rodrigo Fonseca', phone: '84999990018' },
 ];
 
 // GET /api/appointments?date=today
 // status: 'pendente' | 'confirmado' | 'em-andamento' | 'concluido' | 'no-show'
 let APPOINTMENTS = [
-  { id: 'a001', date: getTodayStr(), time: '08:00', client: 'Lucas Andrade',     phone: '84999990001', serviceId: 'combo',       barberId: 'marcos', status: 'concluido',    notes: '' },
-  { id: 'a002', date: getTodayStr(), time: '08:30', client: 'Felipe Rocha',      phone: '84999990002', serviceId: 'corte',       barberId: 'joao',   status: 'concluido',    notes: '' },
-  { id: 'a003', date: getTodayStr(), time: '09:00', client: 'Gabriel Souza',     phone: '84999990003', serviceId: 'barba',       barberId: 'andre',  status: 'concluido',    notes: 'Preferência por navalha' },
-  { id: 'a004', date: getTodayStr(), time: '09:30', client: 'Matheus Lima',      phone: '84999990004', serviceId: 'pigmentacao', barberId: 'marcos', status: 'concluido',    notes: '' },
-  { id: 'a005', date: getTodayStr(), time: '10:00', client: 'Ricardo Ferreira',  phone: '84999990005', serviceId: 'corte',       barberId: 'joao',   status: 'no-show',      notes: '' },
-  { id: 'a006', date: getTodayStr(), time: '10:30', client: 'Bruno Carvalho',    phone: '84999990006', serviceId: 'combo',       barberId: 'andre',  status: 'concluido',    notes: '' },
-  { id: 'a007', date: getTodayStr(), time: '11:00', client: 'Diego Martins',     phone: '84999990007', serviceId: 'relaxamento', barberId: 'marcos', status: 'em-andamento', notes: 'Cabelo comprido' },
-  { id: 'a008', date: getTodayStr(), time: '11:30', client: 'Thiago Oliveira',   phone: '84999990008', serviceId: 'sobrancelha', barberId: 'joao',   status: 'confirmado',   notes: '' },
-  { id: 'a009', date: getTodayStr(), time: '12:00', client: 'Cauã Ribeiro',      phone: '84999990009', serviceId: 'corte',       barberId: 'andre',  status: 'confirmado',   notes: '' },
-  { id: 'a010', date: getTodayStr(), time: '13:00', client: 'Vinicius Alves',    phone: '84999990010', serviceId: 'combo',       barberId: 'marcos', status: 'confirmado',   notes: '' },
-  { id: 'a011', date: getTodayStr(), time: '13:30', client: 'Leonardo Costa',    phone: '84999990011', serviceId: 'barba',       barberId: 'joao',   status: 'pendente',     notes: 'Ligar antes' },
-  { id: 'a012', date: getTodayStr(), time: '14:00', client: 'Samuel Pereira',    phone: '84999990012', serviceId: 'pigmentacao', barberId: 'andre',  status: 'pendente',     notes: '' },
-  { id: 'a013', date: getTodayStr(), time: '14:30', client: 'Rafael Nascimento', phone: '84999990013', serviceId: 'corte',       barberId: 'marcos', status: 'pendente',     notes: '' },
-  { id: 'a014', date: getTodayStr(), time: '15:00', client: 'Igor Campos',       phone: '84999990014', serviceId: 'combo',       barberId: 'joao',   status: 'pendente',     notes: '' },
-  { id: 'a015', date: getTodayStr(), time: '16:00', client: 'Henrique Duarte',   phone: '84999990015', serviceId: 'relaxamento', barberId: 'andre',  status: 'pendente',     notes: '' },
+  { id: 'a001', date: getTodayStr(), time: '08:00', client: 'Lucas Andrade', phone: '84999990001', serviceId: 'combo', barberId: 'marcos', status: 'concluido', notes: '' },
+  { id: 'a002', date: getTodayStr(), time: '08:30', client: 'Felipe Rocha', phone: '84999990002', serviceId: 'corte', barberId: 'joao', status: 'concluido', notes: '' },
+  { id: 'a003', date: getTodayStr(), time: '09:00', client: 'Gabriel Souza', phone: '84999990003', serviceId: 'barba', barberId: 'andre', status: 'concluido', notes: 'Preferência por navalha' },
+  { id: 'a004', date: getTodayStr(), time: '09:30', client: 'Matheus Lima', phone: '84999990004', serviceId: 'pigmentacao', barberId: 'marcos', status: 'concluido', notes: '' },
+  { id: 'a005', date: getTodayStr(), time: '10:00', client: 'Ricardo Ferreira', phone: '84999990005', serviceId: 'corte', barberId: 'joao', status: 'no-show', notes: '' },
+  { id: 'a006', date: getTodayStr(), time: '10:30', client: 'Bruno Carvalho', phone: '84999990006', serviceId: 'combo', barberId: 'andre', status: 'concluido', notes: '' },
+  { id: 'a007', date: getTodayStr(), time: '11:00', client: 'Diego Martins', phone: '84999990007', serviceId: 'relaxamento', barberId: 'marcos', status: 'em-andamento', notes: 'Cabelo comprido' },
+  { id: 'a008', date: getTodayStr(), time: '11:30', client: 'Thiago Oliveira', phone: '84999990008', serviceId: 'sobrancelha', barberId: 'joao', status: 'confirmado', notes: '' },
+  { id: 'a009', date: getTodayStr(), time: '12:00', client: 'Cauã Ribeiro', phone: '84999990009', serviceId: 'corte', barberId: 'andre', status: 'confirmado', notes: '' },
+  { id: 'a010', date: getTodayStr(), time: '13:00', client: 'Vinicius Alves', phone: '84999990010', serviceId: 'combo', barberId: 'marcos', status: 'confirmado', notes: '' },
+  { id: 'a011', date: getTodayStr(), time: '13:30', client: 'Leonardo Costa', phone: '84999990011', serviceId: 'barba', barberId: 'joao', status: 'pendente', notes: 'Ligar antes' },
+  { id: 'a012', date: getTodayStr(), time: '14:00', client: 'Samuel Pereira', phone: '84999990012', serviceId: 'pigmentacao', barberId: 'andre', status: 'pendente', notes: '' },
+  { id: 'a013', date: getTodayStr(), time: '14:30', client: 'Rafael Nascimento', phone: '84999990013', serviceId: 'corte', barberId: 'marcos', status: 'pendente', notes: '' },
+  { id: 'a014', date: getTodayStr(), time: '15:00', client: 'Igor Campos', phone: '84999990014', serviceId: 'combo', barberId: 'joao', status: 'pendente', notes: '' },
+  { id: 'a015', date: getTodayStr(), time: '16:00', client: 'Henrique Duarte', phone: '84999990015', serviceId: 'relaxamento', barberId: 'andre', status: 'pendente', notes: '' },
 ];
 
 // GET /api/blocks (bloqueios de horário)
 let BLOCKS = [
   { id: 'b001', date: getTodayStr(), startTime: '12:00', endTime: '13:00', barberId: 'marcos', reason: 'almoco' },
-  { id: 'b002', date: getTodayStr(), startTime: '12:00', endTime: '13:00', barberId: 'joao',   reason: 'almoco' },
-  { id: 'b003', date: getTodayStr(), startTime: '12:00', endTime: '13:00', barberId: 'andre',  reason: 'almoco' },
+  { id: 'b002', date: getTodayStr(), startTime: '12:00', endTime: '13:00', barberId: 'joao', reason: 'almoco' },
+  { id: 'b003', date: getTodayStr(), startTime: '12:00', endTime: '13:00', barberId: 'andre', reason: 'almoco' },
 ];
 
 
 /* ─── 3. STATE ──────────────────────────────────────────── */
 const STATE = {
-  activeView    : 'kanban',
-  filterBarber  : '',
-  filterService : '',
-  filterSearch  : '',
-  calMode       : 'week',
-  calOffset     : 0,      // semanas ou meses desde hoje
-  listSort      : { field: 'time', dir: 'asc' },
-  listDate      : getTodayStr(),
-  listStatus    : '',
-  dragging      : null,   // { id, fromStatus }
-  editingId     : null,   // null = criando, string = editando
+  activeView: 'kanban',
+  filterBarber: '',
+  filterService: '',
+  filterSearch: '',
+  calMode: 'week',
+  calOffset: 0,      // semanas ou meses desde hoje
+  listSort: { field: 'time', dir: 'asc' },
+  listDate: getTodayStr(),
+  listStatus: '',
+  dragging: null,   // { id, fromStatus }
+  editingId: null,   // null = criando, string = editando
 };
 
 
 /* ─── 4. UTILS ──────────────────────────────────────────── */
 function getTodayStr() {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function formatDate(dateStr) {
@@ -131,8 +131,8 @@ function formatCurrency(val) {
 function formatPhone(phone) {
   if (!phone) return '';
   const n = phone.replace(/\D/g, '');
-  if (n.length === 11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
-  if (n.length === 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+  if (n.length === 11) return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`;
+  if (n.length === 10) return `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}`;
   return phone;
 }
 
@@ -141,15 +141,15 @@ function genId() {
 }
 
 function getService(id) { return SERVICES.find(s => s.id === id) || null; }
-function getBarber(id)  { return BARBERS.find(b => b.id === id)  || null; }
+function getBarber(id) { return BARBERS.find(b => b.id === id) || null; }
 
 function getStatusLabel(status) {
   const map = {
-    'pendente'    : 'Pendente',
-    'confirmado'  : 'Confirmado',
+    'pendente': 'Pendente',
+    'confirmado': 'Confirmado',
     'em-andamento': 'Em Andamento',
-    'concluido'   : 'Finalizado',
-    'no-show'     : 'No-show',
+    'concluido': 'Finalizado',
+    'no-show': 'No-show',
   };
   return map[status] || status;
 }
@@ -165,7 +165,7 @@ function hasConflict(appt, excludeId = null) {
   if (!svc) return false;
   const [h, m] = appt.time.split(':').map(Number);
   const startMin = h * 60 + m;
-  const endMin   = startMin + svc.duration;
+  const endMin = startMin + svc.duration;
 
   return APPOINTMENTS.some(a => {
     if (a.id === excludeId) return false;
@@ -176,20 +176,27 @@ function hasConflict(appt, excludeId = null) {
     if (!svcA) return false;
     const [ah, am] = a.time.split(':').map(Number);
     const aStart = ah * 60 + am;
-    const aEnd   = aStart + svcA.duration;
+    const aEnd = aStart + svcA.duration;
     return startMin < aEnd && endMin > aStart;
   });
 }
 
 // Gera slots de horário para o select
+// Horário de almoço bloqueado: das 12:00 até as 13:00
+const LUNCH_START = 12 * 60; // 720 min
+const LUNCH_END = 13 * 60; // 780 min
+
 function generateTimeSlots() {
   const slots = [];
   let current = CFG.openHour * 60;
   const close = CFG.closeHour * 60;
   while (current < close) {
-    const h = Math.floor(current / 60).toString().padStart(2, '0');
-    const m = (current % 60).toString().padStart(2, '0');
-    slots.push(`${h}:${m}`);
+    // Pula qualquer slot que inicie dentro do bloqueio de almoço
+    if (current < LUNCH_START || current >= LUNCH_END) {
+      const h = Math.floor(current / 60).toString().padStart(2, '0');
+      const m = (current % 60).toString().padStart(2, '0');
+      slots.push(`${h}:${m}`);
+    }
     current += CFG.slotMinutes;
   }
   return slots;
@@ -202,7 +209,7 @@ function getWeekDates(refDate, offsetWeeks) {
   return Array.from({ length: 7 }, (_, i) => {
     const day = new Date(d);
     day.setDate(d.getDate() + i);
-    return `${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`;
+    return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
   });
 }
 
@@ -210,7 +217,7 @@ function getWeekDates(refDate, offsetWeeks) {
 function getFilteredAppointments(dateOverride) {
   return APPOINTMENTS.filter(a => {
     if (dateOverride && a.date !== dateOverride) return false;
-    if (STATE.filterBarber  && a.barberId  !== STATE.filterBarber)  return false;
+    if (STATE.filterBarber && a.barberId !== STATE.filterBarber) return false;
     if (STATE.filterService && a.serviceId !== STATE.filterService) return false;
     if (STATE.filterSearch) {
       const q = STATE.filterSearch.toLowerCase();
@@ -224,8 +231,8 @@ function getFilteredAppointments(dateOverride) {
 function showToast(msg, type = 'success') {
   const icons = {
     success: `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6l3 3 7-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-    error  : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
-    info   : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M6 5v4M6 3.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    error: `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+    info: `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M6 5v4M6 3.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
     warning: `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L11 10H1L6 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 5v2M6 8.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
   };
   const el = document.createElement('div');
@@ -252,11 +259,11 @@ function renderStats() {
   const today = getTodayStr();
   const todays = APPOINTMENTS.filter(a => a.date === today);
 
-  const total     = todays.length;
+  const total = todays.length;
   const confirmed = todays.filter(a => a.status === 'confirmado').length;
-  const ongoing   = todays.filter(a => a.status === 'em-andamento').length;
-  const done      = todays.filter(a => a.status === 'concluido').length;
-  const noshow    = todays.filter(a => ['no-show'].includes(a.status)).length;
+  const ongoing = todays.filter(a => a.status === 'em-andamento').length;
+  const done = todays.filter(a => a.status === 'concluido').length;
+  const noshow = todays.filter(a => ['no-show'].includes(a.status)).length;
   const pendentes = todays.filter(a => a.status === 'pendente').length;
 
   const revenue = todays
@@ -308,11 +315,11 @@ function renderStats() {
    6. KANBAN
 ═══════════════════════════════════════════════════════════ */
 const KANBAN_COLUMNS = [
-  { id: 'pendente',     label: 'Pendentes',    mod: 'pendente' },
-  { id: 'confirmado',   label: 'Confirmados',  mod: 'confirmado' },
+  { id: 'pendente', label: 'Pendentes', mod: 'pendente' },
+  { id: 'confirmado', label: 'Confirmados', mod: 'confirmado' },
   { id: 'em-andamento', label: 'Em Andamento', mod: 'andamento' },
-  { id: 'concluido',    label: 'Finalizados',  mod: 'concluido' },
-  { id: 'no-show',      label: 'No-show',      mod: 'noshow' },
+  { id: 'concluido', label: 'Finalizados', mod: 'concluido' },
+  { id: 'no-show', label: 'No-show', mod: 'noshow' },
 ];
 
 function renderKanban() {
@@ -327,7 +334,7 @@ function renderKanban() {
     // Blocos de horário (apenas na coluna "pendente" visualmente)
     const blocks = col.id === 'pendente'
       ? BLOCKS.filter(b => b.date === today &&
-          (!STATE.filterBarber || b.barberId === STATE.filterBarber))
+        (!STATE.filterBarber || b.barberId === STATE.filterBarber))
       : [];
 
     return `
@@ -379,16 +386,16 @@ function renderKanbanEmpty(col) {
 }
 
 function renderKanbanCard(appt) {
-  const svc    = getService(appt.serviceId);
+  const svc = getService(appt.serviceId);
   const barber = getBarber(appt.barberId);
   const conflict = hasConflict(appt, appt.id);
 
   const statusColors = {
-    'pendente'    : '#E0924A',
-    'confirmado'  : '#5B8DEF',
+    'pendente': '#E0924A',
+    'confirmado': '#5B8DEF',
     'em-andamento': '#9B72CF',
-    'concluido'   : '#4CAF79',
-    'no-show'     : '#E05454',
+    'concluido': '#4CAF79',
+    'no-show': '#E05454',
   };
 
   return `
@@ -574,11 +581,11 @@ function changeStatus(id, newStatus, opts = {}) {
   // POST /api/appointments/:id/status { status: newStatus }
 
   const labels = {
-    'confirmado'  : 'confirmado',
+    'confirmado': 'confirmado',
     'em-andamento': 'iniciado',
-    'concluido'   : 'finalizado',
-    'no-show'     : 'marcado como no-show',
-    'pendente'    : 'movido para pendente',
+    'concluido': 'finalizado',
+    'no-show': 'marcado como no-show',
+    'pendente': 'movido para pendente',
   };
 
   if (!opts.silent) {
@@ -606,9 +613,9 @@ function changeStatus(id, newStatus, opts = {}) {
 function sendWhatsApp(id) {
   const appt = APPOINTMENTS.find(a => a.id === id);
   if (!appt) return;
-  const svc    = getService(appt.serviceId);
+  const svc = getService(appt.serviceId);
   const barber = getBarber(appt.barberId);
-  const phone  = appt.phone.replace(/\D/g, '');
+  const phone = appt.phone.replace(/\D/g, '');
   const msg = encodeURIComponent(
     `Olá ${appt.client}! Confirma seu agendamento na *${CFG.barbershopName}*?\n` +
     `📅 ${formatDateShort(appt.date)} às *${appt.time}*\n` +
@@ -624,7 +631,7 @@ function sendWhatsApp(id) {
    7. CALENDÁRIO
 ═══════════════════════════════════════════════════════════ */
 const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 function renderCalendar() {
   if (STATE.calMode === 'week') {
@@ -635,7 +642,7 @@ function renderCalendar() {
 }
 
 // Altura de 1 hora no grid semanal, em px — deve bater com --cal-hour-h no CSS
-const CAL_HOUR_HEIGHT = 72;
+const CAL_HOUR_HEIGHT = 88; // bate com --cal-hour-h no CSS
 
 function renderWeekCal() {
   const today = getTodayStr();
@@ -643,11 +650,11 @@ function renderWeekCal() {
 
   // Atualiza label
   const first = new Date(weekDates[0] + 'T00:00:00');
-  const last  = new Date(weekDates[6] + 'T00:00:00');
+  const last = new Date(weekDates[6] + 'T00:00:00');
   const sameMonth = first.getMonth() === last.getMonth();
   const label = sameMonth
     ? `${first.getDate()} – ${last.getDate()} de ${MONTH_NAMES[first.getMonth()]} ${first.getFullYear()}`
-    : `${first.getDate()} ${MONTH_NAMES[first.getMonth()].slice(0,3)} – ${last.getDate()} ${MONTH_NAMES[last.getMonth()].slice(0,3)} ${last.getFullYear()}`;
+    : `${first.getDate()} ${MONTH_NAMES[first.getMonth()].slice(0, 3)} – ${last.getDate()} ${MONTH_NAMES[last.getMonth()].slice(0, 3)} ${last.getFullYear()}`;
   document.getElementById('calPeriodLabel').textContent = label;
 
   const grid = document.getElementById('calWeekGrid');
@@ -669,7 +676,7 @@ function renderWeekCal() {
 
   // Monta linhas de hora (sem mais calcular a linha "agora" aqui — feito à parte)
   hours.forEach(h => {
-    const timeStr = `${String(h).padStart(2,'0')}:00`;
+    const timeStr = `${String(h).padStart(2, '0')}:00`;
     html += `<div class="cal-hour-label" aria-hidden="true">${timeStr}</div>`;
 
     weekDates.forEach((date, di) => {
@@ -688,10 +695,11 @@ function renderWeekCal() {
         return bh === h;
       });
 
-      html += `<div class="cal-hour-cell cal-hour-cell--half-line${isToday ? ' cal-hour-cell--today' : ''}"
-                    data-date="${date}" data-hour="${h}"
-                    onclick="calCellClick('${date}', ${h})"
-                    aria-label="${DAY_NAMES[di]} ${date} ${timeStr}">`;
+      const isLunch = (h >= 12 && h < 13);
+      html += `<div class="cal-hour-cell cal-hour-cell--half-line${isToday ? ' cal-hour-cell--today' : ''}${isLunch ? ' cal-hour-cell--lunch' : ''}"
+              data-date="${date}" data-hour="${h}"
+              onclick="calCellClick('${date}', ${h})"
+              aria-label="${isLunch ? 'Almoço bloqueado' : `${DAY_NAMES[di]} ${date} ${timeStr}`}">`;
 
       // Agendamentos — largura dividida se houver mais de um no mesmo slot
       cellAppts.forEach((a, idx) => {
@@ -715,8 +723,6 @@ function renderWeekCal() {
 
   grid.innerHTML = html;
 
-  // Linha de "agora" — única, calculada e posicionada sobre o grid inteiro
-  updateNowLine(weekDates, today);
 }
 
 // Renderiza um único evento (agendamento) dentro da célula de hora,
@@ -728,7 +734,7 @@ function renderCalEvent(appt, hourOfCell, totalInCell, indexInCell) {
   const [, minutesStr] = appt.time.split(':');
   const minutes = Number(minutesStr) || 0;
 
-  const topPx    = Math.round((minutes / 60) * CAL_HOUR_HEIGHT);
+  const topPx = Math.round((minutes / 60) * CAL_HOUR_HEIGHT);
   const heightPx = Math.max(Math.round((durationMin / 60) * CAL_HOUR_HEIGHT) - 4, 26);
 
   // Layout compacto para eventos curtos (<=30min): sem espaço pra 3 linhas
@@ -754,49 +760,12 @@ function renderCalEvent(appt, hourOfCell, totalInCell, indexInCell) {
            </div>`;
 }
 
-// Calcula e posiciona a linha "agora" como um único elemento sobre o grid inteiro
-function updateNowLine(weekDates, today) {
-  const lineEl = document.getElementById('calNowLineGlobal');
-  if (!lineEl) return;
-
-  const nowInRange = weekDates.includes(today);
-  if (!nowInRange) {
-    lineEl.hidden = true;
-    return;
-  }
-
-  const now = new Date();
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const rangeStart = CFG.openHour * 60;
-  const rangeEnd   = CFG.closeHour * 60;
-
-  if (nowMinutes < rangeStart || nowMinutes > rangeEnd) {
-    lineEl.hidden = true;
-    return;
-  }
-
-  const dayIndex = weekDates.indexOf(today); // 0-6
-  const totalHours = CFG.closeHour - CFG.openHour;
-  const topPx = Math.round(((nowMinutes - rangeStart) / 60) * CAL_HOUR_HEIGHT);
-
-  // Posição horizontal: coluna de horas (64px) + (dayIndex / 7) da largura restante
-  const dayWidthPct = (1 / 7) * 100;
-  const leftPct = dayIndex * dayWidthPct;
-  const widthPct = dayWidthPct;
-
-  lineEl.hidden = false;
-  lineEl.style.top = `${topPx + 44}px`; // +44px = altura aproximada do cabeçalho de dias
-  lineEl.style.left = `calc(64px + ${leftPct}%)`;
-  lineEl.style.width = `${widthPct}%`;
-  lineEl.style.right = 'auto';
-}
-
 function renderMonthCal() {
   const today = getTodayStr();
   const refDate = new Date(today + 'T00:00:00');
   refDate.setMonth(refDate.getMonth() + STATE.calOffset);
 
-  const year  = refDate.getFullYear();
+  const year = refDate.getFullYear();
   const month = refDate.getMonth();
 
   document.getElementById('calPeriodLabel').textContent = `${MONTH_NAMES[month]} ${year}`;
@@ -812,7 +781,7 @@ function renderMonthCal() {
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const daysInPrev  = new Date(year, month, 0).getDate();
+  const daysInPrev = new Date(year, month, 0).getDate();
 
   let cells = [];
 
@@ -837,8 +806,8 @@ function renderMonthCal() {
     const isToday = cell.date === today;
     const dayAppts = APPOINTMENTS.filter(a => a.date === cell.date);
     const maxShow = 3;
-    const shown   = dayAppts.slice(0, maxShow);
-    const more    = dayAppts.length - shown.length;
+    const shown = dayAppts.slice(0, maxShow);
+    const more = dayAppts.length - shown.length;
 
     return `
       <div class="cal-month-cell${cell.otherMonth ? ' cal-month-cell--other-month' : ''}${isToday ? ' cal-month-cell--today' : ''}"
@@ -859,12 +828,97 @@ function renderMonthCal() {
 }
 
 function dateToStr(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function calCellClick(date, hour) {
-  const timeStr = `${String(hour).padStart(2,'0')}:00`;
-  openNewAppt(null, { date, time: timeStr });
+  if (hour >= 12 && hour < 13) {
+    showToast('Horário de almoço bloqueado (12:00–13:00).', 'warning');
+    return;
+  }
+  // Abre modal de resumo do slot em vez de ir direto ao novo agendamento
+  openSlotModal(date, hour);
+}
+
+/* ─── MODAL DE RESUMO DO SLOT ───────────────────────────── */
+function openSlotModal(date, hour) {
+  const timeStr = `${String(hour).padStart(2, '0')}:00`;
+
+  // Label do título: "Seg 18 — 08:00"
+  const d = new Date(date + 'T00:00:00');
+  const dayLabel = `${DAY_NAMES[d.getDay()]} ${d.getDate()} de ${MONTH_NAMES[d.getMonth()]}`;
+
+  document.getElementById('slotModalTitle').textContent = `Agendamentos das ${timeStr}`;
+  document.getElementById('slotModalSubtitle').textContent = dayLabel;
+
+  // Filtra agendamentos da hora (respeitando filtros ativos)
+  const slotAppts = APPOINTMENTS.filter(a => {
+    if (a.date !== date) return false;
+    const [ah] = a.time.split(':').map(Number);
+    if (ah !== hour) return false;
+    if (STATE.filterBarber && a.barberId !== STATE.filterBarber) return false;
+    if (STATE.filterService && a.serviceId !== STATE.filterService) return false;
+    if (STATE.filterSearch) {
+      if (!a.client.toLowerCase().includes(STATE.filterSearch.toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  const body = document.getElementById('slotModalBody');
+
+  if (slotAppts.length === 0) {
+    body.innerHTML = `
+      <div class="slot-empty">
+        <svg class="slot-empty__icon" width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M20 13v7.5l5 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="slot-empty__text">Nenhum agendamento às ${timeStr}</span>
+      </div>`;
+  } else {
+    body.innerHTML = `<div class="slot-list">${slotAppts.map(a => {
+      const svc = getService(a.serviceId);
+      const barber = getBarber(a.barberId);
+      const durationMin = svc ? svc.duration : 30;
+      const [hh, mm] = a.time.split(':').map(Number);
+      const endMin = hh * 60 + mm + durationMin;
+      const endTime = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
+
+      return `
+        <button class="slot-pill slot-pill--${a.status}"
+                onclick="slotPillClick('${a.id}')"
+                aria-label="Ver detalhes de ${a.client}">
+          <span class="slot-pill__time">${a.time}<br><span style="font-size:10px;font-weight:500;color:var(--muted)">${endTime}</span></span>
+          <span class="slot-pill__info">
+            <span class="slot-pill__client">${a.client}</span>
+            <span class="slot-pill__meta">
+              <span>${svc ? svc.name : '—'}</span>
+              <span class="slot-pill__sep"></span>
+              <span>${barber ? barber.name.split(' ')[0] : '—'}</span>
+              ${svc ? `<span class="slot-pill__sep"></span><span style="color:var(--gold-lt);font-weight:600">${formatCurrency(svc.price)}</span>` : ''}
+            </span>
+          </span>
+          <span class="slot-pill__badge slot-pill__badge--${a.status}">
+            ${getStatusLabel(a.status)}
+          </span>
+        </button>`;
+    }).join('')}</div>`;
+  }
+
+  // Guarda contexto no botão "Novo Agendamento" do footer
+  const newBtn = document.getElementById('slotModalNewBtn');
+  newBtn.onclick = () => {
+    closeModal('slotModalOverlay');
+    openNewAppt(null, { date, time: timeStr });
+  };
+
+  openModal('slotModalOverlay');
+}
+
+function slotPillClick(id) {
+  closeModal('slotModalOverlay');
+  // Pequeno delay para a transição do modal fechar antes de abrir o de detalhes
+  setTimeout(() => openDetail(id), 180);
 }
 
 function calMonthDayClick(date) {
@@ -892,13 +946,13 @@ function initCalNav() {
         b.classList.toggle('cal-mode-btn--active', b === btn);
         b.setAttribute('aria-pressed', String(b === btn));
       });
-      const weekWrap  = document.getElementById('calWeekWrap');
+      const weekWrap = document.getElementById('calWeekWrap');
       const monthWrap = document.getElementById('calMonthWrap');
       if (STATE.calMode === 'week') {
-        weekWrap.style.display  = '';
+        weekWrap.style.display = '';
         monthWrap.classList.add('cal-month-wrap--hidden');
       } else {
-        weekWrap.style.display  = 'none';
+        weekWrap.style.display = 'none';
         monthWrap.classList.remove('cal-month-wrap--hidden');
       }
       renderCalendar();
@@ -911,13 +965,13 @@ function initCalNav() {
    8. LISTA
 ═══════════════════════════════════════════════════════════ */
 function renderList() {
-  const dateFilter   = STATE.listDate;
+  const dateFilter = STATE.listDate;
   const statusFilter = STATE.listStatus;
 
   let rows = APPOINTMENTS.filter(a => {
     if (dateFilter && a.date !== dateFilter) return false;
     if (statusFilter && a.status !== statusFilter) return false;
-    if (STATE.filterBarber  && a.barberId  !== STATE.filterBarber)  return false;
+    if (STATE.filterBarber && a.barberId !== STATE.filterBarber) return false;
     if (STATE.filterService && a.serviceId !== STATE.filterService) return false;
     if (STATE.filterSearch) {
       const q = STATE.filterSearch.toLowerCase();
@@ -930,14 +984,14 @@ function renderList() {
   const { field, dir } = STATE.listSort;
   rows.sort((a, b) => {
     let va, vb;
-    if (field === 'time')   { va = a.time; vb = b.time; }
+    if (field === 'time') { va = a.time; vb = b.time; }
     if (field === 'client') { va = a.client; vb = b.client; }
-    if (field === 'value')  {
+    if (field === 'value') {
       va = getService(a.serviceId)?.price || 0;
       vb = getService(b.serviceId)?.price || 0;
     }
-    if (va < vb) return dir === 'asc' ? -1 :  1;
-    if (va > vb) return dir === 'asc' ?  1 : -1;
+    if (va < vb) return dir === 'asc' ? -1 : 1;
+    if (va > vb) return dir === 'asc' ? 1 : -1;
     return 0;
   });
 
@@ -948,7 +1002,7 @@ function renderList() {
   // Cabeçalho de sort
   document.querySelectorAll('.list-table th.sortable').forEach(th => {
     const f = th.dataset.sort;
-    th.classList.toggle('sort-asc',  f === field && dir === 'asc');
+    th.classList.toggle('sort-asc', f === field && dir === 'asc');
     th.classList.toggle('sort-desc', f === field && dir === 'desc');
     th.setAttribute('aria-sort', f === field ? (dir === 'asc' ? 'ascending' : 'descending') : 'none');
   });
@@ -973,7 +1027,7 @@ function renderList() {
   }
 
   tbody.innerHTML = rows.map(a => {
-    const svc    = getService(a.serviceId);
+    const svc = getService(a.serviceId);
     const barber = getBarber(a.barberId);
     return `
       <tr>
@@ -1042,7 +1096,7 @@ function deleteAppt(id) {
 }
 
 function initListFilters() {
-  const dateInput   = document.getElementById('listDateFilter');
+  const dateInput = document.getElementById('listDateFilter');
   const statusInput = document.getElementById('listStatusFilter');
 
   if (dateInput) {
@@ -1083,11 +1137,11 @@ function openNewAppt(status = null, prefill = {}) {
   STATE.editingId = null;
 
   // Reset form
-  document.getElementById('apptId').value      = '';
-  document.getElementById('apptClient').value  = '';
-  document.getElementById('apptPhone').value   = '';
-  document.getElementById('apptNotes').value   = '';
-  document.getElementById('apptDate').value    = prefill.date || getTodayStr();
+  document.getElementById('apptId').value = '';
+  document.getElementById('apptClient').value = '';
+  document.getElementById('apptPhone').value = '';
+  document.getElementById('apptNotes').value = '';
+  document.getElementById('apptDate').value = prefill.date || getTodayStr();
   document.getElementById('apptModalTitle').textContent = 'Novo Agendamento';
   document.getElementById('apptModalSave').innerHTML = `
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -1116,11 +1170,11 @@ function openEditAppt(id) {
 
   STATE.editingId = id;
 
-  document.getElementById('apptId').value      = id;
-  document.getElementById('apptClient').value  = appt.client;
-  document.getElementById('apptPhone').value   = appt.phone || '';
-  document.getElementById('apptNotes').value   = appt.notes || '';
-  document.getElementById('apptDate').value    = appt.date;
+  document.getElementById('apptId').value = id;
+  document.getElementById('apptClient').value = appt.client;
+  document.getElementById('apptPhone').value = appt.phone || '';
+  document.getElementById('apptNotes').value = appt.notes || '';
+  document.getElementById('apptDate').value = appt.date;
   document.getElementById('apptModalTitle').textContent = 'Editar Agendamento';
   document.getElementById('apptModalSave').innerHTML = `
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -1206,23 +1260,23 @@ function updateModalSummary(serviceId) {
   const summaryEl = document.getElementById('modalSummary');
   if (!svc) { summaryEl.hidden = true; return; }
   summaryEl.hidden = false;
-  document.getElementById('summaryService').textContent  = svc.name;
+  document.getElementById('summaryService').textContent = svc.name;
   document.getElementById('summaryDuration').textContent = `${svc.duration} min`;
-  document.getElementById('summaryPrice').textContent    = formatCurrency(svc.price);
+  document.getElementById('summaryPrice').textContent = formatCurrency(svc.price);
 }
 
 function getFormData() {
   const selectedService = document.querySelector('.service-option.is-selected');
-  const selectedBarber  = document.querySelector('.barber-option.is-selected');
+  const selectedBarber = document.querySelector('.barber-option.is-selected');
   return {
-    id        : document.getElementById('apptId').value || null,
-    client    : document.getElementById('apptClient').value.trim(),
-    phone     : document.getElementById('apptPhone').value.trim(),
-    date      : document.getElementById('apptDate').value,
-    time      : document.getElementById('apptTime').value,
-    serviceId : selectedService?.dataset.serviceId || '',
-    barberId  : selectedBarber?.dataset.barberId   || '',
-    notes     : document.getElementById('apptNotes').value.trim(),
+    id: document.getElementById('apptId').value || null,
+    client: document.getElementById('apptClient').value.trim(),
+    phone: document.getElementById('apptPhone').value.trim(),
+    date: document.getElementById('apptDate').value,
+    time: document.getElementById('apptTime').value,
+    serviceId: selectedService?.dataset.serviceId || '',
+    barberId: selectedBarber?.dataset.barberId || '',
+    notes: document.getElementById('apptNotes').value.trim(),
   };
 }
 
@@ -1255,38 +1309,44 @@ function saveAppt() {
 
   // Validação básica
   if (!data.client) { showToast('Informe o nome do cliente.', 'error'); return; }
-  if (!data.date)   { showToast('Selecione a data.', 'error'); return; }
-  if (!data.time)   { showToast('Selecione o horário.', 'error'); return; }
+  if (!data.date) { showToast('Selecione a data.', 'error'); return; }
+  if (!data.time) { showToast('Selecione o horário.', 'error'); return; }
+  const [slotH, slotM] = data.time.split(':').map(Number);
+  const slotMin = slotH * 60 + slotM;
+  if (slotMin >= LUNCH_START && slotMin < LUNCH_END) {
+    showToast('Horário de almoço bloqueado (12:00–13:00). Escolha outro horário.', 'warning');
+    return;
+  }
   if (!data.serviceId) { showToast('Selecione um serviço.', 'error'); return; }
-  if (!data.barberId)  { showToast('Selecione um barbeiro.', 'error'); return; }
+  if (!data.barberId) { showToast('Selecione um barbeiro.', 'error'); return; }
 
   if (STATE.editingId) {
     // PUT /api/appointments/:id
     const appt = APPOINTMENTS.find(a => a.id === STATE.editingId);
     if (appt) {
       Object.assign(appt, {
-        client   : data.client,
-        phone    : data.phone,
-        date     : data.date,
-        time     : data.time,
+        client: data.client,
+        phone: data.phone,
+        date: data.date,
+        time: data.time,
         serviceId: data.serviceId,
-        barberId : data.barberId,
-        notes    : data.notes,
+        barberId: data.barberId,
+        notes: data.notes,
       });
       showToast('Agendamento atualizado.', 'success');
     }
   } else {
     // POST /api/appointments
     const newAppt = {
-      id      : genId(),
-      client  : data.client,
-      phone   : data.phone,
-      date    : data.date,
-      time    : data.time,
-      serviceId : data.serviceId,
-      barberId  : data.barberId,
-      notes   : data.notes,
-      status  : 'pendente',
+      id: genId(),
+      client: data.client,
+      phone: data.phone,
+      date: data.date,
+      time: data.time,
+      serviceId: data.serviceId,
+      barberId: data.barberId,
+      notes: data.notes,
+      status: 'pendente',
     };
     APPOINTMENTS.push(newAppt);
     showToast(`Agendamento de ${data.client} criado com sucesso.`, 'success');
@@ -1299,7 +1359,7 @@ function saveAppt() {
 /* Autocomplete de clientes */
 function initClientAutocomplete() {
   const input = document.getElementById('apptClient');
-  const list  = document.getElementById('autocompleteList');
+  const list = document.getElementById('autocompleteList');
   if (!input || !list) return;
 
   input.addEventListener('input', () => {
@@ -1330,7 +1390,7 @@ function initClientAutocomplete() {
 
 function selectClient(name, phone) {
   document.getElementById('apptClient').value = name;
-  document.getElementById('apptPhone').value  = phone ? formatPhone(phone) : '';
+  document.getElementById('apptPhone').value = phone ? formatPhone(phone) : '';
   document.getElementById('autocompleteList').hidden = true;
 }
 
@@ -1339,9 +1399,9 @@ function selectClient(name, phone) {
    10. MODAL DE DETALHES
 ═══════════════════════════════════════════════════════════ */
 function openDetail(id) {
-  const appt   = APPOINTMENTS.find(a => a.id === id);
+  const appt = APPOINTMENTS.find(a => a.id === id);
   if (!appt) return;
-  const svc    = getService(appt.serviceId);
+  const svc = getService(appt.serviceId);
   const barber = getBarber(appt.barberId);
   const conflict = hasConflict(appt, appt.id);
 
@@ -1447,16 +1507,16 @@ function initBlockModal() {
     openModal('blockModalOverlay');
   });
 
-  document.getElementById('blockReason')?.addEventListener('change', function() {
+  document.getElementById('blockReason')?.addEventListener('change', function () {
     document.getElementById('blockOtherGroup').style.display =
       this.value === 'outro' ? 'flex' : 'none';
   });
 
   document.getElementById('blockModalSave')?.addEventListener('click', () => {
-    const date   = document.getElementById('blockDate').value;
+    const date = document.getElementById('blockDate').value;
     const barber = document.getElementById('blockBarber').value;
-    const start  = document.getElementById('blockStart').value;
-    const end    = document.getElementById('blockEnd').value;
+    const start = document.getElementById('blockStart').value;
+    const end = document.getElementById('blockEnd').value;
     const reason = document.getElementById('blockReason').value;
 
     if (!date || !start || !end) {
@@ -1516,10 +1576,11 @@ function initModalClose() {
   });
 
   // Botões de fechar
-  document.getElementById('apptModalClose')?.addEventListener('click',   () => closeModal('apptModalOverlay'));
-  document.getElementById('apptModalCancel')?.addEventListener('click',  () => closeModal('apptModalOverlay'));
-  document.getElementById('apptModalSave')?.addEventListener('click',    saveAppt);
-  document.getElementById('detailModalClose')?.addEventListener('click', () => closeModal('detailModalOverlay'));
+  document.getElementById('apptModalClose')?.addEventListener('click', () => closeModal('apptModalOverlay'));
+  document.getElementById('apptModalCancel')?.addEventListener('click', () => closeModal('apptModalOverlay'));
+  document.getElementById('apptModalSave')?.addEventListener('click', saveAppt);
+  document.getElementById('slotModalClose')?.addEventListener('click', () => closeModal('slotModalOverlay'));
+  document.getElementById('slotModalClose2')?.addEventListener('click', () => closeModal('slotModalOverlay'));
 
   // Escape fecha qualquer modal aberto
   document.addEventListener('keydown', e => {
@@ -1553,23 +1614,23 @@ function initViewTabs() {
       });
 
       if (view === 'calendar') renderCalendar();
-      if (view === 'list')     renderList();
+      if (view === 'list') renderList();
     });
   });
 }
 
 function initFilters() {
-  document.getElementById('searchInput')?.addEventListener('input', function() {
+  document.getElementById('searchInput')?.addEventListener('input', function () {
     STATE.filterSearch = this.value.trim();
     refreshAll();
   });
 
-  document.getElementById('filterBarber')?.addEventListener('change', function() {
+  document.getElementById('filterBarber')?.addEventListener('change', function () {
     STATE.filterBarber = this.value;
     refreshAll();
   });
 
-  document.getElementById('filterService')?.addEventListener('change', function() {
+  document.getElementById('filterService')?.addEventListener('change', function () {
     STATE.filterService = this.value;
     refreshAll();
   });
@@ -1578,10 +1639,10 @@ function initFilters() {
 
 /* ─── MOBILE SIDEBAR ────────────────────────────────────── */
 function initSidebar() {
-  const burger  = document.getElementById('burgerBtn');
+  const burger = document.getElementById('burgerBtn');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebarOverlay');
-  const newBtn  = document.getElementById('topbarNewBtn');
+  const newBtn = document.getElementById('topbarNewBtn');
 
   function openSidebar() {
     sidebar.classList.add('is-open');
@@ -1604,8 +1665,30 @@ function initSidebar() {
   });
 
   overlay?.addEventListener('click', closeSidebar);
-  newBtn?.addEventListener('click',  () => openNewAppt());
+  newBtn?.addEventListener('click', () => openNewAppt());
 
+  const toggleBtn = document.getElementById('sidebarToggleBtn')
+  function collapseSidebar() {
+    sidebar.classList.add('is-collapsed')
+    sidebar.classList.remove("is-expanded")
+    toggleBtn?.setAttribute('aria-expanded', 'false')
+    toggleBtn?.setAttribute('aria-label', 'Expandir menu')
+    try { localStorage.setItem('sidebarCollapsed', '1'); } catch (e) { }
+  }
+
+  function expandSidebar() {
+    sidebar.classList.remove('is-collapsed')
+    sidebar.classList.add('is-expanded')
+    toggleBtn?.setAttribute('aria-expanded', 'true')
+    toggleBtn?.setAttribute('aria-label', 'Recolher menu')
+    try { localStorage.setItem('sidebarCollapsed', '0'); } catch (e) { }
+  }
+  toggleBtn?.addEventListener('click', () => {
+    sidebar.classList.contains('is-collapsed') ? expandSidebar() : collapseSidebar()
+  })
+  try {
+    if (localStorage.getItem('sidebarCollapsed') === '0') expandSidebar()
+  } catch (e) { }
   document.getElementById('openNewApptBtn')?.addEventListener('click', () => openNewAppt());
 }
 
@@ -1615,9 +1698,9 @@ function initSidebar() {
 ═══════════════════════════════════════════════════════════ */
 function refreshAll() {
   renderStats();
-  if (STATE.activeView === 'kanban')   renderKanban();
+  if (STATE.activeView === 'kanban') renderKanban();
   if (STATE.activeView === 'calendar') renderCalendar();
-  if (STATE.activeView === 'list')     renderList();
+  if (STATE.activeView === 'list') renderList();
 }
 
 /* Simula atualização em tempo real (polling de 30s em produção = WebSocket) */
@@ -1639,6 +1722,132 @@ function startRealtimeSimulation() {
   }, 30000);
 }
 
+/* ─── TOOLTIP DO CALENDÁRIO ─────────────────────────────── */
+function initCalTooltip() {
+  const tip = document.getElementById('calTooltip');
+  if (!tip) return;
+
+  let hideTimer = null;
+
+  // Delegação: escuta mouseenter/mouseleave em .cal-week-grid
+  document.addEventListener('mouseover', e => {
+    const card = e.target.closest('#calWeekGrid .cal-event:not(.cal-event--block)');
+    if (!card) return;
+
+    clearTimeout(hideTimer);
+
+    // Pega o id do agendamento do onclick do card
+    const onclickStr = card.getAttribute('onclick') || '';
+    const match = onclickStr.match(/openDetail\('([^']+)'\)/);
+    if (!match) return;
+    const apptId = match[1];
+
+    const appt = APPOINTMENTS.find(a => a.id === apptId);
+    if (!appt) return;
+
+    const svc = getService(appt.serviceId);
+    const barber = getBarber(appt.barberId);
+
+    // Calcula horário de fim
+    const durationMin = svc ? svc.duration : 30;
+    const [hh, mm] = appt.time.split(':').map(Number);
+    const endMin = hh * 60 + mm + durationMin;
+    const endTime = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
+
+    tip.innerHTML = `
+      <div class="cal-tooltip__inner">
+        <div class="cal-tooltip__name">${appt.client}</div>
+
+        <div class="cal-tooltip__row">
+          <svg class="cal-tooltip__icon" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M1 6h12" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M4.5 1v2M9.5 1v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          <span>${appt.time} – ${endTime}</span>
+        </div>
+
+        <div class="cal-tooltip__row">
+          <svg class="cal-tooltip__icon" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <circle cx="7" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M1.5 13c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          <span>${barber ? barber.name : '—'}</span>
+        </div>
+
+        <div class="cal-tooltip__row">
+          <svg class="cal-tooltip__icon" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 4h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M1 7h12" stroke="currentColor" stroke-width="1.3"/>
+          </svg>
+          <span>${svc ? svc.name : '—'}</span>
+        </div>
+
+        <div class="cal-tooltip__row">
+          <svg class="cal-tooltip__icon" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M7 4.5v3l2 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          <span>${svc ? svc.duration + ' min' : '—'}</span>
+        </div>
+
+        <div class="cal-tooltip__row" style="justify-content:space-between; margin-top:2px; padding-top:8px; border-top:1px solid var(--divider)">
+          <span class="cal-tooltip__status cal-tooltip__status--${appt.status}">
+            ${getStatusLabel(appt.status)}
+          </span>
+          ${svc ? `<span class="cal-tooltip__price">${formatCurrency(svc.price)}</span>` : ''}
+        </div>
+      </div>`;
+
+    tip.setAttribute('aria-hidden', 'false');
+    positionTooltip(tip, e);
+    tip.classList.add('is-visible');
+  });
+
+  // Reposiciona o tooltip enquanto o mouse se move dentro do card
+  document.addEventListener('mousemove', e => {
+    const card = e.target.closest('#calWeekGrid .cal-event:not(.cal-event--block)');
+    if (!card || !tip.classList.contains('is-visible')) return;
+    positionTooltip(tip, e);
+  });
+
+  document.addEventListener('mouseout', e => {
+    const card = e.target.closest('#calWeekGrid .cal-event:not(.cal-event--block)');
+    if (!card) return;
+    hideTimer = setTimeout(() => {
+      tip.classList.remove('is-visible');
+      tip.setAttribute('aria-hidden', 'true');
+    }, 80);
+  });
+
+  // Esconde ao clicar (abre o modal)
+  document.addEventListener('click', e => {
+    if (e.target.closest('#calWeekGrid .cal-event')) {
+      tip.classList.remove('is-visible');
+      tip.setAttribute('aria-hidden', 'true');
+    }
+  });
+}
+
+function positionTooltip(tip, e) {
+  const margin = 14;
+  const tipW = tip.offsetWidth || 240;
+  const tipH = tip.offsetHeight || 180;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  let x = e.clientX + margin;
+  let y = e.clientY + margin;
+
+  // Não sair pela direita
+  if (x + tipW > vw - 8) x = e.clientX - tipW - margin;
+  // Não sair pela base
+  if (y + tipH > vh - 8) y = e.clientY - tipH - margin;
+
+  tip.style.left = `${x}px`;
+  tip.style.top = `${y}px`;
+}
+
 function boot() {
   renderHeader();
   renderStats();
@@ -1651,6 +1860,7 @@ function boot() {
   initClientAutocomplete();
   initBlockModal();
   initSidebar();
+  initCalTooltip();
   startRealtimeSimulation();
 
   console.log('[InBarber Agenda] Inicializado com sucesso.');

@@ -319,6 +319,134 @@ input, select, textarea {
   .sidebar-overlay.is-visible { opacity: 1; pointer-events: auto; }
 }
 
+/* ─── SIDEBAR COLAPSÁVEL (desktop) ──────────────────────── */
+:root {
+  --nav-w-collapsed: 64px; /* largura quando fechada = só ícones */
+}
+
+/* Toggle button — fica encostado na borda direita da sidebar */
+.sidebar__toggle {
+  position: absolute;
+  top: 22px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-full);
+  background: var(--bg-3);
+  border: 1px solid var(--divider);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background var(--dur), color var(--dur), transform var(--dur) var(--ease-out);
+  box-shadow: var(--shadow-sm);
+}
+.sidebar__toggle:hover {
+  background: var(--bg-4);
+  color: var(--cream);
+}
+/* Rotaciona a seta quando expandida */
+.sidebar.is-expanded .sidebar__toggle {
+  transform: rotate(180deg);
+}
+
+/* Estado colapsado */
+.sidebar.is-collapsed {
+  width: var(--nav-w-collapsed);
+}
+
+/* Esconde os textos com clip em vez de overflow:hidden na sidebar inteira */
+.sidebar.is-collapsed .sidebar__nav,
+.sidebar.is-collapsed .sidebar__bottom,
+.sidebar.is-collapsed .sidebar__brand {
+  overflow: hidden;
+} 
+
+/* Esconde textos e badge, mantém ícone centralizado */
+.sidebar.is-collapsed .sidebar__name,
+.sidebar.is-collapsed .nav-item span:not(.sr-only),
+.sidebar.is-collapsed .nav-badge,
+.sidebar.is-collapsed .sidebar__user-info,
+.sidebar.is-collapsed .sidebar__user-name,
+.sidebar.is-collapsed .sidebar__user-role {
+  display: none;
+}
+
+.sidebar.is-collapsed .sidebar__brand {
+  justify-content: center;
+  padding: 20px 0 18px;
+}
+
+.sidebar.is-collapsed .nav-item {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+}
+
+.sidebar.is-collapsed .sidebar__bottom {
+  align-items: center;
+  padding: 12px 0 16px;
+}
+
+.sidebar.is-collapsed .sidebar__user {
+  justify-content: center;
+  padding: 10px 0;
+  background: transparent;
+}
+
+.sidebar.is-collapsed .sidebar__nav {
+  padding: 16px 8px;
+}
+
+/* Tooltip ao passar o mouse nos ícones (collapsed) */
+.sidebar.is-collapsed .nav-item {
+  position: relative;
+}
+.sidebar.is-collapsed .nav-item::after {
+  content: attr(data-label);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-4);
+  color: var(--cream);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--divider);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms var(--ease-out);
+  z-index: 300;
+}
+.sidebar.is-collapsed .nav-item:hover::after {
+  opacity: 1;
+}
+
+/* Área principal expande quando sidebar está colapsada */
+.sidebar.is-collapsed ~ .main {
+  margin-left: var(--nav-w-collapsed);
+}
+
+/* Transição suave da sidebar e do main */
+.sidebar {
+  transition: width var(--dur) var(--ease-out),
+              transform var(--dur) var(--ease-drawer);
+}
+.main {
+  transition: margin-left var(--dur) var(--ease-out);
+}
+
+/* No mobile, o toggle não aparece (já tem burger) */
+@media (max-width: 900px) {
+  .sidebar__toggle { display: none; }
+  .sidebar.is-collapsed { width: var(--nav-w); }
+  .sidebar.is-collapsed ~ .main { margin-left: 0; }
+}
 
 /* ─── 5. TOPBAR (mobile) ────────────────────────────────── */
 .topbar {
@@ -1232,15 +1360,15 @@ input, select, textarea {
 .cal-week-grid {
   display: grid;
   /* hora col + 7 dias */
-  grid-template-columns: 64px repeat(7, 1fr);
-  min-width: 760px;
-  --cal-hour-h: 72px;
+  grid-template-columns: 56px repeat(7, 1fr);
+  min-width: 860px;
+  --cal-hour-h: 88px; /* era 72px — mais altura = cards respiram mais verticalmente */
 }
 
 /* Cabeçalho dos dias */
 .cal-day-header {
   background: var(--bg-3);
-  padding: 12px 8px;
+  padding: 14px 6px;   /* mais vertical, menos horizontal (colunas são estreitas) */
   text-align: center;
   border-bottom: 1px solid var(--divider);
   border-right: 1px solid var(--divider);
@@ -1307,7 +1435,7 @@ input, select, textarea {
   border-right: 1px solid var(--divider);
   border-bottom: 1px solid var(--divider);
   position: relative;
-  padding: 3px 4px;
+  padding: 4px 5px;   /* era 3px 4px */
   transition: background var(--dur) var(--ease-out);
 }
 
@@ -1328,10 +1456,10 @@ input, select, textarea {
 /* Evento no calendário */
 .cal-event {
   position: absolute;
-  left: 3px; right: 3px;
-  border-radius: var(--r-sm);
-  padding: 6px 8px;
-  font-size: 11.5px;
+  left: 4px; right: 4px;   /* era 3px — um tiquinho mais de respiro lateral */
+  border-radius: var(--r-md);  /* era --r-sm, agora borda mais arredondada */
+  padding: 8px 10px;            /* era 6px 8px */
+  font-size: 12px;              /* era 11.5px */
   font-weight: 600;
   cursor: pointer;
   transition: opacity var(--dur) var(--ease-out),
@@ -1339,12 +1467,12 @@ input, select, textarea {
               box-shadow var(--dur) var(--ease-out);
   z-index: 2;
   overflow: hidden;
-  line-height: 1.35;
+  line-height: 1.4;             /* era 1.35 */
   border-left: 3px solid transparent;
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  gap: 3px;                     /* era 1px — textos mais separados */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* sombra levemente maior */
 }
 
 .cal-event:hover {
@@ -1358,24 +1486,44 @@ input, select, textarea {
   z-index: 3;
 }
 
-.cal-event--pendente   { background: rgba(224,146,74,0.16);  color: var(--orange); border-left-color: var(--orange); }
+.cal-event--pendente { background: rgba(224,146,74,0.16);  color: var(--orange); border-left-color: var(--orange); }
 .cal-event--confirmado { background: rgba(91,141,239,0.16);  color: var(--blue);   border-left-color: var(--blue); }
-.cal-event--andamento  { background: rgba(155,114,207,0.16); color: var(--purple); border-left-color: var(--purple); }
-.cal-event--concluido  { background: rgba(76,175,121,0.16);  color: var(--green);  border-left-color: var(--green); }
-.cal-event--noshow     { background: rgba(224,84,84,0.16);   color: var(--red);    border-left-color: var(--red); }
-.cal-event--block      { background: var(--bg-4);            color: var(--muted);  border-left-color: var(--orange); }
+.cal-event--andamento,
+.cal-event--em-andamento { background: rgba(224,146,74,0.30);  color: var(--orange); border-left-color: var(--orange); border-top: 1px solid var(--orange-border); }
+.cal-event--concluido { background: rgba(76,175,121,0.16);  color: var(--green);  border-left-color: var(--green); }
+.cal-event--no-show,
+.cal-event--noshow { background: rgba(224,84,84,0.30);   color: var(--red);    border-left-color: var(--red);   border-top: 1px solid var(--red-border); }
+.cal-event--block { background: var(--bg-4);            color: var(--muted);  border-left-color: var(--orange); }
+
+.cal-event--em-andamento .cal-event__time,
+.cal-event--em-andamento .cal-event__client {
+  color: white;
+  opacity: 1;
+}
+
+.cal-event--no-show .cal-event__time,
+.cal-event--no-show .cal-event__client,
+.cal-event--no-show .cal-event__service,
+.cal-event--noshow .cal-event__time,
+.cal-event--noshow .cal-event__client,
+.cal-event--noshow .cal-event__service {
+  color: white;
+  opacity: 1;
+}
+
+
 
 .cal-event__time {
-  font-size: 10.5px;
+  font-size: 11px;        /* era 10.5px */
   font-weight: 700;
   color: var(--white);
-  opacity: 0.9;
+  opacity: 0.85;
   display: block;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
 }
 
 .cal-event__client {
-  font-size: 12px;
+  font-size: 12.5px;      /* era 12px */
   font-weight: 700;
   color: var(--white);
   white-space: nowrap;
@@ -1384,9 +1532,9 @@ input, select, textarea {
 }
 
 .cal-event__service {
-  font-size: 10.5px;
+  font-size: 11px;        /* era 10.5px */
   font-weight: 500;
-  opacity: 0.8;
+  opacity: 0.75;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1395,74 +1543,12 @@ input, select, textarea {
 /* Eventos curtos (<=30min): esconde o serviço, mantém horário + nome numa linha */
 .cal-event--compact {
   flex-direction: row;
-  align-items: baseline;
-  gap: 5px;
-  padding: 4px 8px;
+  align-items: center;   /* era baseline — melhor alinhamento vertical */
+  gap: 6px;              /* era 5px */
+  padding: 5px 10px;     /* era 4px 8px */
 }
 
 .cal-event--compact .cal-event__service { display: none; }
-
-/* Linha de "agora" — versão antiga, mantida para compatibilidade caso não migre o JS ainda */
-.cal-now-line {
-  position: absolute;
-  left: 0; right: 0;
-  height: 2px;
-  background: var(--gold);
-  z-index: 10;
-  pointer-events: none;
-}
-
-.cal-now-line::before {
-  content: '';
-  position: absolute;
-  left: -4px;
-  top: -3px;
-  width: 8px;
-  height: 8px;
-  border-radius: var(--r-full);
-  background: var(--gold);
-}
-
-/* Linha de "agora" — versão nova, única e contínua sobre todo o grid */
-.cal-now-line-global {
-  position: absolute;
-  left: 64px; /* alinhada ao fim da coluna de horas */
-  right: 0;
-  height: 2px;
-  background: var(--gold);
-  z-index: 15;
-  pointer-events: none;
-  box-shadow: 0 0 8px rgba(191,160,106,0.5);
-}
-
-.cal-now-line-global::before {
-  content: '';
-  position: absolute;
-  left: -5px;
-  top: -4px;
-  width: 10px;
-  height: 10px;
-  border-radius: var(--r-full);
-  background: var(--gold);
-  box-shadow: 0 0 0 3px rgba(191,160,106,0.2);
-}
-
-.cal-now-line-global::after {
-  content: 'agora';
-  position: absolute;
-  left: -46px;
-  top: -8px;
-  font-size: 9.5px;
-  font-weight: 700;
-  color: var(--gold);
-  background: var(--bg-2);
-  padding: 1px 5px;
-  border-radius: var(--r-sm);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.cal-now-line-global[hidden] { display: none; }
 
 /* ── Vista Mensal ── */
 .cal-month-wrap { margin-top: 0; }
@@ -1476,6 +1562,30 @@ input, select, textarea {
   border-radius: var(--r-md) var(--r-md) 0 0;
   background: var(--bg-3);
   overflow: hidden;
+}
+
+/* Célula de almoço bloqueada */
+.cal-hour-cell--lunch {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 6px,
+    rgba(224,146,74,0.04) 6px,
+    rgba(224,146,74,0.04) 12px
+  );
+  cursor: not-allowed;
+  pointer-events: auto; /* mantém o onclick para mostrar o toast */
+}
+
+.cal-hour-cell--lunch:hover {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 6px,
+    rgba(224,146,74,0.08) 6px,
+    rgba(224,146,74,0.08) 12px
+  );
+  cursor: not-allowed;
 }
 
 .cal-month-dow {
@@ -1576,6 +1686,266 @@ input, select, textarea {
   .cal-month-cell__num { font-size: 11px; }
 }
 
+/* ── Tooltip de evento no calendário ── */
+.cal-tooltip {
+  position: fixed;
+  z-index: 500;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px) scale(0.97);
+  transition: opacity 140ms var(--ease-out),
+              transform 140ms var(--ease-out);
+  min-width: 210px;
+  max-width: 270px;
+}
+
+.cal-tooltip.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.cal-tooltip__inner {
+  background: var(--bg-3);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Cabeçalho: nome do cliente */
+.cal-tooltip__name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.2;
+  border-bottom: 1px solid var(--divider);
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+}
+
+/* Linhas de detalhe */
+.cal-tooltip__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--cream-2);
+}
+
+.cal-tooltip__icon {
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.cal-tooltip__label {
+  color: var(--muted);
+  font-size: 11px;
+  margin-right: 2px;
+}
+
+/* Badge de status dentro do tooltip */
+.cal-tooltip__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cal-tooltip__status::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: var(--r-full);
+  background: currentColor;
+}
+
+.cal-tooltip__status--pendente { color: var(--orange); background: var(--orange-bg); }
+.cal-tooltip__status--confirmado { color: var(--blue);   background: var(--blue-bg);   }
+.cal-tooltip__status--andamento,
+.cal-tooltip__status--em-andamento { color: var(--orange); background: var(--orange-bg); }
+.cal-tooltip__status--concluido { color: var(--green);  background: var(--green-bg);  }
+.cal-tooltip__status--noshow,
+.cal-tooltip__status--no-show { color: var(--red);  background: rgba(224, 84, 84, 0.30);       }
+
+/* Valor em destaque */
+.cal-tooltip__price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold-lt);
+}
+
+/* ── Modal de resumo de horário (slot) ── */
+.modal--slot {
+  max-width: 480px;
+}
+
+.slot-modal__subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Lista de pills dentro do modal */
+.slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Pill de cada agendamento */
+.slot-pill {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-3);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease-out),
+              background var(--dur) var(--ease-out),
+              transform var(--dur) var(--ease-out);
+  border-left: 3px solid transparent;
+  text-align: left;
+  width: 100%;
+}
+
+.slot-pill:hover {
+  background: var(--bg-4);
+  border-color: rgba(255,255,255,0.10);
+  transform: translateX(2px);
+}
+
+/* Cor da borda esquerda por status */
+.slot-pill--pendente   { border-left-color: var(--orange); }
+.slot-pill--confirmado { border-left-color: var(--blue);   }
+.slot-pill--andamento  { border-left-color: var(--purple); }
+.slot-pill--concluido  { border-left-color: var(--green);  }
+.slot-pill--noshow     { border-left-color: var(--red);    }
+
+.slot-pill--noshow {
+  border-left-color: var(--red);
+  background: rgba(224,84,84,0.07);
+}
+
+.slot-pill--noshow:hover {
+  background: rgba(224,84,84,0.12);
+}
+
+.slot-pill--noshow .slot-pill__client {
+  color: var(--red);
+}
+
+/* Coluna 1: horário */
+.slot-pill__time {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 42px;
+}
+
+/* Coluna 2: info central */
+.slot-pill__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.slot-pill__client {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-pill__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.slot-pill__sep {
+  width: 2px;
+  height: 2px;
+  border-radius: var(--r-full);
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+/* Coluna 3: badge de status */
+.slot-pill__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--r-full);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.slot-pill__badge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: var(--r-full);
+  background: currentColor;
+}
+
+.slot-pill__badge--pendente   { color: var(--orange); background: var(--orange-bg); }
+.slot-pill__badge--confirmado { color: var(--blue);   background: var(--blue-bg);   }
+.slot-pill__badge--andamento  { color: var(--purple); background: var(--purple-bg); }
+.slot-pill__badge--concluido  { color: var(--green);  background: var(--green-bg);  }
+.slot-pill__badge--noshow     { color: var(--red);    background: var(--red-bg);    }
+
+/* Seta indicadora de clique */
+.slot-pill__arrow {
+  display: none; /* aparece via grid na col 3 junto com o badge */
+}
+
+/* Estado vazio */
+.slot-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.slot-empty__icon {
+  color: var(--muted);
+  opacity: 0.35;
+}
+
+.slot-empty__text {
+  font-size: 13.5px;
+  color: var(--muted);
+  font-weight: 500;
+}
 
 /* ═══════════════════════════════════════════════════════════
    11. LISTA

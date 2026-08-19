@@ -230,22 +230,6 @@
         </div>
       </article>
 
-      <article class="kpi-card" id="kpi-occupancy">
-        <div class="kpi-card__head">
-          <span class="kpi-card__label">Taxa de Ocupação</span>
-          <div class="kpi-card__icon kpi-card__icon--green">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M6 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </div>
-        <div class="kpi-card__value" id="kpiOccupancy">0%</div>
-        <div class="kpi-card__occupancy-bar">
-          <div class="kpi-card__occupancy-fill" id="kpiOccupancyFill" style="width:0%"></div>
-        </div>
-      </article>
-
       <article class="kpi-card" id="kpi-ticket">
         <div class="kpi-card__head">
           <span class="kpi-card__label">Ticket Médio</span>
@@ -262,23 +246,7 @@
         </div>
       </article>
 
-      <article class="kpi-card kpi-card--alert" id="kpi-noshows">
-        <div class="kpi-card__head">
-          <span class="kpi-card__label">No-Shows Hoje</span>
-          <div class="kpi-card__icon kpi-card__icon--red">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M10 6v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="10" cy="14" r="1" fill="currentColor"/>
-            </svg>
-          </div>
-        </div>
-        <div class="kpi-card__value" id="kpiNoShows">0</div>
-        <div class="kpi-card__meta">
-          <span class="kpi-card__meta-detail" id="kpiNoShowsValue">R$ 0 perdidos</span>
-        </div>
-      </article>
-
+      
       <article class="kpi-card" id="kpi-new-clients">
         <div class="kpi-card__head">
           <span class="kpi-card__label">Novos Clientes</span>
@@ -303,6 +271,25 @@
 
       <!-- Coluna esquerda: gráficos + agenda -->
       <div class="content-grid__main">
+
+        <!-- Agenda do Dia -->
+        <section class="agenda-card" aria-label="Agenda do dia">
+          <div class="agenda-card__header">
+            <div>
+              <h2 class="agenda-card__title">Agenda de Hoje</h2>
+              <p class="agenda-card__sub" id="agendaSub">Carregando...</p>
+            </div>
+            <div class="agenda-filters">
+              <button class="agenda-filter agenda-filter--active" data-filter="all">Todos</button>
+              <button class="agenda-filter" data-filter="confirmado">Confirmados</button>
+              <button class="agenda-filter" data-filter="pendente">Pendentes</button>
+            </div>
+          </div>
+
+          <div class="agenda-list" id="agendaList" role="list">
+            <!-- Gerado via JS -->
+          </div>
+        </section>
 
         <!-- Gráfico: Faturamento 30 dias -->
         <section class="chart-card" aria-label="Faturamento dos últimos 30 dias">
@@ -376,44 +363,6 @@
 
           <!-- Lista individual dos barbeiros -->
           <div class="goals-list" id="goalsList" role="list">
-            <!-- Gerado via JS -->
-          </div>
-        </section>
-
-        <!-- Agenda do Dia -->
-        <section class="agenda-card" aria-label="Agenda do dia">
-          <div class="agenda-card__header">
-            <div>
-              <h2 class="agenda-card__title">Agenda de Hoje</h2>
-              <p class="agenda-card__sub" id="agendaSub">Carregando...</p>
-            </div>
-            <div class="agenda-filters">
-              <button class="agenda-filter agenda-filter--active" data-filter="all">Todos</button>
-              <button class="agenda-filter" data-filter="confirmado">Confirmados</button>
-              <button class="agenda-filter" data-filter="pendente">Pendentes</button>
-            </div>
-          </div>
-
-          <div class="agenda-list" id="agendaList" role="list">
-            <!-- Gerado via JS -->
-          </div>
-        </section>
-
-        <!-- ════════════════════════════════════════
-             NOVA SEÇÃO 1: LOYALTY PROGRAM BARBEIROS
-        ════════════════════════════════════════ -->
-        <section class="loyalty-card" aria-label="Programa de fidelidade dos barbeiros">
-          <div class="loyalty-card__header">
-            <div>
-              <h2 class="loyalty-card__title">Loyalty Program</h2>
-              <p class="loyalty-card__sub">Ranking e pontuação dos barbeiros</p>
-            </div>
-            <div class="loyalty-card__badge-wrap">
-              <span class="loyalty-period-badge">Junho 2025</span>
-            </div>
-          </div>
-
-          <div class="loyalty-ranking" id="loyaltyRanking" role="list">
             <!-- Gerado via JS -->
           </div>
         </section>

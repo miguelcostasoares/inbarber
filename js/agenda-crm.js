@@ -285,16 +285,10 @@ function renderStats() {
       mod: 'orange',
     },
     {
-      label: 'No-shows',
+      label: 'Cancelado ou Falta',
       value: noshow,
       icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M5 5l6 6M11 5L5 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`,
       mod: 'red',
-    },
-    {
-      label: 'Faturado hoje',
-      value: formatCurrency(revenue),
-      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M8 5.5v5M6 8h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`,
-      mod: 'green',
     },
   ];
 
@@ -352,7 +346,13 @@ function renderKanban() {
           ${blocks.map(renderBlockCard).join('')}
           ${cards.length === 0 && blocks.length === 0 ? renderKanbanEmpty(col) : ''}
           ${cards.map(a => renderKanbanCard(a)).join('')}
-          <div class="kanban-drop-hint" aria-hidden="true">Soltar aqui</div>
+          <div class="kanban-drop-hint" aria-hidden="true">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M6.5 1v8.5M3 6.5l3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            Soltar aqui
+          </div>
         </div>
         <button class="kanban-col__add-btn"
                 onclick="openNewAppt('${col.id}')"
@@ -552,7 +552,16 @@ function handleDrop(event) {
   if (!id) return;
 
   const newStatus = col.dataset.status;
-  changeStatus(id, newStatus, { silent: true });
+  const appt = APPOINTMENTS.find(a => a.id === id);
+  if (!appt) return;
+
+  // Se soltou na mesma coluna, não faz nada (evita toast/refresh desnecessário)
+  if (appt.status === newStatus) {
+    STATE.dragging = null;
+    return;
+  }
+
+  changeStatus(id, newStatus, { silent: true, dropAnimate: true });
 }
 
 function changeStatus(id, newStatus, opts = {}) {
@@ -579,6 +588,19 @@ function changeStatus(id, newStatus, opts = {}) {
   }
 
   refreshAll();
+
+  // Aplica animação de "soltar com sucesso" no novo card, após o re-render
+  if (opts.dropAnimate) {
+    requestAnimationFrame(() => {
+      const newCard = document.getElementById(`kcard-${id}`);
+      if (newCard) {
+        newCard.classList.add('drop-success');
+        newCard.addEventListener('animationend', () => {
+          newCard.classList.remove('drop-success');
+        }, { once: true });
+      }
+    });
+  }
 }
 
 function sendWhatsApp(id) {
@@ -612,6 +634,9 @@ function renderCalendar() {
   }
 }
 
+// Altura de 1 hora no grid semanal, em px — deve bater com --cal-hour-h no CSS
+const CAL_HOUR_HEIGHT = 72;
+
 function renderWeekCal() {
   const today = getTodayStr();
   const weekDates = getWeekDates(today, STATE.calOffset);
@@ -642,22 +667,15 @@ function renderWeekCal() {
     </div>`;
   });
 
-  // Linha de "agora" — calcula posição
-  const now = new Date();
-  const nowInRange = weekDates.includes(today);
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const nowPercent = ((nowMinutes - CFG.openHour * 60) / ((CFG.closeHour - CFG.openHour) * 60)) * 100;
-
-  // Monta linhas de hora
+  // Monta linhas de hora (sem mais calcular a linha "agora" aqui — feito à parte)
   hours.forEach(h => {
     const timeStr = `${String(h).padStart(2,'0')}:00`;
     html += `<div class="cal-hour-label" aria-hidden="true">${timeStr}</div>`;
 
     weekDates.forEach((date, di) => {
       const isToday = date === today;
-      const todayCol = di;
 
-      // Eventos desta célula
+      // Eventos desta célula (agrupados por hora de início)
       const cellAppts = APPOINTMENTS.filter(a => {
         if (a.date !== date) return false;
         const [ah] = a.time.split(':').map(Number);
@@ -670,57 +688,107 @@ function renderWeekCal() {
         return bh === h;
       });
 
-      const showNowLine = isToday &&
-        nowInRange &&
-        now.getHours() === h &&
-        nowPercent >= 0 &&
-        nowPercent <= 100;
-
-      html += `<div class="cal-hour-cell${isToday ? ' cal-hour-cell--today' : ''}"
+      html += `<div class="cal-hour-cell cal-hour-cell--half-line${isToday ? ' cal-hour-cell--today' : ''}"
                     data-date="${date}" data-hour="${h}"
                     onclick="calCellClick('${date}', ${h})"
                     aria-label="${DAY_NAMES[di]} ${date} ${timeStr}">`;
 
-      // Agendamentos
-      cellAppts.forEach(a => {
-        const svc = getService(a.serviceId);
-        const barber = getBarber(a.barberId);
-        const heightPx = svc ? Math.round((svc.duration / 60) * 56) - 4 : 52;
-        const topPx = Math.round(((a.time.split(':')[1] || 0) / 60) * 56);
-        html += `<div class="cal-event cal-event--${a.status}"
-                       style="top:${topPx}px; height:${heightPx}px;"
-                       onclick="event.stopPropagation(); openDetail('${a.id}')"
-                       role="button"
-                       tabindex="0"
-                       aria-label="${a.client} às ${a.time}">
-                   <span class="cal-event__time">${a.time}</span>
-                   ${a.client.split(' ')[0]}
-                 </div>`;
+      // Agendamentos — largura dividida se houver mais de um no mesmo slot
+      cellAppts.forEach((a, idx) => {
+        html += renderCalEvent(a, h, cellAppts.length, idx);
       });
 
       // Bloqueios
       cellBlocks.forEach(b => {
         html += `<div class="cal-event cal-event--block"
-                       style="top:0px; height:54px;"
+                       style="top:2px; height:${CAL_HOUR_HEIGHT - 6}px;"
                        title="${getBlockReasonLabel(b.reason)}: ${b.startTime}–${b.endTime}"
                        aria-label="Bloqueio: ${b.startTime}–${b.endTime}">
                    <span class="cal-event__time">${b.startTime}</span>
-                   🔒 ${getBlockReasonLabel(b.reason)}
+                   <span class="cal-event__client">🔒 ${getBlockReasonLabel(b.reason)}</span>
                  </div>`;
       });
-
-      // Linha de agora
-      if (showNowLine) {
-        const nowMin = now.getMinutes();
-        const topPx  = Math.round((nowMin / 60) * 56);
-        html += `<div class="cal-now-line" style="top:${topPx}px" aria-label="Horário atual" aria-hidden="true"></div>`;
-      }
 
       html += `</div>`;
     });
   });
 
   grid.innerHTML = html;
+
+  // Linha de "agora" — única, calculada e posicionada sobre o grid inteiro
+  updateNowLine(weekDates, today);
+}
+
+// Renderiza um único evento (agendamento) dentro da célula de hora,
+// com altura proporcional à duração real e largura dividida se houver conflito visual
+function renderCalEvent(appt, hourOfCell, totalInCell, indexInCell) {
+  const svc = getService(appt.serviceId);
+  const barber = getBarber(appt.barberId);
+  const durationMin = svc ? svc.duration : 30;
+  const [, minutesStr] = appt.time.split(':');
+  const minutes = Number(minutesStr) || 0;
+
+  const topPx    = Math.round((minutes / 60) * CAL_HOUR_HEIGHT);
+  const heightPx = Math.max(Math.round((durationMin / 60) * CAL_HOUR_HEIGHT) - 4, 26);
+
+  // Layout compacto para eventos curtos (<=30min): sem espaço pra 3 linhas
+  const isCompact = durationMin <= 30;
+
+  // Se houver mais de 1 evento na mesma célula, divide a largura lado a lado
+  let leftStyle = 'left:3px; right:3px;';
+  if (totalInCell > 1) {
+    const widthPct = 100 / totalInCell;
+    leftStyle = `left: calc(${widthPct * indexInCell}% + 2px); width: calc(${widthPct}% - 4px);`;
+  }
+
+  return `<div class="cal-event cal-event--${appt.status}${isCompact ? ' cal-event--compact' : ''}"
+                 style="top:${topPx}px; height:${heightPx}px; ${leftStyle}"
+                 onclick="event.stopPropagation(); openDetail('${appt.id}')"
+                 role="button"
+                 tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openDetail('${appt.id}');}"
+                 aria-label="${appt.client}, ${svc ? svc.name : ''}, às ${appt.time}, com ${barber ? barber.name : 'barbeiro não definido'}, status ${getStatusLabel(appt.status)}">
+             <span class="cal-event__time">${appt.time}</span>
+             <span class="cal-event__client">${appt.client}</span>
+             <span class="cal-event__service">${svc ? svc.name : ''}</span>
+           </div>`;
+}
+
+// Calcula e posiciona a linha "agora" como um único elemento sobre o grid inteiro
+function updateNowLine(weekDates, today) {
+  const lineEl = document.getElementById('calNowLineGlobal');
+  if (!lineEl) return;
+
+  const nowInRange = weekDates.includes(today);
+  if (!nowInRange) {
+    lineEl.hidden = true;
+    return;
+  }
+
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const rangeStart = CFG.openHour * 60;
+  const rangeEnd   = CFG.closeHour * 60;
+
+  if (nowMinutes < rangeStart || nowMinutes > rangeEnd) {
+    lineEl.hidden = true;
+    return;
+  }
+
+  const dayIndex = weekDates.indexOf(today); // 0-6
+  const totalHours = CFG.closeHour - CFG.openHour;
+  const topPx = Math.round(((nowMinutes - rangeStart) / 60) * CAL_HOUR_HEIGHT);
+
+  // Posição horizontal: coluna de horas (64px) + (dayIndex / 7) da largura restante
+  const dayWidthPct = (1 / 7) * 100;
+  const leftPct = dayIndex * dayWidthPct;
+  const widthPct = dayWidthPct;
+
+  lineEl.hidden = false;
+  lineEl.style.top = `${topPx + 44}px`; // +44px = altura aproximada do cabeçalho de dias
+  lineEl.style.left = `calc(64px + ${leftPct}%)`;
+  lineEl.style.width = `${widthPct}%`;
+  lineEl.style.right = 'auto';
 }
 
 function renderMonthCal() {

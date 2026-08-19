@@ -241,7 +241,7 @@
          VIEW: KANBAN
     ════════════════════════════════════════════ -->
     <section class="view-panel" id="view-kanban" role="tabpanel" aria-labelledby="tab-kanban">
-      <div class="kanban-board" id="kanbanBoard" aria-label="Quadro Kanban de agendamentos">
+      <div class="kanban-board" id="kanbanBoard" role="group" aria-label="Quadro Kanban de agendamentos. Use arrastar e soltar ou os botões de ação em cada card para mudar o status.">
         <!-- Gerado via JS: 5 colunas -->
       </div>
     </section>
@@ -273,10 +273,13 @@
         <button class="cal-today-btn" id="calTodayBtn">Hoje</button>
       </div>
 
-      <!-- Grade semanal -->
       <div class="cal-week-wrap" id="calWeekWrap">
-        <div class="cal-week-grid" id="calWeekGrid" aria-label="Calendário semanal">
-          <!-- Gerado via JS -->
+        <div class="cal-week-grid-scroll" id="calWeekGridScroll">
+          <div class="cal-week-grid" id="calWeekGrid" aria-label="Calendário semanal">
+            <!-- Gerado via JS -->
+          </div>
+          <!-- Linha "agora" única, posicionada via JS sobre o grid inteiro -->
+          <div class="cal-now-line-global" id="calNowLineGlobal" aria-hidden="true" hidden></div>
         </div>
       </div>
 
@@ -574,8 +577,13 @@
       <div class="modal__body" id="detailModalBody">
         <!-- Gerado via JS -->
       </div>
-      <div class="modal__footer modal__footer--actions" id="detailModalActions">
-        <!-- Ações rápidas — gerado via JS conforme status -->
+      <div class="modal__footer modal__footer--actions">
+        <div class="detail-actions-primary" id="detailModalActions">
+          <!-- Ações de status (Confirmar/Iniciar/Finalizar/etc) — gerado via JS -->
+        </div>
+        <div class="detail-actions-secondary" id="detailModalActionsSecondary">
+          <!-- Editar + WhatsApp — sempre visíveis, separados visualmente -->
+        </div>
       </div>
     </div>
   </div>

@@ -686,13 +686,19 @@ function renderWeekCal() {
       const cellAppts = APPOINTMENTS.filter(a => {
         if (a.date !== date) return false;
         const [ah] = a.time.split(':').map(Number);
-        return ah === h;
+        if (ah !== h) return false;
+        if (STATE.filterBarber && a.barberId !== STATE.filterBarber) return false;
+        if (STATE.filterService && a.serviceId !== STATE.filterService) return false;
+        if (STATE.filterSearch && !a.client.toLowerCase().includes(STATE.filterSearch.toLowerCase())) return false;
+        return true;
       });
 
       const cellBlocks = BLOCKS.filter(b => {
         if (b.date !== date) return false;
         const [bh] = b.startTime.split(':').map(Number);
-        return bh === h;
+        if (bh !== h) return false;
+        if (STATE.filterBarber && b.barberId !== STATE.filterBarber) return false;
+        return true;
       });
 
       const isLunch = (h >= 12 && h < 13);
@@ -804,7 +810,13 @@ function renderMonthCal() {
 
   grid.innerHTML = cells.map(cell => {
     const isToday = cell.date === today;
-    const dayAppts = APPOINTMENTS.filter(a => a.date === cell.date);
+    const dayAppts = APPOINTMENTS.filter(a => {
+  if (a.date !== cell.date) return false;
+  if (STATE.filterBarber && a.barberId !== STATE.filterBarber) return false;
+  if (STATE.filterService && a.serviceId !== STATE.filterService) return false;
+  if (STATE.filterSearch && !a.client.toLowerCase().includes(STATE.filterSearch.toLowerCase())) return false;
+  return true;
+});
     const maxShow = 3;
     const shown = dayAppts.slice(0, maxShow);
     const more = dayAppts.length - shown.length;

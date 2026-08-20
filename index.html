@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Barbearia — Arte & Tradição</title>
+<title>InBarber — Agende o seu horário</title>
+<meta name="description" content="InBarber — corte, barba e cuidado masculino com agendamento online em segundos.">
+<meta name="theme-color" content="#0A0A0A">
+
+<!-- ═══ LOGO / ÍCONES ═══ -->
+<link rel="icon" href="/assets/favicon.ico" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/logo.svg">
+
+<!-- Open Graph -->
+<meta property="og:title" content="InBarber">
+<meta property="og:description" content="Agende o seu corte em segundos.">
+<meta property="og:image" content="/assets/logo.svg">
+<meta property="og:type" content="website">
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/thin/style.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,18 +29,25 @@
 </head>
 <body>
 
+<!--
+  ═══════════════════════════════════════════════════════════════
+  LOGO INBARBER — componente único (.brand)
+  Repetido na nav, no drawer e no rodapé. Para trocar a logo,
+  basta substituir o <svg> por:  <img src="/assets/logo.svg" alt="">
+  Tamanhos: .brand (38px) · .brand--sm (30px) · .brand--lg (48px)
+  ═══════════════════════════════════════════════════════════════
+-->
+
 <!-- ═══════════════════════════════ NAV ═══════════════════════════════ -->
 <header class="nav" id="nav">
-  <a href="#" class="nav-brand" aria-label="Início">
-    <!-- TROQUE: imagem/svg da logo -->
-    <div class="nav-logo-box">
-      <span class="nav-logo-letter">B</span>
-      <span class="nav-logo-corner"></span>
-    </div>
-    <div class="nav-brand-text">
-      <span class="nav-brand-name">Barbearia</span>
-      <span class="nav-brand-since">Est. 2010</span>
-    </div>
+  <a href="#" class="brand nav-brand" aria-label="InBarber — Início">
+    <span class="brand-mark" aria-hidden="true">
+      <img src="/assets/logo.svg" alt="">
+    </span>
+    <span class="brand-text">
+      <span class="brand-name"><span>In</span>Barber</span>
+      <span class="brand-tag">Est. 2026</span>
+    </span>
   </a>
 
   <nav class="nav-links" aria-label="Menu principal">
@@ -58,7 +78,18 @@
   <div class="nav-drawer-overlay" id="nav-drawer-overlay"></div>
   <div class="nav-drawer-panel">
     <div class="nav-drawer-header">
-      <span class="nav-drawer-title">Menu</span>
+      <span class="brand brand--sm">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="28" height="28" rx="7" fill="currentColor"/>
+            <path class="brand-mark-ink" d="M9 7L19 21M19 7L9 21" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-name">InBarber</span>
+          <span class="brand-tag" data-i18n="drawer.title">Menu</span>
+        </span>
+      </span>
       <button class="nav-drawer-close" id="nav-drawer-close" aria-label="Fechar menu">
         <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
           <line x1="3" y1="3" x2="15" y2="15"/><line x1="15" y1="3" x2="3" y2="15"/>
@@ -145,7 +176,7 @@
   <div class="hero-overlay" aria-hidden="true"></div>
 
   <div class="hero-title-wrap" aria-hidden="true">
-    <span class="hero-big-word">BARBER</span>
+    <span class="hero-big-word">INBARBER</span>
   </div>
 
   <div class="hero-content">
@@ -815,10 +846,10 @@
       <div class="map-box">
         <div class="map-badge">
           <span class="dot" aria-hidden="true"></span>
-          InBarber Barbearia
+          InBarber
         </div>
  
-        <div id="loc-map" class="map-canvas is-static" role="img" aria-label="Mapa mostrando a localização da Matrix Barbearia em São Paulo"></div>
+        <div id="loc-map" class="map-canvas is-static" role="img" aria-label="Mapa mostrando a localização da InBarber em São Paulo"></div>
  
         <button type="button" class="map-expand" id="loc-map-expand">
           <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h5v5M7 16H2v-5M16 2l-6 6M2 16l6-6"/></svg>
@@ -840,7 +871,7 @@
             WhatsApp
           </a>
           <!-- TROQUE: @ real -->
-          <a href="https://instagram.com/matrixbarbearia" target="_blank" rel="noopener" class="map-cta-secondary map-cta-instagram">
+          <a href="https://instagram.com/inbarber" target="_blank" rel="noopener" class="map-cta-secondary map-cta-instagram">
             <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="14" height="14" rx="4"/><circle cx="9" cy="9" r="3.3"/><circle cx="13" cy="5" r="0.6" fill="currentColor"/></svg>
             Instagram
           </a>
@@ -867,16 +898,15 @@
 <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
 <footer class="footer">
   <div class="footer-top">
-    <div class="footer-brand">
-      <div class="nav-logo-box small">
-        <span class="nav-logo-letter">B</span>
-        <span class="nav-logo-corner"></span>
-      </div>
-      <div class="nav-brand-text">
-        <span class="nav-brand-name">Barbearia</span>
-        <span class="nav-brand-since">Est. 2010</span>
-      </div>
-    </div>
+    <a href="#" class="brand brand--sm footer-brand" aria-label="InBarber — Início">
+      <span class="brand-mark" aria-hidden="true">
+        <img src="/assets/logo.svg" alt="">
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">InBarber</span>
+        <span class="brand-tag">Est. 2026</span>
+      </span>
+    </a>
     <p class="footer-desc">Tradição, técnica e estilo. Um espaço onde cada detalhe importa.</p>
   </div>
 
@@ -889,8 +919,8 @@
   </nav>
 
   <div class="footer-bottom">
-    <p>© 2026 Barbearia. Todos os direitos reservados.</p>
-    <p>Powered by <strong><a href="www.incode.com" target="_blank">InCode</a></strong></p>
+    <p>© 2026 InBarber. Todos os direitos reservados.</p>
+    <p>Powered by <strong><a href="https://www.incode.com" target="_blank">InCode</a></strong></p>
   </div>
 </footer>
 
@@ -899,7 +929,7 @@
 
   <div class="booking-bar-slide">
 
-    <div class="booking-dropdown" id="booking-dropdown" aria-hidden="true">
+    <div class="booking-dropdown" id="booking-dropdown" aria-hidden="true" inert>
       <div class="booking-dropdown-inner">
 
         <div class="booking-dropdown-header">
@@ -968,10 +998,16 @@
   </a>
 </div>
 
-<script src="/js/main.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="/js/servicos.js"></script>
+
+<!--
+  ⚠ NÃO carregar /js/servicos.js aqui.
+  Esse ficheiro pertence apenas a servicos.html. Se os dois forem
+  carregados na mesma página, as declarações repetidas (const nav,
+  const selected, …) provocam "Identifier already declared" e o
+  segundo script nem chega a correr — foi o que matou os botões da nav.
+-->
 <script src="/js/app.js"></script>
 
 </body>

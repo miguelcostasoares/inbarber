@@ -25,7 +25,7 @@ const CONFIG = {
 
 // 2.1 Serviços disponíveis
 const mockServices = [
-  { id: 'corte',        name: 'Corte Masculino',   price: 45,  duration: 30, color: '#BFA06A' },
+  { id: 'corte',        name: 'Corte Masculino',   price: 45,  duration: 30, color: '#3B82F6' },
   { id: 'barba',        name: 'Barba',              price: 35,  duration: 30, color: '#5B8DEF' },
   { id: 'combo',        name: 'Corte + Barba',      price: 70,  duration: 60, color: '#9B72CF' },
   { id: 'pigmentacao',  name: 'Pigmentação',        price: 90,  duration: 60, color: '#4CAF79' },
@@ -648,7 +648,7 @@ function animateCounter(el, from, to, duration, formatter) {
 // Paleta global para Chart.js (evita repetição)
 const CHART_DEFAULTS = {
   gridColor: 'rgba(255,255,255,0.05)',
-  tickColor: '#6B6762',
+  tickColor: '#8A94A6',   // cinza-frio — alinhado com a paleta azul
   font: "'DM Sans', system-ui, sans-serif",
 };
 
@@ -676,19 +676,19 @@ function initRevenueChart() {
       datasets: [{
         label: 'Faturamento',
         data,
-        borderColor: '#BFA06A',
+        borderColor: '#3B82F6',
         borderWidth: 2,
         pointRadius: 0,
         pointHoverRadius: 5,
-        pointHoverBackgroundColor: '#BFA06A',
+        pointHoverBackgroundColor: '#3B82F6',
         pointHoverBorderColor: '#0A0A0A',
         pointHoverBorderWidth: 2,
         tension: 0.4,
         fill: true,
         backgroundColor: (ctx) => {
           const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height);
-          gradient.addColorStop(0, 'rgba(191,160,106,0.18)');
-          gradient.addColorStop(1, 'rgba(191,160,106,0.00)');
+          gradient.addColorStop(0, 'rgba(59,130,246,0.18)');
+          gradient.addColorStop(1, 'rgba(59,130,246,0.00)');
           return gradient;
         },
       }],
@@ -700,11 +700,11 @@ function initRevenueChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1A1A1A',
-          borderColor: 'rgba(255,255,255,0.08)',
+          backgroundColor: '#111827',
+          borderColor: 'rgba(59,130,246,0.25)',
           borderWidth: 1,
           padding: 12,
-          titleColor: '#C8C0B4',
+          titleColor: '#94A3B8',
           bodyColor: '#FFFFFF',
           callbacks: {
             label: (ctx) => ` ${formatCurrency(ctx.raw)}`,
@@ -765,11 +765,11 @@ function initServicesChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1A1A1A',
-          borderColor: 'rgba(255,255,255,0.08)',
+          backgroundColor: '#111827',
+          borderColor: 'rgba(59,130,246,0.25)',
           borderWidth: 1,
           padding: 10,
-          titleColor: '#C8C0B4',
+          titleColor: '#94A3B8',
           bodyColor: '#FFFFFF',
           callbacks: {
             label: (ctx) => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw / total) * 100).toFixed(0)}%)`,
@@ -811,9 +811,9 @@ function initOccupancyChart() {
         label: 'Ocupação %',
         data,
         backgroundColor: data.map(v =>
-          v >= 90 ? 'rgba(191,160,106,0.85)' :
-          v >= 70 ? 'rgba(191,160,106,0.55)' :
-                    'rgba(191,160,106,0.25)'
+          v >= 90 ? 'rgba(59,130,246,0.90)' :
+          v >= 70 ? 'rgba(59,130,246,0.60)' :
+                    'rgba(59,130,246,0.28)'
         ),
         borderColor: 'transparent',
         borderRadius: 4,
@@ -826,10 +826,12 @@ function initOccupancyChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1A1A1A',
-          borderColor: 'rgba(255,255,255,0.08)',
+          backgroundColor: '#111827',
+          borderColor: 'rgba(59,130,246,0.25)',
           borderWidth: 1,
           padding: 10,
+          titleColor: '#94A3B8',
+          bodyColor: '#FFFFFF',
           callbacks: {
             label: (ctx) => ` ${ctx.raw}% de ocupação`,
           },
@@ -903,8 +905,8 @@ function renderGoalsTeamOverview(data) {
 
   const teamPct = Math.round((data.teamSold / data.teamTarget) * 100);
 
-  // Cor do sparkline da equipe: verde se >= 75%, gold se >= 50%, orange se menos
-  const sparkColor = teamPct >= 75 ? '#4CAF79' : teamPct >= 50 ? '#BFA06A' : '#E0924A';
+  // Cor do sparkline da equipe: verde se >= 75%, azul se >= 50%, laranja se menos
+  const sparkColor = teamPct >= 75 ? '#4CAF79' : teamPct >= 50 ? '#3B82F6' : '#E0924A';
   const sparkSVG   = buildSparklineSVG(data.teamTrend, sparkColor, 88, 32);
 
   el.innerHTML = `
@@ -916,7 +918,7 @@ function renderGoalsTeamOverview(data) {
 
     <div class="goals-team-stat">
       <span class="goals-team-stat__label">Faturado</span>
-      <span class="goals-team-stat__value goals-team-stat__value--gold">${formatCurrency(data.teamSold)}</span>
+      <span class="goals-team-stat__value goals-team-stat__value--blue">${formatCurrency(data.teamSold)}</span>
       <span class="goals-team-stat__sub">${teamPct}% da meta</span>
     </div>
 
@@ -931,8 +933,8 @@ function renderGoalsTeamOverview(data) {
  */
 const GOAL_SPARK_COLORS = {
   'ahead':    '#4CAF79',  // green
-  'on-track': '#5B8DEF',  // blue
-  'almost':   '#BFA06A',  // gold
+  'on-track': '#3B82F6',  // blue (primário)
+  'almost':   '#60A5FA',  // blue-light (quase lá)
   'behind':   '#E0924A',  // orange
 };
 
@@ -951,7 +953,7 @@ function renderGoalsList(data) {
     const pct        = Math.min(Math.round((entry.sold / entry.target) * 100), 100);
     const statusMeta = getGoalStatusMeta(entry.status);
     const aidx       = avatarIndex[entry.barberId] || (i + 1);
-    const sparkColor = GOAL_SPARK_COLORS[entry.status] || '#BFA06A';
+    const sparkColor = GOAL_SPARK_COLORS[entry.status] || '#3B82F6';
     const sparkSVG   = buildSparklineSVG(entry.trend, sparkColor, 64, 24);
 
     return `
@@ -1105,7 +1107,7 @@ function handleAgendaAction(e) {
     showToast(`${appt.client} — Atendimento iniciado`, 'success');
   } else if (action === 'finish') {
     appt.status = 'concluido';
-    showToast(`${appt.client} — Atendimento concluído`, 'gold');
+    showToast(`${appt.client} — Atendimento concluído`, 'blue');
   }
 
   renderAgendaList(mockAppointments);
@@ -1282,9 +1284,10 @@ function showToast(message, type = 'success') {
   if (existing) existing.remove();
 
   const colors = {
-    success: { bg: 'var(--green-bg)',  border: 'rgba(76,175,121,0.3)',  text: 'var(--green)'  },
-    gold:    { bg: 'var(--gold-bg)',   border: 'rgba(191,160,106,0.3)', text: 'var(--gold-lt)' },
-    error:   { bg: 'var(--red-bg)',    border: 'rgba(224,84,84,0.3)',   text: 'var(--red)'    },
+    success: { bg: 'var(--green-bg)',  border: 'rgba(76,175,121,0.3)',   text: 'var(--green)'   },
+    blue:    { bg: 'var(--blue-bg)',   border: 'rgba(59,130,246,0.3)',   text: 'var(--blue-lt)' },
+    gold:    { bg: 'var(--blue-bg)',   border: 'rgba(59,130,246,0.3)',   text: 'var(--blue-lt)' }, // alias legado → blue
+    error:   { bg: 'var(--red-bg)',    border: 'rgba(224,84,84,0.3)',    text: 'var(--red)'     },
   };
 
   const c = colors[type] || colors.success;
@@ -1484,7 +1487,7 @@ function renderCommissions(period) {
     </div>
     <div class="commission-total-item">
       <span class="commission-total-label">Comissões a pagar</span>
-      <span class="commission-total-value commission-total-value--gold">${formatCurrency(data.totalPayout)}</span>
+      <span class="commission-total-value commission-total-value--blue">${formatCurrency(data.totalPayout)}</span>
     </div>
     <div class="commission-total-item">
       <span class="commission-total-label">Atendimentos</span>
@@ -1741,7 +1744,7 @@ function handleReportExport(e) {
     btn.addEventListener('click', handleReportExport);
 
     // Toast de sucesso
-    showToast(`PDF "${filename}" exportado com sucesso!`, 'gold');
+    showToast(`PDF "${filename}" exportado com sucesso!`, 'blue');
   }, 1400);
 }
 

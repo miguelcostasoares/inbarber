@@ -747,8 +747,10 @@ function toggleCard(card) {
 /* ── Sticky CTA — estado centralizado ── */
 function setStickyCtaVisible(visible) {
   if (!stickyCta) return;
-  stickyCta.style.opacity = visible ? '1' : '0';
-  stickyCta.style.pointerEvents = visible ? 'all' : 'none';
+  stickyCta.classList.toggle('is-hidden', !visible);
+  stickyCta.setAttribute('aria-hidden', String(!visible));
+  stickyCta.style.opacity = '';        // limpa estilos inline antigos
+  stickyCta.style.pointerEvents = '';
 }
 
 /* ── Barra ── */

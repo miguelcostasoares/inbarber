@@ -200,7 +200,7 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 
 .nav-item--active {
   background: var(--gold-bg);
-  color: var(--gold-lt);
+  color: white;
 }
 
 .nav-item--active .nav-icon { color: var(--gold); }

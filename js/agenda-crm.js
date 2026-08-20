@@ -1155,6 +1155,7 @@ function openNewAppt(status = null, prefill = {}) {
   document.getElementById('apptNotes').value = '';
   document.getElementById('apptDate').value = prefill.date || getTodayStr();
   document.getElementById('apptModalTitle').textContent = 'Novo Agendamento';
+  document.getElementById('apptModalSubtitle').textContent = 'Preencha os dados abaixo para agendar';
   document.getElementById('apptModalSave').innerHTML = `
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
       <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1163,6 +1164,7 @@ function openNewAppt(status = null, prefill = {}) {
 
   hideConflict();
   document.getElementById('modalSummary').hidden = true;
+  document.getElementById('footerSummaryHint').textContent = '';
 
   // Preencher service picker
   populateServicePicker(null);
@@ -1188,6 +1190,7 @@ function openEditAppt(id) {
   document.getElementById('apptNotes').value = appt.notes || '';
   document.getElementById('apptDate').value = appt.date;
   document.getElementById('apptModalTitle').textContent = 'Editar Agendamento';
+  document.getElementById('apptModalSubtitle').textContent = appt.client;
   document.getElementById('apptModalSave').innerHTML = `
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
       <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1270,11 +1273,17 @@ function populateTimeSelect(selectedTime) {
 function updateModalSummary(serviceId) {
   const svc = getService(serviceId);
   const summaryEl = document.getElementById('modalSummary');
-  if (!svc) { summaryEl.hidden = true; return; }
+  const hint = document.getElementById('footerSummaryHint');
+  if (!svc) {
+    summaryEl.hidden = true;
+    if (hint) hint.textContent = '';
+    return;
+  }
   summaryEl.hidden = false;
   document.getElementById('summaryService').textContent = svc.name;
   document.getElementById('summaryDuration').textContent = `${svc.duration} min`;
   document.getElementById('summaryPrice').textContent = formatCurrency(svc.price);
+  if (hint) hint.textContent = `${svc.name} · ${svc.duration} min · ${formatCurrency(svc.price)}`;
 }
 
 function getFormData() {
@@ -1417,94 +1426,122 @@ function openDetail(id) {
   const barber = getBarber(appt.barberId);
   const conflict = hasConflict(appt, appt.id);
 
+  const statusKey = appt.status === 'em-andamento' ? 'andamento' : appt.status === 'no-show' ? 'noshow' : appt.status;
+
+  // Calcula horário de término
+  const durationMin = svc ? svc.duration : 30;
+  const [hh, mm] = appt.time.split(':').map(Number);
+  const endMin = hh * 60 + mm + durationMin;
+  const endTime = `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`;
+
   document.getElementById('detailModalTitle').textContent = appt.client;
 
   const body = document.getElementById('detailModalBody');
   body.innerHTML = `
-    <div class="detail-row">
-      <div class="detail-section">
-        <div class="detail-label">Horário</div>
-        <div class="detail-value detail-value--large">${appt.time}</div>
-        <div style="color:var(--muted);font-size:12px;margin-top:2px">${formatDate(appt.date)}</div>
+    <!-- Hero: horário + status numa linha -->
+    <div class="detail-hero">
+      <div class="detail-hero__time">
+        <span class="detail-hero__time-main">${appt.time}</span>
+        <span class="detail-hero__time-sep">–</span>
+        <span class="detail-hero__time-end">${endTime}</span>
       </div>
-      <div class="detail-section">
-        <div class="detail-label">Status</div>
-        <span class="status-badge status-badge--${appt.status === 'em-andamento' ? 'andamento' : appt.status === 'no-show' ? 'noshow' : appt.status}">${getStatusLabel(appt.status)}</span>
-        ${conflict ? `<div style="color:var(--red);font-size:11px;margin-top:6px;display:flex;align-items:center;gap:4px">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L9 8H1L5 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5 4v2M5 7v.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-          Conflito detectado
-        </div>` : ''}
-      </div>
+      <span class="status-badge status-badge--${statusKey}">${getStatusLabel(appt.status)}</span>
     </div>
-    <div class="detail-row">
-      <div class="detail-section">
-        <div class="detail-label">Serviço</div>
-        <div class="detail-value" style="display:flex;align-items:center;gap:7px">
-          <span style="width:8px;height:8px;border-radius:50%;background:${svc?.color || '#6B6762'};display:inline-block;flex-shrink:0" aria-hidden="true"></span>
-          ${svc?.name || '—'}
-        </div>
-        <div style="color:var(--muted);font-size:12px;margin-top:2px">${svc ? `${svc.duration} min` : ''}</div>
-      </div>
-      <div class="detail-section">
-        <div class="detail-label">Valor</div>
-        <div class="detail-value detail-value--gold">${svc ? formatCurrency(svc.price) : '—'}</div>
-      </div>
-    </div>
-    <div class="detail-section">
-      <div class="detail-label">Barbeiro</div>
-      <div class="detail-barber-row">
-        <div class="detail-barber-avatar detail-barber-avatar--${appt.barberId}" aria-hidden="true">
-          ${barber?.avatar || '?'}
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:600;color:var(--cream)">${barber?.name || '—'}</div>
-          <div style="font-size:12px;color:var(--muted)">★ ${barber?.rating || '—'}</div>
-        </div>
-      </div>
-    </div>
-    ${appt.phone ? `
-    <div class="detail-section">
-      <div class="detail-label">Telefone</div>
-      <div class="detail-value">${formatPhone(appt.phone)}</div>
+
+    <!-- Data -->
+    <div class="detail-meta-date">${formatDate(appt.date)}</div>
+
+    ${conflict ? `
+    <div class="detail-conflict">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M6 1L11 10H1L6 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+        <path d="M6 5v2M6 8.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      Conflito de horário detectado
     </div>` : ''}
+
+    <div class="detail-divider"></div>
+
+    <!-- Linha: Serviço + Valor -->
+    <div class="detail-inline-row">
+      <div class="detail-field">
+        <span class="detail-field__label">Serviço</span>
+        <span class="detail-field__value">
+          <span class="detail-svc-dot" style="background:${svc?.color || '#6B6762'}" aria-hidden="true"></span>
+          ${svc?.name || '—'}
+          ${svc ? `<span class="detail-field__sub">${svc.duration} min</span>` : ''}
+        </span>
+      </div>
+      <div class="detail-field detail-field--end">
+        <span class="detail-field__label">Valor</span>
+        <span class="detail-field__value detail-field__value--gold">${svc ? formatCurrency(svc.price) : '—'}</span>
+      </div>
+    </div>
+
+    <!-- Barbeiro -->
+    <div class="detail-field">
+      <span class="detail-field__label">Barbeiro</span>
+      <div class="detail-barber-chip">
+        <div class="detail-barber-avatar detail-barber-avatar--${appt.barberId}" aria-hidden="true">${barber?.avatar || '?'}</div>
+        <div class="detail-barber-info">
+          <span class="detail-barber-name">${barber?.name || '—'}</span>
+          <span class="detail-barber-rating">★ ${barber?.rating || '—'}</span>
+        </div>
+      </div>
+    </div>
+
+    ${appt.phone ? `
+    <div class="detail-field">
+      <span class="detail-field__label">Telefone</span>
+      <span class="detail-field__value">${formatPhone(appt.phone)}</span>
+    </div>` : ''}
+
     ${appt.notes ? `
-    <div class="detail-section">
-      <div class="detail-label">Observações</div>
+    <div class="detail-field">
+      <span class="detail-field__label">Observações</span>
       <div class="detail-notes">${appt.notes}</div>
     </div>` : ''}
   `;
 
-  // Ações no rodapé
+  // Monta footer: ação primária de status + botão Editar sempre visível
   const actions = document.getElementById('detailModalActions');
-  const actBtns = [];
+  const secondary = document.getElementById('detailModalActionsSecondary');
 
+  // Ação principal de status
+  const primaryBtns = [];
   if (appt.status === 'pendente') {
-    actBtns.push(`<button class="action-btn action-btn--blue"  onclick="changeStatus('${appt.id}','confirmado');closeModal('detailModalOverlay')">Confirmar</button>`);
-    actBtns.push(`<button class="action-btn action-btn--gold"  onclick="openEditAppt('${appt.id}')">Editar</button>`);
-    actBtns.push(`<button class="action-btn action-btn--red"   onclick="changeStatus('${appt.id}','no-show');closeModal('detailModalOverlay')">Cancelar</button>`);
+    primaryBtns.push(`<button class="action-btn action-btn--blue" onclick="changeStatus('${appt.id}','confirmado');closeModal('detailModalOverlay')">Confirmar</button>`);
+    primaryBtns.push(`<button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show');closeModal('detailModalOverlay')">Cancelar</button>`);
   }
   if (appt.status === 'confirmado') {
-    actBtns.push(`<button class="action-btn action-btn--orange" onclick="changeStatus('${appt.id}','em-andamento');closeModal('detailModalOverlay')">Iniciar</button>`);
-    actBtns.push(`<button class="action-btn action-btn--gold"   onclick="openEditAppt('${appt.id}')">Reagendar</button>`);
-    actBtns.push(`<button class="action-btn action-btn--red"    onclick="changeStatus('${appt.id}','no-show');closeModal('detailModalOverlay')">No-show</button>`);
+    primaryBtns.push(`<button class="action-btn action-btn--orange" onclick="changeStatus('${appt.id}','em-andamento');closeModal('detailModalOverlay')">Iniciar</button>`);
+    primaryBtns.push(`<button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show');closeModal('detailModalOverlay')">No-show</button>`);
   }
   if (appt.status === 'em-andamento') {
-    actBtns.push(`<button class="action-btn action-btn--green" onclick="changeStatus('${appt.id}','concluido');closeModal('detailModalOverlay')">Finalizar</button>`);
-  }
-  if (appt.status === 'concluido') {
-    actBtns.push(`<button class="action-btn action-btn--muted" onclick="openEditAppt('${appt.id}')">Editar</button>`);
+    primaryBtns.push(`<button class="action-btn action-btn--green" onclick="changeStatus('${appt.id}','concluido');closeModal('detailModalOverlay')">Finalizar</button>`);
   }
   if (appt.status === 'no-show') {
-    actBtns.push(`<button class="action-btn action-btn--blue"  onclick="openEditAppt('${appt.id}')">Reagendar</button>`);
+    primaryBtns.push(`<button class="action-btn action-btn--blue" onclick="openEditAppt('${appt.id}')">Reagendar</button>`);
   }
-  actBtns.push(`<button class="action-btn action-btn--green" onclick="sendWhatsApp('${appt.id}')">
-    <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M8 0C3.58 0 0 3.58 0 8c0 1.41.37 2.74 1.01 3.9L0 16l4.24-1.01A7.95 7.95 0 0 0 8 16c4.42 0 8-3.58 8-8S12.42 0 8 0zm3.92 11.34c-.17.47-1 .92-1.38.96-.35.04-.68.17-2.29-.47-1.93-.76-3.18-2.72-3.28-2.85-.1-.13-.82-1.08-.82-2.07 0-.99.52-1.47.7-1.67.18-.2.4-.25.53-.25h.38c.12 0 .29.05.44.34.16.3.54 1.31.59 1.4.05.1.08.21.02.33-.06.13-.09.2-.19.31-.1.11-.2.24-.28.32-.1.09-.19.19-.08.38.11.19.5.82 1.07 1.32.74.65 1.36.86 1.56.95.19.09.3.08.41-.04.12-.13.5-.58.64-.78.13-.2.27-.17.45-.1.19.07 1.19.56 1.39.66.2.1.34.15.39.24.05.09.05.53-.12 1z"/>
-    </svg>
-    WhatsApp
-  </button>`);
 
-  actions.innerHTML = actBtns.join('');
+  actions.innerHTML = primaryBtns.join('');
+
+  // Ações secundárias fixas: Editar + WhatsApp
+  const editLabel = appt.status === 'confirmado' ? 'Reagendar' : 'Editar';
+  secondary.innerHTML = `
+    <button class="detail-edit-btn" onclick="openEditAppt('${appt.id}')">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      ${editLabel}
+    </button>
+    <button class="detail-whatsapp-btn" onclick="sendWhatsApp('${appt.id}')">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 1.41.37 2.74 1.01 3.9L0 16l4.24-1.01A7.95 7.95 0 0 0 8 16c4.42 0 8-3.58 8-8S12.42 0 8 0zm3.92 11.34c-.17.47-1 .92-1.38.96-.35.04-.68.17-2.29-.47-1.93-.76-3.18-2.72-3.28-2.85-.1-.13-.82-1.08-.82-2.07 0-.99.52-1.47.7-1.67.18-.2.4-.25.53-.25h.38c.12 0 .29.05.44.34.16.3.54 1.31.59 1.4.05.1.08.21.02.33-.06.13-.09.2-.19.31-.1.11-.2.24-.28.32-.1.09-.19.19-.08.38.11.19.5.82 1.07 1.32.74.65 1.36.86 1.56.95.19.09.3.08.41-.04.12-.13.5-.58.64-.78.13-.2.27-.17.45-.1.19.07 1.19.56 1.39.66.2.1.34.15.39.24.05.09.05.53-.12 1z"/>
+      </svg>
+      WhatsApp
+    </button>
+  `;
 
   openModal('detailModalOverlay');
 }
@@ -1591,6 +1628,7 @@ function initModalClose() {
   document.getElementById('apptModalClose')?.addEventListener('click', () => closeModal('apptModalOverlay'));
   document.getElementById('apptModalCancel')?.addEventListener('click', () => closeModal('apptModalOverlay'));
   document.getElementById('apptModalSave')?.addEventListener('click', saveAppt);
+  document.getElementById('detailModalClose')?.addEventListener('click', () => closeModal('detailModalOverlay'));
   document.getElementById('slotModalClose')?.addEventListener('click', () => closeModal('slotModalOverlay'));
   document.getElementById('slotModalClose2')?.addEventListener('click', () => closeModal('slotModalOverlay'));
 

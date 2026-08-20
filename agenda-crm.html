@@ -389,16 +389,10 @@
   <div class="modal-overlay" id="apptModalOverlay" role="dialog" aria-modal="true" aria-labelledby="apptModalTitle"
     hidden>
     <div class="modal" id="apptModal">
-      <div class="modal__header">
-        <div class="modal__header-left">
-          <div class="modal__header-icon" id="apptModalIcon" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="1" y="2" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5" />
-              <path d="M1 7h14" stroke="currentColor" stroke-width="1.5" />
-              <path d="M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-          </div>
+      <div class="modal__header modal__header--form">
+        <div>
           <h2 class="modal__title" id="apptModalTitle">Novo Agendamento</h2>
+          <p class="modal__subtitle" id="apptModalSubtitle">Preencha os dados abaixo para agendar</p>
         </div>
         <button class="modal__close" id="apptModalClose" aria-label="Fechar modal">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -420,65 +414,70 @@
         <input type="hidden" id="apptId" />
 
         <!-- Cliente + telefone -->
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="apptClient">Cliente <span class="form-required"
-                aria-hidden="true">*</span></label>
-            <div class="input-autocomplete">
-              <input class="form-input" id="apptClient" type="text" placeholder="Nome do cliente" autocomplete="off"
-                required />
-              <ul class="autocomplete-list" id="autocompleteList" role="listbox" aria-label="Sugestões de clientes"
-                hidden></ul>
+        <div class="form-section">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="apptClient">Cliente <span class="form-required" aria-hidden="true">*</span></label>
+              <div class="input-autocomplete">
+                <input class="form-input" id="apptClient" type="text" placeholder="Nome do cliente" autocomplete="off"
+                  required />
+                <ul class="autocomplete-list" id="autocompleteList" role="listbox" aria-label="Sugestões de clientes"
+                  hidden></ul>
+              </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="apptPhone">Telefone</label>
-            <input class="form-input" id="apptPhone" type="tel" placeholder="(84) 99999-9999" />
+            <div class="form-group">
+              <label class="form-label" for="apptPhone">Telefone</label>
+              <input class="form-input" id="apptPhone" type="tel" placeholder="(84) 99999-9999" />
+            </div>
           </div>
         </div>
 
         <!-- Data + Horário -->
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="apptDate">Data <span class="form-required"
-                aria-hidden="true">*</span></label>
-            <input class="form-input" id="apptDate" type="date" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="apptTime">Horário <span class="form-required"
-                aria-hidden="true">*</span></label>
-            <select class="form-input form-select" id="apptTime" required>
-              <option value="">Selecionar</option>
-            </select>
+        <div class="form-section">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="apptDate">Data <span class="form-required" aria-hidden="true">*</span></label>
+              <input class="form-input" id="apptDate" type="date" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="apptTime">Horário <span class="form-required" aria-hidden="true">*</span></label>
+              <select class="form-input form-select" id="apptTime" required>
+                <option value="">Selecionar</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <!-- Serviço -->
-        <div class="form-group">
-          <label class="form-label" for="apptService">Serviço <span class="form-required"
-              aria-hidden="true">*</span></label>
-          <div class="service-picker" id="servicePicker" role="radiogroup" aria-label="Selecionar serviço">
-            <!-- Gerado via JS -->
+        <div class="form-section">
+          <div class="form-group">
+            <label class="form-label" for="apptService">Serviço <span class="form-required" aria-hidden="true">*</span></label>
+            <div class="service-picker" id="servicePicker" role="radiogroup" aria-label="Selecionar serviço">
+              <!-- Gerado via JS -->
+            </div>
           </div>
         </div>
 
         <!-- Barbeiro -->
-        <div class="form-group">
-          <label class="form-label" for="apptBarber">Barbeiro <span class="form-required"
-              aria-hidden="true">*</span></label>
-          <div class="barber-picker" id="barberPicker" role="radiogroup" aria-label="Selecionar barbeiro">
-            <!-- Gerado via JS -->
+        <div class="form-section">
+          <div class="form-group">
+            <label class="form-label" for="apptBarber">Barbeiro <span class="form-required" aria-hidden="true">*</span></label>
+            <div class="barber-picker" id="barberPicker" role="radiogroup" aria-label="Selecionar barbeiro">
+              <!-- Gerado via JS -->
+            </div>
           </div>
         </div>
 
         <!-- Observações -->
-        <div class="form-group">
-          <label class="form-label" for="apptNotes">Observações</label>
-          <textarea class="form-input form-textarea" id="apptNotes"
-            placeholder="Preferências, alergias, instruções especiais..." rows="2"></textarea>
+        <div class="form-section form-section--last">
+          <div class="form-group">
+            <label class="form-label" for="apptNotes">Observações <span class="form-label__optional">opcional</span></label>
+            <textarea class="form-input form-textarea" id="apptNotes"
+              placeholder="Ex: navalha no pescoço, alergia a determinado produto..." rows="2"></textarea>
+          </div>
         </div>
 
-        <!-- Resumo de valor (dinâmico) -->
+        <!-- Resumo de valor (dinâmico) — mantido para compatibilidade com JS -->
         <div class="modal-summary" id="modalSummary" hidden>
           <div class="modal-summary__row">
             <span class="modal-summary__label">Serviço</span>
@@ -495,15 +494,18 @@
         </div>
       </div>
 
-      <div class="modal__footer">
-        <button class="btn-ghost" id="apptModalCancel">Cancelar</button>
-        <button class="btn-primary" id="apptModalSave">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </svg>
-          Agendar
-        </button>
+      <div class="modal__footer modal__footer--form">
+        <div class="modal__footer-summary" id="footerSummaryHint"></div>
+        <div class="modal__footer-actions">
+          <button class="btn-ghost" id="apptModalCancel">Cancelar</button>
+          <button class="btn-primary" id="apptModalSave">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Agendar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -657,8 +659,8 @@
       </div>
 
       <div class="modal__footer" id="slotModalFooter">
-        <button class="btn-ghost" id="slotModalClose2">Fechar</button>
-        <button class="btn-primary-lg" id="slotModalNewBtn">
+        <button class="btn-ghost" id="slotModalClose2" style="display:none">Fechar</button>
+        <button class="btn-primary-lg" id="slotModalNewBtn" style="display:none">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>

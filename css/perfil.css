@@ -16,10 +16,10 @@
   --cream:    #F0EBE1;
   --cream-2:  #C8C0B4;
   --muted:    #6B6762;
-  --gold:     #BFA06A;
-  --gold-lt:  #D4B98A;
-  --gold-dim: #7A6440;
-  --gold-bg:  rgba(191,160,106,0.07);
+  --gold:     #0047ff;
+  --gold-lt:  #00f0ff;
+  --gold-dim: #8b5cf6;
+  --gold-bg:  rgba(0,71,255,0.07);
   --white:    #FFFFFF;
 
   /* Status */
@@ -122,7 +122,7 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   transition: transform 200ms var(--ease-out), border-color 160ms ease-out, background 160ms ease-out;
 }
 .back-btn:hover .back-arrow {
-  border-color: rgba(191,160,106,0.3);
+  border-color: rgba(0,71,255,0.3);
   background: var(--bg-4);
 }
 .back-arrow svg {
@@ -218,7 +218,7 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(191,160,106,0.06) 0%, transparent 55%);
+  background: linear-gradient(135deg, rgba(0,71,255,0.06) 0%, transparent 55%);
   pointer-events: none;
 }
 
@@ -384,7 +384,6 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   border-top: 1px solid var(--divider);
   background: rgba(255,255,255,0.012);
 }
-/* A linha acima já traz a sua própria borda */
 .row + .card-foot { border-top: none; }
 
 @media (max-width: 460px) {
@@ -432,7 +431,6 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 }
 .row--link:hover .row-arrow { transform: translateX(2px); color: var(--gold); }
 
-/* Linha empilhada (controlo abaixo do texto) */
 .row--stack { flex-direction: column; align-items: stretch; gap: 0.75rem; }
 .row-stack-head { display: flex; align-items: center; gap: 13px; }
 
@@ -470,7 +468,7 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   outline: none;
   border-color: var(--gold-dim);
   background: var(--bg-4);
-  box-shadow: 0 0 0 3px rgba(191,160,106,0.10);
+  box-shadow: 0 0 0 3px rgba(0,71,255,0.10);
 }
 .form-input:disabled { color: var(--muted); cursor: not-allowed; }
 .form-input[aria-invalid="true"] {
@@ -636,7 +634,6 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 .seg-btn.active { background: var(--gold-bg); color: var(--gold-lt); box-shadow: inset 0 0 0 1px var(--gold-dim); }
 .seg-flag { font-size: 13px; line-height: 1; }
 
-/* Dentro de uma linha empilhada, o segmento ocupa a largura toda */
 .row--stack .seg { width: 100%; }
 .row--stack .seg-btn { flex: 1; justify-content: center; }
 

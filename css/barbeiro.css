@@ -10,10 +10,10 @@
   --cream:    #F0EBE1;
   --cream-2:  #C8C0B4;
   --muted:    #6B6762;
-  --gold:     #BFA06A;
-  --gold-lt:  #D4B98A;
-  --gold-dim: #7A6440;
-  --gold-bg:  rgba(191,160,106,0.07);
+  --gold:     #0047ff;
+  --gold-lt:  #00f0ff;
+  --gold-dim: #8b5cf6;
+  --gold-bg:  rgba(0,71,255,0.07);
   --white:    #FFFFFF;
   --ff-d: 'DM Serif Display', Georgia, serif;
   --ff-b: 'DM Sans', system-ui, sans-serif;
@@ -59,7 +59,7 @@ button { font-family: var(--ff-b); cursor: pointer; border: none; background: no
   border: 1px solid var(--divider); background: var(--bg-3);
   transition: transform 200ms var(--ease-out), border-color 160ms ease-out, background 160ms ease-out;
 }
-.back-btn:hover .back-arrow { border-color: rgba(191,160,106,.3); background: var(--bg-4); }
+.back-btn:hover .back-arrow { border-color: rgba(0,71,255,.3); background: var(--bg-4); }
 .back-arrow svg { width: 14px; height: 14px; stroke: var(--cream-2); fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .topbar-title {
   position: absolute; left: 50%; transform: translateX(-50%);
@@ -104,7 +104,7 @@ button { font-family: var(--ff-b); cursor: pointer; border: none; background: no
 .step-dot svg { width: 10px; height: 10px; display: none; }
 .step.done .step-dot { background: var(--gold-dim); border-color: var(--gold-dim); }
 .step.done .step-dot svg { display: block; stroke: var(--gold); }
-.step.active .step-dot { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 3px rgba(191,160,106,0.2); }
+.step.active .step-dot { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 3px rgba(0,71,255,0.2); }
 .step-label { font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 0.3px; }
 .step.active .step-label { color: var(--cream); font-weight: 600; }
 .step.done .step-label { color: var(--gold-dim); }
@@ -132,14 +132,14 @@ button { font-family: var(--ff-b); cursor: pointer; border: none; background: no
 .barber-card:nth-child(4){animation-delay:.23s}
 .barber-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .barber-card:active { transform: scale(.97); }
-.barber-card.selected { background: rgba(191,160,106,.09); border-color: var(--gold); }
+.barber-card.selected { background: rgba(0,71,255,.09); border-color: var(--gold); }
 .barber-card.selected .barber-name { color: var(--white); }
 @media(hover:hover)and(pointer:fine){
-  .barber-card:not(.selected):hover { background: var(--bg-4); border-color: rgba(191,160,106,.2); }
+  .barber-card:not(.selected):hover { background: var(--bg-4); border-color: rgba(0,71,255,.2); }
 }
 .barber-check {
   position: absolute; top: 10px; right: 10px; width: 20px; height: 20px;
-  border-radius: 50%; border: 1.5px solid rgba(191,160,106,.3);
+  border-radius: 50%; border: 1.5px solid rgba(0,71,255,.3);
   display: flex; align-items: center; justify-content: center; background: transparent;
   transition: background 160ms var(--ease-out), border-color 160ms ease-out, transform 120ms var(--ease-spring);
 }
@@ -159,7 +159,7 @@ button { font-family: var(--ff-b); cursor: pointer; border: none; background: no
 .avatar-initials--any { border-color: var(--divider); color: var(--muted); }
 .avatar-rating {
   position: absolute; bottom: -2px; right: -4px;
-  background: var(--bg-4); border: 1px solid rgba(191,160,106,.35); border-radius: var(--r-full);
+  background: var(--bg-4); border: 1px solid rgba(0,71,255,.35); border-radius: var(--r-full);
   padding: 2px 6px 2px 5px; display: flex; align-items: center; gap: 3px;
   font-size: 10px; font-weight: 700; color: var(--cream); pointer-events: none;
 }
@@ -185,9 +185,9 @@ button { font-family: var(--ff-b); cursor: pointer; border: none; background: no
 }
 .summary-bar-inner {
   width: 100%; max-width: 680px; background: rgba(22,22,22,.97);
-  border: 1px solid rgba(191,160,106,.22); border-radius: var(--r-lg);
+  border: 1px solid rgba(0,71,255,.22); border-radius: var(--r-lg);
   padding: .65rem .65rem .65rem 1.1rem;
-  box-shadow: 0 -8px 40px rgba(0,0,0,.65), 0 0 0 1px rgba(191,160,106,.05);
+  box-shadow: 0 -8px 40px rgba(0,0,0,.65), 0 0 0 1px rgba(0,71,255,.05);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); pointer-events: all;
   transform: translateY(120%); opacity: 0;
   transition: transform 340ms var(--ease-out), opacity 260ms ease-out;
@@ -445,7 +445,7 @@ button { font-family: var(--ff-b); cursor: pointer; border: none; background: no
 .profile-select-btn:hover  { opacity: .88; }
 .profile-select-btn:active { transform: scale(.98); }
 .profile-select-btn.already-selected {
-  background: rgba(191,160,106,.12); color: var(--gold); border: 1.5px solid var(--gold);
+  background: rgba(0,71,255,.12); color: var(--gold); border: 1.5px solid var(--gold);
 }
 
 /* ════════════════════════════════════════

@@ -25,39 +25,39 @@ const CONFIG = {
 
 // 2.1 Serviços disponíveis
 const mockServices = [
-  { id: 'corte',        name: 'Corte Masculino',   price: 45,  duration: 30, color: '#3B82F6' },
-  { id: 'barba',        name: 'Barba',              price: 35,  duration: 30, color: '#5B8DEF' },
-  { id: 'combo',        name: 'Corte + Barba',      price: 70,  duration: 60, color: '#9B72CF' },
-  { id: 'pigmentacao',  name: 'Pigmentação',        price: 90,  duration: 60, color: '#4CAF79' },
-  { id: 'relaxamento',  name: 'Relaxamento',        price: 80,  duration: 60, color: '#E0924A' },
-  { id: 'sobrancelha',  name: 'Sobrancelha',        price: 20,  duration: 20, color: '#E05454' },
+  { id: 'corte', name: 'Corte Masculino', price: 45, duration: 30, color: '#3B82F6' },
+  { id: 'barba', name: 'Barba', price: 35, duration: 30, color: '#5B8DEF' },
+  { id: 'combo', name: 'Corte + Barba', price: 70, duration: 60, color: '#9B72CF' },
+  { id: 'pigmentacao', name: 'Pigmentação', price: 90, duration: 60, color: '#4CAF79' },
+  { id: 'relaxamento', name: 'Relaxamento', price: 80, duration: 60, color: '#E0924A' },
+  { id: 'sobrancelha', name: 'Sobrancelha', price: 20, duration: 20, color: '#E05454' },
 ];
 
 // 2.2 Barbeiros
 const mockBarbers = [
-  { id: 'marcos', name: 'Marcos Silva',  avatar: 'MS', rating: 4.9 },
-  { id: 'joao',   name: 'João Pereira',  avatar: 'JP', rating: 4.7 },
-  { id: 'andre',  name: 'André Santos',  avatar: 'AS', rating: 4.8 },
+  { id: 'marcos', name: 'Marcos Silva', avatar: 'MS', rating: 4.9 },
+  { id: 'joao', name: 'João Pereira', avatar: 'JP', rating: 4.7 },
+  { id: 'andre', name: 'André Santos', avatar: 'AS', rating: 4.8 },
 ];
 
 // 2.3 Agendamentos de hoje
 // status: 'confirmado' | 'pendente' | 'em-andamento' | 'concluido' | 'no-show'
 const mockAppointments = [
-  { id: 'a001', time: '08:00', client: 'Lucas Andrade',     serviceId: 'combo',       barberId: 'marcos', status: 'concluido',    phone: '84999990001' },
-  { id: 'a002', time: '08:30', client: 'Felipe Rocha',      serviceId: 'corte',       barberId: 'joao',   status: 'concluido',    phone: '84999990002' },
-  { id: 'a003', time: '09:00', client: 'Gabriel Souza',     serviceId: 'barba',       barberId: 'andre',  status: 'concluido',    phone: '84999990003' },
-  { id: 'a004', time: '09:30', client: 'Matheus Lima',      serviceId: 'pigmentacao', barberId: 'marcos', status: 'concluido',    phone: '84999990004' },
-  { id: 'a005', time: '10:00', client: 'Ricardo Ferreira',  serviceId: 'corte',       barberId: 'joao',   status: 'no-show',      phone: '84999990005' },
-  { id: 'a006', time: '10:30', client: 'Bruno Carvalho',    serviceId: 'combo',       barberId: 'andre',  status: 'concluido',    phone: '84999990006' },
-  { id: 'a007', time: '11:00', client: 'Diego Martins',     serviceId: 'relaxamento', barberId: 'marcos', status: 'em-andamento', phone: '84999990007' },
-  { id: 'a008', time: '11:30', client: 'Thiago Oliveira',   serviceId: 'sobrancelha', barberId: 'joao',   status: 'confirmado',   phone: '84999990008' },
-  { id: 'a009', time: '12:00', client: 'Cauã Ribeiro',      serviceId: 'corte',       barberId: 'andre',  status: 'confirmado',   phone: '84999990009' },
-  { id: 'a010', time: '13:00', client: 'Vinicius Alves',    serviceId: 'combo',       barberId: 'marcos', status: 'confirmado',   phone: '84999990010' },
-  { id: 'a011', time: '13:30', client: 'Leonardo Costa',    serviceId: 'barba',       barberId: 'joao',   status: 'pendente',     phone: '84999990011' },
-  { id: 'a012', time: '14:00', client: 'Samuel Pereira',    serviceId: 'pigmentacao', barberId: 'andre',  status: 'pendente',     phone: '84999990012' },
-  { id: 'a013', time: '14:30', client: 'Rafael Nascimento', serviceId: 'corte',       barberId: 'marcos', status: 'pendente',     phone: '84999990013' },
-  { id: 'a014', time: '15:00', client: 'Igor Campos',       serviceId: 'combo',       barberId: 'joao',   status: 'pendente',     phone: '84999990014' },
-  { id: 'a015', time: '16:00', client: 'Henrique Duarte',   serviceId: 'relaxamento', barberId: 'andre',  status: 'pendente',     phone: '84999990015' },
+  { id: 'a001', time: '08:00', client: 'Lucas Andrade', serviceId: 'combo', barberId: 'marcos', status: 'concluido', phone: '84999990001' },
+  { id: 'a002', time: '08:30', client: 'Felipe Rocha', serviceId: 'corte', barberId: 'joao', status: 'concluido', phone: '84999990002' },
+  { id: 'a003', time: '09:00', client: 'Gabriel Souza', serviceId: 'barba', barberId: 'andre', status: 'concluido', phone: '84999990003' },
+  { id: 'a004', time: '09:30', client: 'Matheus Lima', serviceId: 'pigmentacao', barberId: 'marcos', status: 'concluido', phone: '84999990004' },
+  { id: 'a005', time: '10:00', client: 'Ricardo Ferreira', serviceId: 'corte', barberId: 'joao', status: 'no-show', phone: '84999990005' },
+  { id: 'a006', time: '10:30', client: 'Bruno Carvalho', serviceId: 'combo', barberId: 'andre', status: 'concluido', phone: '84999990006' },
+  { id: 'a007', time: '11:00', client: 'Diego Martins', serviceId: 'relaxamento', barberId: 'marcos', status: 'em-andamento', phone: '84999990007' },
+  { id: 'a008', time: '11:30', client: 'Thiago Oliveira', serviceId: 'sobrancelha', barberId: 'joao', status: 'confirmado', phone: '84999990008' },
+  { id: 'a009', time: '12:00', client: 'Cauã Ribeiro', serviceId: 'corte', barberId: 'andre', status: 'confirmado', phone: '84999990009' },
+  { id: 'a010', time: '13:00', client: 'Vinicius Alves', serviceId: 'combo', barberId: 'marcos', status: 'confirmado', phone: '84999990010' },
+  { id: 'a011', time: '13:30', client: 'Leonardo Costa', serviceId: 'barba', barberId: 'joao', status: 'pendente', phone: '84999990011' },
+  { id: 'a012', time: '14:00', client: 'Samuel Pereira', serviceId: 'pigmentacao', barberId: 'andre', status: 'pendente', phone: '84999990012' },
+  { id: 'a013', time: '14:30', client: 'Rafael Nascimento', serviceId: 'corte', barberId: 'marcos', status: 'pendente', phone: '84999990013' },
+  { id: 'a014', time: '15:00', client: 'Igor Campos', serviceId: 'combo', barberId: 'joao', status: 'pendente', phone: '84999990014' },
+  { id: 'a015', time: '16:00', client: 'Henrique Duarte', serviceId: 'relaxamento', barberId: 'andre', status: 'pendente', phone: '84999990015' },
 ];
 
 // 2.4 Faturamento dos últimos 30 dias (para gráfico de linha)
@@ -81,12 +81,12 @@ const mockRevenue30d = (function () {
 // 2.5 Distribuição de serviços no mês (para donut)
 // Conectar: GET /api/services/distribution?period=month
 const mockServiceDistribution = [
-  { serviceId: 'corte',       count: 148 },
-  { serviceId: 'combo',       count: 97  },
-  { serviceId: 'barba',       count: 83  },
-  { serviceId: 'pigmentacao', count: 42  },
-  { serviceId: 'relaxamento', count: 31  },
-  { serviceId: 'sobrancelha', count: 29  },
+  { serviceId: 'corte', count: 148 },
+  { serviceId: 'combo', count: 97 },
+  { serviceId: 'barba', count: 83 },
+  { serviceId: 'pigmentacao', count: 42 },
+  { serviceId: 'relaxamento', count: 31 },
+  { serviceId: 'sobrancelha', count: 29 },
 ];
 
 // 2.6 Ocupação por faixa de horário (para barras)
@@ -120,66 +120,66 @@ const mockOccupancyByHour = [
 //   >= 100% → ahead | 75–99% → on-track | 50–74% → almost | < 50% → behind
 const mockBarberGoals = {
   week: {
-    teamTarget:  18_000,         // meta semanal total da equipe
-    teamSold:    13_420,         // faturado pela equipe na semana
+    teamTarget: 18_000,         // meta semanal total da equipe
+    teamSold: 13_420,         // faturado pela equipe na semana
     // Tendência da equipe — últimos 7 dias (totais diários em R$)
-    teamTrend:   [1580, 1920, 2100, 1870, 2250, 2300, 1400],
+    teamTrend: [1580, 1920, 2100, 1870, 2250, 2300, 1400],
     barbers: [
       {
-        barberId:  'marcos',
-        sold:      5820,
-        target:    6000,
-        trend:     [720, 900, 940, 850, 960, 1050, 400],  // últimos 7 dias
-        status:    'almost',
-        forecast:  'Deve bater a meta amanhã',
+        barberId: 'marcos',
+        sold: 5820,
+        target: 6000,
+        trend: [720, 900, 940, 850, 960, 1050, 400],  // últimos 7 dias
+        status: 'almost',
+        forecast: 'Deve bater a meta amanhã',
       },
       {
-        barberId:  'andre',
-        sold:      4600,
-        target:    6000,
-        trend:     [580, 700, 750, 680, 820, 870, 200],
-        status:    'on-track',
-        forecast:  'No ritmo certo — projeção: R$ 6.100',
+        barberId: 'andre',
+        sold: 4600,
+        target: 6000,
+        trend: [580, 700, 750, 680, 820, 870, 200],
+        status: 'on-track',
+        forecast: 'No ritmo certo — projeção: R$ 6.100',
       },
       {
-        barberId:  'joao',
-        sold:      3000,
-        target:    6000,
-        trend:     [280, 320, 410, 340, 470, 380, 800],
-        status:    'behind',
-        forecast:  'Precisa de R$ 500/dia para recuperar',
+        barberId: 'joao',
+        sold: 3000,
+        target: 6000,
+        trend: [280, 320, 410, 340, 470, 380, 800],
+        status: 'behind',
+        forecast: 'Precisa de R$ 500/dia para recuperar',
       },
     ],
   },
   month: {
-    teamTarget:  54_000,
-    teamSold:    41_830,
+    teamTarget: 54_000,
+    teamSold: 41_830,
     // Tendência da equipe — últimos 7 dias dentro do mês
-    teamTrend:   [5200, 6100, 5800, 6400, 6300, 6500, 5530],
+    teamTrend: [5200, 6100, 5800, 6400, 6300, 6500, 5530],
     barbers: [
       {
-        barberId:  'marcos',
-        sold:      19_200,
-        target:    20_000,
-        trend:     [2500, 2900, 2700, 3100, 3000, 3100, 1900],
-        status:    'almost',
-        forecast:  'Deve bater a meta em 4 dias',
+        barberId: 'marcos',
+        sold: 19_200,
+        target: 20_000,
+        trend: [2500, 2900, 2700, 3100, 3000, 3100, 1900],
+        status: 'almost',
+        forecast: 'Deve bater a meta em 4 dias',
       },
       {
-        barberId:  'andre',
-        sold:      14_830,
-        target:    18_000,
-        trend:     [1800, 2200, 2100, 2300, 2200, 2400, 1830],
-        status:    'on-track',
-        forecast:  'No ritmo — projeção: R$ 18.400',
+        barberId: 'andre',
+        sold: 14_830,
+        target: 18_000,
+        trend: [1800, 2200, 2100, 2300, 2200, 2400, 1830],
+        status: 'on-track',
+        forecast: 'No ritmo — projeção: R$ 18.400',
       },
       {
-        barberId:  'joao',
-        sold:       7_800,
-        target:    16_000,
-        trend:     [900, 1000, 1000, 1000, 1100, 1300, 1500],
-        status:    'behind',
-        forecast:  'Tendência positiva, mas meta distante',
+        barberId: 'joao',
+        sold: 7_800,
+        target: 16_000,
+        trend: [900, 1000, 1000, 1000, 1100, 1300, 1500],
+        status: 'behind',
+        forecast: 'Tendência positiva, mas meta distante',
       },
     ],
   },
@@ -189,19 +189,19 @@ const mockBarberGoals = {
 // Conectar: GET /api/kpis/today e GET /api/kpis/month
 const mockKPIs = {
   monthly: {
-    revenue:          18_450,
+    revenue: 18_450,
     revenuePrevMonth: 15_920,  // usado para calcular variação
   },
   today: {
-    revenue:          870,
+    revenue: 870,
     revenueYesterday: 720,
-    appointments:     15,
+    appointments: 15,
     appointmentsValue: 870,
-    occupancy:        78,       // porcentagem
-    ticketAvg:        58,
-    ticketAvgLastWeek:52,
-    noShows:          1,
-    noShowValue:      45,
+    occupancy: 78,       // porcentagem
+    ticketAvg: 58,
+    ticketAvgLastWeek: 52,
+    noShows: 1,
+    noShowValue: 45,
   },
   week: {
     newClients: 7,
@@ -211,26 +211,26 @@ const mockKPIs = {
 // 2.9 Clientes para reativar (sem visita há >30 dias)
 // Conectar: GET /api/clients/reactivate?days=30&limit=5
 const mockReactivateClients = [
-  { id: 'c001', name: 'Anderson Silva',   lastVisit: '42 dias', spend: 'R$ 210' },
+  { id: 'c001', name: 'Anderson Silva', lastVisit: '42 dias', spend: 'R$ 210' },
   { id: 'c002', name: 'Rodrigo Teixeira', lastVisit: '38 dias', spend: 'R$ 175' },
-  { id: 'c003', name: 'Paulo Mendes',     lastVisit: '35 dias', spend: 'R$ 280' },
-  { id: 'c004', name: 'Fábio Correia',    lastVisit: '33 dias', spend: 'R$ 130' },
+  { id: 'c003', name: 'Paulo Mendes', lastVisit: '35 dias', spend: 'R$ 280' },
+  { id: 'c004', name: 'Fábio Correia', lastVisit: '33 dias', spend: 'R$ 130' },
 ];
 
 // 2.10 Aniversariantes do mês
 // Conectar: GET /api/clients/birthdays?month=current
 const mockBirthdays = [
-  { id: 'c010', name: 'Carlos Eduardo', day: 'Hoje',      phone: '84999990020' },
-  { id: 'c011', name: 'Thiago Lopes',   day: 'Amanhã',   phone: '84999990021' },
-  { id: 'c012', name: 'Marcus Vitor',   day: '30/06',     phone: '84999990022' },
+  { id: 'c010', name: 'Carlos Eduardo', day: 'Hoje', phone: '84999990020' },
+  { id: 'c011', name: 'Thiago Lopes', day: 'Amanhã', phone: '84999990021' },
+  { id: 'c012', name: 'Marcus Vitor', day: '30/06', phone: '84999990022' },
 ];
 
 // 2.11 Estoque baixo
 // Conectar: GET /api/stock/low?threshold=10
 const mockLowStock = [
-  { id: 'p001', name: 'Pomada Modeladora 150g', qty: 2,  unit: 'un' },
-  { id: 'p002', name: 'Lâminas Gillette (cx)',  qty: 1,  unit: 'cx' },
-  { id: 'p003', name: 'Óleo para barba 30ml',   qty: 4,  unit: 'un' },
+  { id: 'p001', name: 'Pomada Modeladora 150g', qty: 2, unit: 'un' },
+  { id: 'p002', name: 'Lâminas Gillette (cx)', qty: 1, unit: 'cx' },
+  { id: 'p003', name: 'Óleo para barba 30ml', qty: 4, unit: 'un' },
 ];
 
 // 2.12 Agendamentos pendentes de confirmação
@@ -249,31 +249,31 @@ const mockPendingConfirmation = mockAppointments
 // Níveis: bronze (0–999 pts) | silver (1000–2499 pts) | gold (2500+ pts)
 const mockLoyalty = [
   {
-    barberId:  'marcos',
-    points:    3120,
-    level:     'gold',
-    progress:  84,       // % rumo ao próximo benefício
-    nextGoal:  3750,     // meta em pontos para próximo benefit
-    benefits:  ['Folga extra', 'Comissão +2%', 'Kit premium'],
-    rank:      1,
+    barberId: 'marcos',
+    points: 3120,
+    level: 'gold',
+    progress: 84,       // % rumo ao próximo benefício
+    nextGoal: 3750,     // meta em pontos para próximo benefit
+    benefits: ['Folga extra', 'Comissão +2%', 'Kit premium'],
+    rank: 1,
   },
   {
-    barberId:  'andre',
-    points:    2310,
-    level:     'silver',
-    progress:  63,
-    nextGoal:  2500,
-    benefits:  ['Folga extra', 'Kit básico'],
-    rank:      2,
+    barberId: 'andre',
+    points: 2310,
+    level: 'silver',
+    progress: 63,
+    nextGoal: 2500,
+    benefits: ['Folga extra', 'Kit básico'],
+    rank: 2,
   },
   {
-    barberId:  'joao',
-    points:    890,
-    level:     'bronze',
-    progress:  89,
-    nextGoal:  1000,
-    benefits:  ['Certificado mensal'],
-    rank:      3,
+    barberId: 'joao',
+    points: 890,
+    level: 'bronze',
+    progress: 89,
+    nextGoal: 1000,
+    benefits: ['Certificado mensal'],
+    rank: 3,
   },
 ];
 
@@ -282,32 +282,32 @@ const mockLoyalty = [
 const mockCommissions = {
   today: {
     totalGenerated: 870,
-    totalPayout:    217.5,
-    appointments:   15,
+    totalPayout: 217.5,
+    appointments: 15,
     barbers: [
-      { barberId: 'marcos', commissionPct: 30, generated: 360,   payout: 108,   appointments: 6, performance: 'good'    },
-      { barberId: 'andre',  commissionPct: 28, generated: 300,   payout: 84,    appointments: 5, performance: 'good'    },
-      { barberId: 'joao',   commissionPct: 25, generated: 210,   payout: 52.5,  appointments: 4, performance: 'medium'  },
+      { barberId: 'marcos', commissionPct: 30, generated: 360, payout: 108, appointments: 6, performance: 'good' },
+      { barberId: 'andre', commissionPct: 28, generated: 300, payout: 84, appointments: 5, performance: 'good' },
+      { barberId: 'joao', commissionPct: 25, generated: 210, payout: 52.5, appointments: 4, performance: 'medium' },
     ],
   },
   week: {
     totalGenerated: 4830,
-    totalPayout:    1257,
-    appointments:   78,
+    totalPayout: 1257,
+    appointments: 78,
     barbers: [
-      { barberId: 'marcos', commissionPct: 30, generated: 2100,  payout: 630,   appointments: 33, performance: 'good'    },
-      { barberId: 'andre',  commissionPct: 28, generated: 1560,  payout: 436.8, appointments: 25, performance: 'good'    },
-      { barberId: 'joao',   commissionPct: 25, generated: 1170,  payout: 292.5, appointments: 20, performance: 'warning' },
+      { barberId: 'marcos', commissionPct: 30, generated: 2100, payout: 630, appointments: 33, performance: 'good' },
+      { barberId: 'andre', commissionPct: 28, generated: 1560, payout: 436.8, appointments: 25, performance: 'good' },
+      { barberId: 'joao', commissionPct: 25, generated: 1170, payout: 292.5, appointments: 20, performance: 'warning' },
     ],
   },
   month: {
     totalGenerated: 18450,
-    totalPayout:    4847,
-    appointments:   298,
+    totalPayout: 4847,
+    appointments: 298,
     barbers: [
-      { barberId: 'marcos', commissionPct: 30, generated: 8200,  payout: 2460,  appointments: 128, performance: 'good'   },
-      { barberId: 'andre',  commissionPct: 28, generated: 6300,  payout: 1764,  appointments:  98, performance: 'good'   },
-      { barberId: 'joao',   commissionPct: 25, generated: 3950,  payout: 987,   appointments:  72, performance: 'medium' },
+      { barberId: 'marcos', commissionPct: 30, generated: 8200, payout: 2460, appointments: 128, performance: 'good' },
+      { barberId: 'andre', commissionPct: 28, generated: 6300, payout: 1764, appointments: 98, performance: 'good' },
+      { barberId: 'joao', commissionPct: 25, generated: 3950, payout: 987, appointments: 72, performance: 'medium' },
     ],
   },
 };
@@ -316,39 +316,39 @@ const mockCommissions = {
 // Conectar: GET /api/reports/preview?period=today|week|month
 const mockReportPreviews = {
   today: {
-    period:   'Hoje',
+    period: 'Hoje',
     filename: 'relatorio-hoje',
     items: [
-      { label: 'Faturamento',       value: 'R$ 870'    },
-      { label: 'Agendamentos',      value: '15'         },
-      { label: 'Ticket Médio',      value: 'R$ 58'      },
-      { label: 'Top Serviço',       value: 'Corte + Barba' },
-      { label: 'Comissões a pagar', value: 'R$ 217,50'  },
-      { label: 'No-shows',          value: '1'          },
+      { label: 'Faturamento', value: 'R$ 870' },
+      { label: 'Agendamentos', value: '15' },
+      { label: 'Ticket Médio', value: 'R$ 58' },
+      { label: 'Top Serviço', value: 'Corte + Barba' },
+      { label: 'Comissões a pagar', value: 'R$ 217,50' },
+      { label: 'No-shows', value: '1' },
     ],
   },
   week: {
-    period:   'Esta Semana',
+    period: 'Esta Semana',
     filename: 'relatorio-semana',
     items: [
-      { label: 'Faturamento',       value: 'R$ 4.830'  },
-      { label: 'Agendamentos',      value: '78'         },
-      { label: 'Ticket Médio',      value: 'R$ 61,92'  },
-      { label: 'Top Serviço',       value: 'Corte Masc.' },
-      { label: 'Comissões a pagar', value: 'R$ 1.257'  },
-      { label: 'Novos Clientes',    value: '7'          },
+      { label: 'Faturamento', value: 'R$ 4.830' },
+      { label: 'Agendamentos', value: '78' },
+      { label: 'Ticket Médio', value: 'R$ 61,92' },
+      { label: 'Top Serviço', value: 'Corte Masc.' },
+      { label: 'Comissões a pagar', value: 'R$ 1.257' },
+      { label: 'Novos Clientes', value: '7' },
     ],
   },
   month: {
-    period:   'Este Mês',
+    period: 'Este Mês',
     filename: 'relatorio-junho-2025',
     items: [
-      { label: 'Faturamento',       value: 'R$ 18.450' },
-      { label: 'Agendamentos',      value: '298'        },
-      { label: 'Ticket Médio',      value: 'R$ 61,91'  },
-      { label: 'Top Serviço',       value: 'Corte Masc.' },
-      { label: 'Comissões a pagar', value: 'R$ 4.847'  },
-      { label: 'Taxa de Ocupação',  value: '78%'        },
+      { label: 'Faturamento', value: 'R$ 18.450' },
+      { label: 'Agendamentos', value: '298' },
+      { label: 'Ticket Médio', value: 'R$ 61,91' },
+      { label: 'Top Serviço', value: 'Corte Masc.' },
+      { label: 'Comissões a pagar', value: 'R$ 4.847' },
+      { label: 'Taxa de Ocupação', value: '78%' },
     ],
   },
 };
@@ -427,11 +427,11 @@ function getBarber(id) {
  */
 function getStatusLabel(status) {
   const map = {
-    'confirmado':    'Confirmado',
-    'pendente':      'Pendente',
-    'em-andamento':  'Em andamento',
-    'concluido':     'Concluído',
-    'no-show':       'No-show',
+    'confirmado': 'Confirmado',
+    'pendente': 'Pendente',
+    'em-andamento': 'Em andamento',
+    'concluido': 'Concluído',
+    'no-show': 'No-show',
   };
   return map[status] || status;
 }
@@ -464,10 +464,10 @@ function getActionButtons(appt) {
  */
 function getGoalStatusMeta(status) {
   const map = {
-    'ahead':    { label: 'Superou',    css: 'goals-badge--ahead',    barCss: 'goals-bar-fill--green'  },
-    'on-track': { label: 'No ritmo',   css: 'goals-badge--on-track', barCss: 'goals-bar-fill--blue'   },
-    'almost':   { label: 'Quase lá',   css: 'goals-badge--almost',   barCss: 'goals-bar-fill--gold'   },
-    'behind':   { label: 'Atrasado',   css: 'goals-badge--behind',   barCss: 'goals-bar-fill--orange' },
+    'ahead': { label: 'Superou', css: 'goals-badge--ahead', barCss: 'goals-bar-fill--green' },
+    'on-track': { label: 'No ritmo', css: 'goals-badge--on-track', barCss: 'goals-bar-fill--blue' },
+    'almost': { label: 'Quase lá', css: 'goals-badge--almost', barCss: 'goals-bar-fill--gold' },
+    'behind': { label: 'Atrasado', css: 'goals-badge--behind', barCss: 'goals-bar-fill--orange' },
   };
   return map[status] || map['on-track'];
 }
@@ -483,14 +483,14 @@ function getGoalStatusMeta(status) {
 function buildSparklineSVG(points, stroke, w = 72, h = 28) {
   if (!points || points.length < 2) return '';
 
-  const min  = Math.min(...points);
-  const max  = Math.max(...points);
+  const min = Math.min(...points);
+  const max = Math.max(...points);
   const range = max - min || 1;
 
   // Normaliza para o viewBox com padding vertical de 3px
-  const pad  = 3;
-  const xs   = points.map((_, i) => (i / (points.length - 1)) * w);
-  const ys   = points.map(v => pad + ((1 - (v - min) / range) * (h - pad * 2)));
+  const pad = 3;
+  const xs = points.map((_, i) => (i / (points.length - 1)) * w);
+  const ys = points.map(v => pad + ((1 - (v - min) / range) * (h - pad * 2)));
 
   const d = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
 
@@ -643,12 +643,20 @@ function animateCounter(el, from, to, duration, formatter) {
 }
 
 
+/* ═══════════════════════════════════════════════════════════
+   PATCH: Seção 6 — CHARTS (substitua o bloco completo)
+   Melhorias:
+     • Tooltip externo para o donut (nunca cortado)
+     • Tooltips mais ricos nos 3 gráficos
+     • Mesma paleta e estilo do sistema
+═══════════════════════════════════════════════════════════ */
+
 /* ─── 6. CHARTS ─────────────────────────────────────────── */
 
-// Paleta global para Chart.js (evita repetição)
+// Paleta global para Chart.js
 const CHART_DEFAULTS = {
   gridColor: 'rgba(255,255,255,0.05)',
-  tickColor: '#8A94A6',   // cinza-frio — alinhado com a paleta azul
+  tickColor: '#8A94A6',
   font: "'DM Sans', system-ui, sans-serif",
 };
 
@@ -658,24 +666,121 @@ function applyChartDefaults() {
   Chart.defaults.font.size = 11;
 }
 
-// 6.1 Gráfico de linha: Faturamento 30 dias
+
+/* ── Tooltip Externo (DOM único compartilhado) ─────────── */
+/*
+ * Cria (ou reutiliza) o elemento #chartTooltip no <body>.
+ * Usado pelo donut e pode ser reaproveitado.
+ */
+function getExternalTooltipEl() {
+  let el = document.getElementById('chartTooltip');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'chartTooltip';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+/**
+ * Posiciona o tooltip externo perto do cursor / ponto,
+ * garantindo que nunca ultrapasse as bordas da viewport.
+ * @param {HTMLElement} el   – elemento #chartTooltip
+ * @param {number}      x    – posição X de referência (pageX ou canvas abs)
+ * @param {number}      y    – posição Y de referência (pageY ou canvas abs)
+ */
+function positionTooltip(el, x, y) {
+  const PAD = 12;           // espaço entre o ponto e o tooltip
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const rect = el.getBoundingClientRect();
+  const tw = rect.width || 220;
+  const th = rect.height || 120;
+
+  // Tenta posicionar à direita; se não couber, vai para a esquerda
+  let left = x + PAD;
+  if (left + tw > vw - PAD) left = x - tw - PAD;
+
+  // Tenta posicionar abaixo; se não couber, sobe
+  let top = y + PAD;
+  if (top + th > vh - PAD) top = y - th - PAD;
+
+  el.style.left = `${Math.max(PAD, left)}px`;
+  el.style.top = `${Math.max(PAD, top)}px`;
+}
+
+/** Oculta o tooltip externo */
+function hideExternalTooltip() {
+  const el = getExternalTooltipEl();
+  el.classList.remove('is-visible');
+}
+
+
+/* ── 6.1  Gráfico de linha: Faturamento 30 dias ─────────── */
 function initRevenueChart() {
   const canvas = document.getElementById('revenueChart');
   if (!canvas) return;
 
-  const labels = getLast30DayLabels();
-  const data = mockRevenue30d;
+  // Mock de dados por período
+  // Em produção: trocar por fetch ao endpoint correspondente
+  const periodData = {
+    day: {
+      labels: getLast30DayLabels(),
+      data:   mockRevenue30d,
+      avgLabel: 'Média do período',
+      bestLabel: 'Melhor dia do período',
+    },
+    month: {
+      labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+      data:   [12400, 10800, 14200, 13600, 15900, 18450, 0, 0, 0, 0, 0, 0],
+      avgLabel: 'Média mensal',
+      bestLabel: 'Melhor mês',
+    },
+    year: {
+      labels: ['2021', '2022', '2023', '2024', '2025'],
+      data:   [98000, 124000, 151000, 178000, 87300],
+      avgLabel: 'Média anual',
+      bestLabel: 'Melhor ano',
+    },
+  };
 
-  // Calcula total para tooltip do total
-  const total = data.reduce((s, v) => s + v, 0);
+  let currentPeriod = 'day';
 
-  new Chart(canvas, {
+  function buildChartConfig(period) {
+    const { labels, data, avgLabel, bestLabel } = periodData[period];
+    const validData = data.filter(v => v > 0);
+    const total     = data.reduce((s, v) => s + v, 0);
+    const average   = validData.length ? Math.round(validData.reduce((s, v) => s + v, 0) / validData.length) : 0;
+    const maxVal    = Math.max(...data);
+    const maxIdx    = data.indexOf(maxVal);
+
+    return {
+      labels,
+      data,
+      total,
+      average,
+      maxIdx,
+      avgLabel,
+      bestLabel,
+    };
+  }
+
+  function createGradient(ctx) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+    gradient.addColorStop(0, 'rgba(59,130,246,0.18)');
+    gradient.addColorStop(1, 'rgba(59,130,246,0.00)');
+    return gradient;
+  }
+
+  let cfg = buildChartConfig(currentPeriod);
+
+  const chart = new Chart(canvas, {
     type: 'line',
     data: {
-      labels,
+      labels: cfg.labels,
       datasets: [{
         label: 'Faturamento',
-        data,
+        data: cfg.data,
         borderColor: '#3B82F6',
         borderWidth: 2,
         pointRadius: 0,
@@ -685,12 +790,7 @@ function initRevenueChart() {
         pointHoverBorderWidth: 2,
         tension: 0.4,
         fill: true,
-        backgroundColor: (ctx) => {
-          const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height);
-          gradient.addColorStop(0, 'rgba(59,130,246,0.18)');
-          gradient.addColorStop(1, 'rgba(59,130,246,0.00)');
-          return gradient;
-        },
+        backgroundColor: (ctx) => createGradient(ctx.chart.ctx),
       }],
     },
     options: {
@@ -700,14 +800,48 @@ function initRevenueChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111827',
-          borderColor: 'rgba(59,130,246,0.25)',
+          enabled: true,
+          backgroundColor: '#0E1420',
+          borderColor: 'rgba(77,166,255,0.22)',
           borderWidth: 1,
-          padding: 12,
-          titleColor: '#94A3B8',
-          bodyColor: '#FFFFFF',
+          padding: { top: 12, right: 14, bottom: 12, left: 14 },
+          titleColor: '#8A94A6',
+          bodyColor: '#F0EBE1',
+          titleFont: { size: 11, weight: '500' },
+          bodyFont:  { size: 13, weight: '600' },
+          caretSize: 5,
+          caretPadding: 6,
+          cornerRadius: 10,
           callbacks: {
-            label: (ctx) => ` ${formatCurrency(ctx.raw)}`,
+            title(items) {
+              return items[0].label;
+            },
+            label(ctx) {
+              const val = ctx.raw;
+              if (val === 0) return '  Fechado';
+              return `  ${formatCurrency(val)}`;
+            },
+            afterBody(items) {
+              const val = items[0].raw;
+              if (val === 0) return [];
+              const idx   = items[0].dataIndex;
+              const isMax = (idx === cfg.maxIdx);
+              const lines = ['', `  ${cfg.avgLabel}: ${formatCurrency(cfg.average)}`];
+              if (isMax) lines.push(`  Melhor dia do período`);
+              return lines;
+            },
+            afterBodyColor() {
+              return '#555E6E';
+            },
+            footer(items) {
+              const idx      = items[0].dataIndex;
+              const soFar    = cfg.data.slice(0, idx + 1).reduce((s, v) => s + v, 0);
+              const pctTotal = cfg.total > 0 ? ((soFar / cfg.total) * 100).toFixed(0) : 0;
+              return [`  Acumulado: ${formatCurrency(soFar)} (${pctTotal}%)`];
+            },
+            footerColor: '#4da6ff',
+            footerFont: { size: 11, weight: '500' },
+            footerMarginTop: 8,
           },
         },
       },
@@ -715,11 +849,7 @@ function initRevenueChart() {
         x: {
           grid: { color: CHART_DEFAULTS.gridColor, drawTicks: false },
           border: { dash: [4, 4], color: 'transparent' },
-          ticks: {
-            maxTicksLimit: 8,
-            maxRotation: 0,
-            color: CHART_DEFAULTS.tickColor,
-          },
+          ticks: { maxTicksLimit: 8, maxRotation: 0, color: CHART_DEFAULTS.tickColor },
         },
         y: {
           grid: { color: CHART_DEFAULTS.gridColor, drawTicks: false },
@@ -733,29 +863,54 @@ function initRevenueChart() {
       },
     },
   });
+
+  // Pills de período
+  const pills = document.querySelectorAll('.chart-period-pill');
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      pills.forEach(p => p.classList.remove('chart-period-pill--active'));
+      pill.classList.add('chart-period-pill--active');
+
+      currentPeriod = pill.dataset.period;
+      cfg = buildChartConfig(currentPeriod);
+
+      chart.data.labels         = cfg.labels;
+      chart.data.datasets[0].data = cfg.data;
+      chart.update('active');
+    });
+  });
 }
 
-// 6.2 Donut: Distribuição de serviços
+
+/* ── 6.2  Donut: Distribuição de serviços ───────────────── */
+/*
+ * Usa tooltip EXTERNO para evitar corte pelo overflow do container.
+ * O elemento #chartTooltip vive no <body> e é posicionado via JS.
+ */
 function initServicesChart() {
   const canvas = document.getElementById('servicesChart');
   if (!canvas) return;
 
   const total = mockServiceDistribution.reduce((s, d) => s + d.count, 0);
+  const labels = mockServiceDistribution.map(d => getService(d.serviceId).name);
+  const data = mockServiceDistribution.map(d => d.count);
+  const colors = mockServiceDistribution.map(d => getService(d.serviceId).color);
+  const prices = mockServiceDistribution.map(d => getService(d.serviceId).price);
 
-  const labels  = mockServiceDistribution.map(d => getService(d.serviceId).name);
-  const data    = mockServiceDistribution.map(d => d.count);
-  const colors  = mockServiceDistribution.map(d => getService(d.serviceId).color);
+  // Receita estimada por serviço (contagem × preço)
+  const revenues = data.map((cnt, i) => cnt * prices[i]);
+  const totalRev = revenues.reduce((s, v) => s + v, 0);
 
-  new Chart(canvas, {
+  const chart = new Chart(canvas, {
     type: 'doughnut',
     data: {
       labels,
       datasets: [{
         data,
-        backgroundColor: colors.map(c => c + 'CC'),   // 80% opacidade
-        borderColor:     colors,
+        backgroundColor: colors.map(c => c + 'CC'),
+        borderColor: colors,
         borderWidth: 1.5,
-        hoverOffset: 6,
+        hoverOffset: 8,
       }],
     },
     options: {
@@ -765,21 +920,83 @@ function initServicesChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111827',
-          borderColor: 'rgba(59,130,246,0.25)',
-          borderWidth: 1,
-          padding: 10,
-          titleColor: '#94A3B8',
-          bodyColor: '#FFFFFF',
-          callbacks: {
-            label: (ctx) => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw / total) * 100).toFixed(0)}%)`,
+          // Desativa o tooltip nativo — usamos o externo
+          enabled: false,
+          external(context) {
+            const tooltipEl = getExternalTooltipEl();
+            const model = context.tooltip;
+
+            // Oculta quando não há item
+            if (model.opacity === 0) {
+              tooltipEl.classList.remove('is-visible');
+              return;
+            }
+
+            // Dados do segmento hovered
+            const idx = model.dataPoints[0].dataIndex;
+            const label = labels[idx];
+            const count = data[idx];
+            const color = colors[idx];
+            const pct = ((count / total) * 100).toFixed(1);
+            const rev = revenues[idx];
+            const revPct = ((rev / totalRev) * 100).toFixed(1);
+            const price = prices[idx];
+
+            // Rank entre os serviços (por contagem)
+            const sorted = [...data].sort((a, b) => b - a);
+            const rank = sorted.indexOf(count) + 1;
+            const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+
+            tooltipEl.innerHTML = `
+              <div class="ct-header">
+                <span class="ct-dot" style="background:${color}"></span>
+                <span class="ct-label">${label}</span>
+              </div>
+              <div class="ct-rows">
+                <div class="ct-row">
+                  <span class="ct-row-label">Qtd. no mês</span>
+                  <span class="ct-row-value ct-row-value--accent">${count} serviços</span>
+                </div>
+                <div class="ct-row">
+                  <span class="ct-row-label">Participação</span>
+                  <span class="ct-row-value">${pct}% do total</span>
+                </div>
+                <hr class="ct-divider">
+                <div class="ct-row">
+                  <span class="ct-row-label">Preço unitário</span>
+                  <span class="ct-row-value">${formatCurrency(price)}</span>
+                </div>
+                <div class="ct-row">
+                  <span class="ct-row-label">Receita estimada</span>
+                  <span class="ct-row-value ct-row-value--green">${formatCurrency(rev)}</span>
+                </div>
+              </div>
+              <div class="ct-footer">
+                <span>${rankIcon} ${rank === 1 ? 'Serviço mais realizado' : `${rank}º serviço mais realizado`}</span>
+              </div>
+            `;
+
+            // Posiciona usando a posição do mouse salva no canvas
+            const canvasRect = canvas.getBoundingClientRect();
+            const x = canvasRect.left + model.caretX;
+            const y = canvasRect.top + model.caretY;
+
+            // Mostra primeiro (invisível) para medir tamanho real
+            tooltipEl.style.left = '-9999px';
+            tooltipEl.classList.add('is-visible');
+
+            // Depois posiciona corretamente
+            requestAnimationFrame(() => positionTooltip(tooltipEl, x, y));
           },
         },
       },
     },
   });
 
-  // Legenda customizada
+  // Garante que o tooltip some ao tirar o mouse do canvas
+  canvas.addEventListener('mouseleave', hideExternalTooltip);
+
+  // Legenda customizada (inalterada)
   const legendEl = document.getElementById('donutLegend');
   if (legendEl) {
     legendEl.innerHTML = mockServiceDistribution.map((d, i) => {
@@ -795,13 +1012,21 @@ function initServicesChart() {
   }
 }
 
-// 6.3 Barras: Ocupação por horário
+
+/* ── 6.3  Barras: Ocupação por horário ──────────────────── */
 function initOccupancyChart() {
   const canvas = document.getElementById('occupancyChart');
   if (!canvas) return;
 
   const labels = mockOccupancyByHour.map(d => d.label);
-  const data   = mockOccupancyByHour.map(d => d.value);
+  const data = mockOccupancyByHour.map(d => d.value);
+
+  // Melhor e pior hora (ignora zeros)
+  const maxOcc = Math.max(...data);
+  const minOcc = Math.min(...data);
+  const maxIdx = data.indexOf(maxOcc);
+  const minIdx = data.indexOf(minOcc);
+  const average = Math.round(data.reduce((s, v) => s + v, 0) / data.length);
 
   new Chart(canvas, {
     type: 'bar',
@@ -812,8 +1037,8 @@ function initOccupancyChart() {
         data,
         backgroundColor: data.map(v =>
           v >= 90 ? 'rgba(59,130,246,0.90)' :
-          v >= 70 ? 'rgba(59,130,246,0.60)' :
-                    'rgba(59,130,246,0.28)'
+            v >= 70 ? 'rgba(59,130,246,0.60)' :
+              'rgba(59,130,246,0.28)'
         ),
         borderColor: 'transparent',
         borderRadius: 4,
@@ -826,15 +1051,50 @@ function initOccupancyChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111827',
-          borderColor: 'rgba(59,130,246,0.25)',
+          enabled: true,
+          backgroundColor: '#0E1420',
+          borderColor: 'rgba(77,166,255,0.22)',
           borderWidth: 1,
-          padding: 10,
-          titleColor: '#94A3B8',
-          bodyColor: '#FFFFFF',
+          padding: { top: 12, right: 14, bottom: 12, left: 14 },
+          titleColor: '#8A94A6',
+          bodyColor: '#F0EBE1',
+          titleFont: { size: 11, weight: '500' },
+          bodyFont: { size: 13, weight: '600' },
+          caretSize: 5,
+          cornerRadius: 10,
           callbacks: {
-            label: (ctx) => ` ${ctx.raw}% de ocupação`,
+            title(items) {
+              return `${items[0].label} — Ocupação`;
+            },
+            label(ctx) {
+              const v = ctx.raw;
+              const tier =
+                v >= 90 ? 'Alta demanda' :
+                  v >= 70 ? 'Boa ocupação' :
+                    v >= 50 ? 'Demanda média' :
+                      'Baixa demanda';
+              return `  ${v}%  · ${tier}`;
+            },
+            afterBody(items) {
+              const val = items[0].raw;
+              if (val === 0) return [];
+
+              const idx = items[0].dataIndex;
+              const isMax = (idx === maxIdx);
+
+              const lines = [
+                '',
+                `  Média do mês: ${formatCurrency(average)}`,
+              ];
+              if (isMax) lines.push('  Melhor dia do mês');
+              return lines;
+            },
+            afterBodyColor() {
+              return '#555E6E';
+            },
           },
+          footerColor: '#4da6ff',
+          footerFont: { size: 11, weight: '500' },
         },
       },
       scales: {
@@ -846,8 +1106,7 @@ function initOccupancyChart() {
         y: {
           grid: { color: CHART_DEFAULTS.gridColor },
           border: { color: 'transparent' },
-          min: 0,
-          max: 100,
+          min: 0, max: 100,
           ticks: {
             maxTicksLimit: 5,
             callback: (v) => `${v}%`,
@@ -907,7 +1166,7 @@ function renderGoalsTeamOverview(data) {
 
   // Cor do sparkline da equipe: verde se >= 75%, azul se >= 50%, laranja se menos
   const sparkColor = teamPct >= 75 ? '#4CAF79' : teamPct >= 50 ? '#3B82F6' : '#E0924A';
-  const sparkSVG   = buildSparklineSVG(data.teamTrend, sparkColor, 88, 32);
+  const sparkSVG = buildSparklineSVG(data.teamTrend, sparkColor, 88, 32);
 
   el.innerHTML = `
     <div class="goals-team-stat">
@@ -932,10 +1191,10 @@ function renderGoalsTeamOverview(data) {
  * Cores de sparkline por status (mapeadas para CSS vars reais)
  */
 const GOAL_SPARK_COLORS = {
-  'ahead':    '#4CAF79',  // green
+  'ahead': '#4CAF79',  // green
   'on-track': '#3B82F6',  // blue (primário)
-  'almost':   '#60A5FA',  // blue-light (quase lá)
-  'behind':   '#E0924A',  // orange
+  'almost': '#60A5FA',  // blue-light (quase lá)
+  'behind': '#E0924A',  // orange
 };
 
 /**
@@ -949,12 +1208,12 @@ function renderGoalsList(data) {
   const avatarIndex = { marcos: 1, andre: 2, joao: 3 };
 
   el.innerHTML = data.barbers.map((entry, i) => {
-    const barber     = getBarber(entry.barberId);
-    const pct        = Math.min(Math.round((entry.sold / entry.target) * 100), 100);
+    const barber = getBarber(entry.barberId);
+    const pct = Math.min(Math.round((entry.sold / entry.target) * 100), 100);
     const statusMeta = getGoalStatusMeta(entry.status);
-    const aidx       = avatarIndex[entry.barberId] || (i + 1);
+    const aidx = avatarIndex[entry.barberId] || (i + 1);
     const sparkColor = GOAL_SPARK_COLORS[entry.status] || '#3B82F6';
-    const sparkSVG   = buildSparklineSVG(entry.trend, sparkColor, 64, 24);
+    const sparkSVG = buildSparklineSVG(entry.trend, sparkColor, 64, 24);
 
     return `
       <div class="goals-item" role="listitem" data-barber-id="${entry.barberId}">
@@ -988,8 +1247,8 @@ function renderGoalsList(data) {
             </div>
 
             ${entry.forecast
-              ? `<span class="goals-forecast" aria-label="Previsão: ${entry.forecast}">${entry.forecast}</span>`
-              : ''}
+        ? `<span class="goals-forecast" aria-label="Previsão: ${entry.forecast}">${entry.forecast}</span>`
+        : ''}
           </div>
         </div>
 
@@ -1046,7 +1305,7 @@ function renderAgendaList(appointments) {
 
   listEl.innerHTML = filtered.map(appt => {
     const service = getService(appt.serviceId);
-    const barber  = getBarber(appt.barberId);
+    const barber = getBarber(appt.barberId);
     const actions = getActionButtons(appt);
 
     return `
@@ -1095,8 +1354,8 @@ function initAgendaFilters() {
 }
 
 function handleAgendaAction(e) {
-  const btn    = e.currentTarget;
-  const id     = btn.dataset.id;
+  const btn = e.currentTarget;
+  const id = btn.dataset.id;
   const action = btn.dataset.action;
 
   const appt = mockAppointments.find(a => a.id === id);
@@ -1125,7 +1384,7 @@ function initAlerts() {
 }
 
 function renderReactivate() {
-  const listEl  = document.getElementById('reactivateList');
+  const listEl = document.getElementById('reactivateList');
   const badgeEl = document.getElementById('reactivateBadge');
 
   if (badgeEl) badgeEl.textContent = mockReactivateClients.length;
@@ -1141,7 +1400,7 @@ function renderReactivate() {
 }
 
 function renderBirthdays() {
-  const listEl  = document.getElementById('birthdayList');
+  const listEl = document.getElementById('birthdayList');
   const badgeEl = document.getElementById('birthdayBadge');
 
   if (badgeEl) badgeEl.textContent = mockBirthdays.length;
@@ -1157,7 +1416,7 @@ function renderBirthdays() {
 }
 
 function renderLowStock() {
-  const listEl  = document.getElementById('stockList');
+  const listEl = document.getElementById('stockList');
   const badgeEl = document.getElementById('stockBadge');
 
   if (badgeEl) badgeEl.textContent = mockLowStock.length;
@@ -1174,7 +1433,7 @@ function renderLowStock() {
 
 function updatePendingAlerts() {
   const pending = mockAppointments.filter(a => a.status === 'pendente');
-  const listEl  = document.getElementById('pendingList');
+  const listEl = document.getElementById('pendingList');
   const badgeEl = document.getElementById('pendingBadge');
 
   if (badgeEl) badgeEl.textContent = pending.length;
@@ -1193,13 +1452,13 @@ function updatePendingAlerts() {
 /* ─── 10. MODAL ─────────────────────────────────────────── */
 
 function initModal() {
-  const overlay    = document.getElementById('modalOverlay');
-  const openBtns   = [
+  const overlay = document.getElementById('modalOverlay');
+  const openBtns = [
     document.getElementById('newAppointmentBtn'),
     document.getElementById('topbarNewBtn'),
   ];
-  const closeBtn   = document.getElementById('modalClose');
-  const cancelBtn  = document.getElementById('modalCancel');
+  const closeBtn = document.getElementById('modalClose');
+  const cancelBtn = document.getElementById('modalCancel');
 
   function openModal() {
     overlay.removeAttribute('hidden');
@@ -1217,7 +1476,7 @@ function initModal() {
   }
 
   openBtns.forEach(btn => btn && btn.addEventListener('click', openModal));
-  closeBtn  && closeBtn.addEventListener('click',  closeModal);
+  closeBtn && closeBtn.addEventListener('click', closeModal);
   cancelBtn && cancelBtn.addEventListener('click', closeModal);
 
   // Fecha clicando fora
@@ -1241,9 +1500,9 @@ function initModal() {
 /* ─── 11. SIDEBAR MOBILE ────────────────────────────────── */
 
 function initSidebar() {
-  const sidebar  = document.getElementById('sidebar');
-  const overlay  = document.getElementById('sidebarOverlay');
-  const burger   = document.getElementById('burgerBtn');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const burger = document.getElementById('burgerBtn');
 
   function openSidebar() {
     sidebar.classList.add('is-open');
@@ -1261,7 +1520,7 @@ function initSidebar() {
     document.body.style.overflow = '';
   }
 
-  burger  && burger.addEventListener('click',  () => {
+  burger && burger.addEventListener('click', () => {
     sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar();
   });
 
@@ -1284,10 +1543,10 @@ function showToast(message, type = 'success') {
   if (existing) existing.remove();
 
   const colors = {
-    success: { bg: 'var(--green-bg)',  border: 'rgba(76,175,121,0.3)',   text: 'var(--green)'   },
-    blue:    { bg: 'var(--blue-bg)',   border: 'rgba(59,130,246,0.3)',   text: 'var(--blue-lt)' },
-    gold:    { bg: 'var(--blue-bg)',   border: 'rgba(59,130,246,0.3)',   text: 'var(--blue-lt)' }, // alias legado → blue
-    error:   { bg: 'var(--red-bg)',    border: 'rgba(224,84,84,0.3)',    text: 'var(--red)'     },
+    success: { bg: 'var(--green-bg)', border: 'rgba(76,175,121,0.3)', text: 'var(--green)' },
+    blue: { bg: 'var(--blue-bg)', border: 'rgba(59,130,246,0.3)', text: 'var(--blue-lt)' },
+    gold: { bg: 'var(--blue-bg)', border: 'rgba(59,130,246,0.3)', text: 'var(--blue-lt)' }, // alias legado → blue
+    error: { bg: 'var(--red-bg)', border: 'rgba(224,84,84,0.3)', text: 'var(--red)' },
   };
 
   const c = colors[type] || colors.success;
@@ -1305,26 +1564,26 @@ function showToast(message, type = 'success') {
   `;
 
   Object.assign(toast.style, {
-    position:     'fixed',
-    bottom:       '24px',
-    right:        '24px',
-    zIndex:       '1000',
-    display:      'flex',
-    alignItems:   'center',
-    gap:          '8px',
-    padding:      '12px 18px',
+    position: 'fixed',
+    bottom: '24px',
+    right: '24px',
+    zIndex: '1000',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '12px 18px',
     borderRadius: 'var(--r-md)',
-    background:   c.bg,
-    border:       `1px solid ${c.border}`,
-    color:        c.text,
-    fontSize:     '13px',
-    fontWeight:   '500',
-    fontFamily:   'var(--ff-b)',
-    boxShadow:    'var(--shadow-md)',
-    transform:    'translateY(16px)',
-    opacity:      '0',
-    transition:   'transform 300ms var(--ease-out), opacity 300ms',
-    maxWidth:     'calc(100vw - 32px)',
+    background: c.bg,
+    border: `1px solid ${c.border}`,
+    color: c.text,
+    fontSize: '13px',
+    fontWeight: '500',
+    fontFamily: 'var(--ff-b)',
+    boxShadow: 'var(--shadow-md)',
+    transform: 'translateY(16px)',
+    opacity: '0',
+    transition: 'transform 300ms var(--ease-out), opacity 300ms',
+    maxWidth: 'calc(100vw - 32px)',
   });
 
   document.body.appendChild(toast);
@@ -1333,14 +1592,14 @@ function showToast(message, type = 'success') {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       toast.style.transform = 'translateY(0)';
-      toast.style.opacity   = '1';
+      toast.style.opacity = '1';
     });
   });
 
   // Remove após 3.5s
   setTimeout(() => {
     toast.style.transform = 'translateY(8px)';
-    toast.style.opacity   = '0';
+    toast.style.opacity = '0';
     setTimeout(() => toast.remove(), 320);
   }, 3500);
 }
@@ -1361,7 +1620,7 @@ function initScrollReveal() {
         const el = entry.target;
         const delay = parseInt(el.dataset.revealDelay || 0);
         setTimeout(() => {
-          el.style.opacity   = '1';
+          el.style.opacity = '1';
           el.style.transform = 'translateY(0)';
         }, delay);
         observer.unobserve(el);
@@ -1370,8 +1629,8 @@ function initScrollReveal() {
   }, { threshold: 0.08 });
 
   targets.forEach((el, i) => {
-    el.style.opacity    = '0';
-    el.style.transform  = 'translateY(18px)';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(18px)';
     el.style.transition = 'opacity 480ms var(--ease-out), transform 480ms var(--ease-out)';
     el.dataset.revealDelay = Math.min(i * 40, 300);
     observer.observe(el);
@@ -1390,16 +1649,16 @@ function initLoyalty() {
   if (!container) return;
 
   const rankMeta = {
-    1: { css: 'loyalty-item--1st',  rankCss: 'loyalty-rank--gold',   avatarCss: 'loyalty-avatar--gold',   symbol: '🥇' },
-    2: { css: '',                    rankCss: 'loyalty-rank--silver',  avatarCss: 'loyalty-avatar--silver', symbol: '🥈' },
-    3: { css: '',                    rankCss: 'loyalty-rank--bronze',  avatarCss: 'loyalty-avatar--bronze', symbol: '🥉' },
+    1: { css: 'loyalty-item--1st', rankCss: 'loyalty-rank--gold', avatarCss: 'loyalty-avatar--gold', symbol: '🥇' },
+    2: { css: '', rankCss: 'loyalty-rank--silver', avatarCss: 'loyalty-avatar--silver', symbol: '🥈' },
+    3: { css: '', rankCss: 'loyalty-rank--bronze', avatarCss: 'loyalty-avatar--bronze', symbol: '🥉' },
   };
 
   const levelLabel = { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' };
 
   container.innerHTML = mockLoyalty.map(entry => {
-    const barber  = getBarber(entry.barberId);
-    const meta    = rankMeta[entry.rank] || { css: '', rankCss: '', avatarCss: 'loyalty-avatar--default', symbol: entry.rank };
+    const barber = getBarber(entry.barberId);
+    const meta = rankMeta[entry.rank] || { css: '', rankCss: '', avatarCss: 'loyalty-avatar--default', symbol: entry.rank };
     const pointsToNext = (entry.nextGoal - entry.points).toLocaleString('pt-BR');
 
     const benefitTags = entry.benefits.map(b =>
@@ -1474,9 +1733,9 @@ function initCommissions() {
 }
 
 function renderCommissions(period) {
-  const data      = mockCommissions[period];
-  const totalsEl  = document.getElementById('commissionTotals');
-  const listEl    = document.getElementById('commissionList');
+  const data = mockCommissions[period];
+  const totalsEl = document.getElementById('commissionTotals');
+  const listEl = document.getElementById('commissionList');
   if (!data || !totalsEl || !listEl) return;
 
   // Totais
@@ -1501,9 +1760,9 @@ function renderCommissions(period) {
   const perfLabel = { good: 'Ótimo', medium: 'Regular', warning: 'Atenção' };
 
   listEl.innerHTML = data.barbers.map(barber => {
-    const info     = getBarber(barber.barberId);
-    const barPct   = maxGenerated > 0 ? ((barber.generated / maxGenerated) * 100).toFixed(0) : 0;
-    const perfCss  = `commission-perf--${barber.performance}`;
+    const info = getBarber(barber.barberId);
+    const barPct = maxGenerated > 0 ? ((barber.generated / maxGenerated) * 100).toFixed(0) : 0;
+    const perfCss = `commission-perf--${barber.performance}`;
 
     return `
       <div class="commission-item" role="listitem">
@@ -1606,35 +1865,35 @@ function getReportCards(period) {
 
   return [
     {
-      type:    'Financeiro',
-      icon:    'revenue',
-      title:   `Relatório Financeiro`,
-      period:  preview.period,
+      type: 'Financeiro',
+      icon: 'revenue',
+      title: `Relatório Financeiro`,
+      period: preview.period,
       preview: preview.items.slice(0, 4),
       filename: `${preview.filename}-financeiro.pdf`,
     },
     {
-      type:    'Serviços',
-      icon:    'services',
-      title:   `Top Serviços`,
-      period:  preview.period,
+      type: 'Serviços',
+      icon: 'services',
+      title: `Top Serviços`,
+      period: preview.period,
       preview: [
         preview.items.find(i => i.label === 'Agendamentos') || { label: 'Agendamentos', value: '—' },
-        preview.items.find(i => i.label === 'Top Serviço')  || { label: 'Top Serviço',  value: '—' },
+        preview.items.find(i => i.label === 'Top Serviço') || { label: 'Top Serviço', value: '—' },
         preview.items.find(i => i.label === 'Ticket Médio') || { label: 'Ticket Médio', value: '—' },
         preview.items.find(i => i.label === 'No-shows' || i.label === 'Taxa de Ocupação' || i.label === 'Novos Clientes') || preview.items[5],
       ].filter(Boolean),
       filename: `${preview.filename}-servicos.pdf`,
     },
     {
-      type:    'Comissões',
-      icon:    'commissions',
-      title:   `Relatório de Comissões`,
-      period:  preview.period,
+      type: 'Comissões',
+      icon: 'commissions',
+      title: `Relatório de Comissões`,
+      period: preview.period,
       preview: [
-        preview.items.find(i => i.label === 'Faturamento')        || { label: 'Faturamento',       value: '—' },
-        preview.items.find(i => i.label === 'Comissões a pagar')  || { label: 'Comissões a pagar', value: '—' },
-        preview.items.find(i => i.label === 'Agendamentos')       || { label: 'Agendamentos',      value: '—' },
+        preview.items.find(i => i.label === 'Faturamento') || { label: 'Faturamento', value: '—' },
+        preview.items.find(i => i.label === 'Comissões a pagar') || { label: 'Comissões a pagar', value: '—' },
+        preview.items.find(i => i.label === 'Agendamentos') || { label: 'Agendamentos', value: '—' },
         { label: 'Barbeiros ativos', value: '3' },
       ],
       filename: `${preview.filename}-comissoes.pdf`,
@@ -1691,11 +1950,11 @@ function renderReports(period) {
   // Trigger scroll reveal nos novos cards
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     grid.querySelectorAll('.report-card').forEach((el, i) => {
-      el.style.opacity   = '0';
+      el.style.opacity = '0';
       el.style.transform = 'translateY(14px)';
       el.style.transition = 'opacity 400ms var(--ease-out), transform 400ms var(--ease-out)';
       setTimeout(() => {
-        el.style.opacity   = '1';
+        el.style.opacity = '1';
         el.style.transform = 'translateY(0)';
       }, i * 60);
     });
@@ -1707,7 +1966,7 @@ function renderReports(period) {
  * Em produção, faça um POST para /api/reports/export e use a resposta como blob.
  */
 function handleReportExport(e) {
-  const btn      = e.currentTarget;
+  const btn = e.currentTarget;
   const filename = btn.dataset.filename || 'relatorio.pdf';
 
   // Feedback visual imediato
@@ -1728,9 +1987,9 @@ function handleReportExport(e) {
       [`InBarber — Relatório simulado\nArquivo: ${filename}\nGerado em: ${new Date().toLocaleString('pt-BR')}`],
       { type: 'application/pdf' }
     );
-    const url  = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href     = url;
+    link.href = url;
     link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
@@ -1764,10 +2023,10 @@ function initScrollReveal() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        const el    = entry.target;
+        const el = entry.target;
         const delay = parseInt(el.dataset.revealDelay || 0);
         setTimeout(() => {
-          el.style.opacity   = '1';
+          el.style.opacity = '1';
           el.style.transform = 'translateY(0)';
         }, delay);
         observer.unobserve(el);
@@ -1776,8 +2035,8 @@ function initScrollReveal() {
   }, { threshold: 0.08 });
 
   targets.forEach((el, i) => {
-    el.style.opacity    = '0';
-    el.style.transform  = 'translateY(18px)';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(18px)';
     el.style.transition = 'opacity 480ms var(--ease-out), transform 480ms var(--ease-out)';
     el.dataset.revealDelay = Math.min(i * 40, 300);
     observer.observe(el);

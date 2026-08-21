@@ -1229,3 +1229,164 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   .main { padding-left: 36px; padding-right: 36px; }
   .content-grid { grid-template-columns: 1fr 320px; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PATCH: Tooltip Externo dos Gráficos
+   Adicione este bloco ao FINAL do dashboard.css
+═══════════════════════════════════════════════════════════ */
+
+/* ─── TOOLTIP EXTERNO (Chart.js external tooltip) ──────── */
+/*
+ * Substitui o tooltip nativo do Chart.js para o gráfico
+ * de pizza (e pode ser reaproveitado nos demais).
+ * Fica fixo no <body>, acima de tudo, nunca cortado.
+ */
+#chartTooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+
+  background: #0E1420;
+  border: 1px solid rgba(77, 166, 255, 0.22);
+  border-radius: var(--r-md);
+  box-shadow:
+    0 0 0 1px rgba(0, 71, 255, 0.08),
+    0 8px 28px rgba(0, 0, 0, 0.65),
+    0 2px 8px  rgba(0, 0, 0, 0.4);
+
+  padding: 12px 14px;
+  min-width: 190px;
+  max-width: 240px;
+
+  font-family: var(--ff-b);
+  font-size: 13px;
+  color: var(--cream);
+  line-height: 1.4;
+
+  /* Entrada suave */
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+  will-change: opacity, transform;
+}
+
+#chartTooltip.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ── Cabeçalho (título / label do ponto) ── */
+.ct-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ct-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ct-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cream);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Linhas de dados ── */
+.ct-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ct-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ct-row-label {
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.ct-row-value {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cream);
+  white-space: nowrap;
+}
+
+.ct-row-value--accent {
+  color: var(--blue);  /* #4da6ff */
+}
+
+.ct-row-value--green {
+  color: var(--green);
+}
+
+.ct-row-value--orange {
+  color: var(--orange);
+}
+
+/* ── Divisor interno opcional ── */
+.ct-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  margin: 8px 0;
+}
+
+/* ── Rodapé opcional (dica contextual) ── */
+.ct-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 10.5px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ─── Pills de período do gráfico de linha ── */
+.chart-card__period-pills {
+  display: flex;
+  gap: 4px;
+}
+
+.chart-period-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--divider);
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: color var(--dur), background var(--dur), border-color var(--dur);
+}
+
+.chart-period-pill:hover {
+  color: var(--cream-2);
+  border-color: rgba(0, 71, 255, 0.3);
+}
+
+.chart-period-pill--active {
+  background: var(--gold-bg);
+  border-color: rgba(0, 71, 255, 0.4);
+  color: var(--blue);
+}

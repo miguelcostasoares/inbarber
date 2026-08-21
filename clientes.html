@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clientes — InBarber</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+    rel="stylesheet" />
+
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/clientes.css" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       SIDEBAR NAV
+  ═══════════════════════════════════════════ -->
+  <aside class="sidebar is-collapsed" id="sidebar" role="navigation" aria-label="Menu principal">
+
+    <div class="sidebar__brand">
+      <div class="sidebar__logo">
+        <img src="assets/logo_inbarber.png" alt="logo-inbarber" class="sidebar__img-logo">
+      </div>
+      <span class="sidebar__name">InBarber</span>
+    </div>
+
+    <!-- Botão de abrir/fechar (desktop) -->
+    <button class="sidebar__toggle" id="sidebarToggleBtn" aria-label="Expandir menu" aria-expanded="false"
+      aria-controls="sidebar">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+
+    <nav class="sidebar__nav">
+      <ul class="nav-list" role="list">
+        <li>
+          <a href="/dashboard.html" class="nav-item" data-label="Dashboard">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+              <rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+              <rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+              <rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="/agenda-crm.html" class="nav-item" data-label="Agenda">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.5" />
+              <path d="M2 8h16" stroke="currentColor" stroke-width="1.5" />
+              <path d="M7 1v4M13 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <span>Agenda</span>
+          </a>
+        </li>
+        <li>
+          <a href="/clientes.html" class="nav-item nav-item--active" aria-current="page" data-label="Clientes">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.5" />
+              <path d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" />
+            </svg>
+            <span>Clientes</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-label="Serviços">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4 4h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" stroke="currentColor"
+                stroke-width="1.5" />
+              <path d="M3 8h14" stroke="currentColor" stroke-width="1.5" />
+              <path d="M7 12l1.5 1.5L11 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            <span>Serviços</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-label="Barbeiros">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.5" />
+              <path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <span>Barbeiros</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-label="Financeiro">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5" />
+              <path d="M6 10h8M6 6h4M6 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <span>Financeiro</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item nav-item--pipeline" data-label="Pipeline Kanban">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="3" width="4" height="14" rx="1" stroke="currentColor" stroke-width="1.5" />
+              <rect x="8" y="6" width="4" height="11" rx="1" stroke="currentColor" stroke-width="1.5" />
+              <rect x="14" y="9" width="4" height="8" rx="1" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+            <span>Pipeline Kanban</span>
+            <span class="nav-badge">Novo</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar__bottom">
+      <a href="#" class="nav-item" data-label="Configurações">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5" />
+          <path d="M7 10h6M10 7v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        <span>Configurações</span>
+      </a>
+      <div class="sidebar__user">
+        <div class="sidebar__avatar">RC</div>
+        <div class="sidebar__user-info">
+          <span class="sidebar__user-name">Rafael Costa</span>
+          <span class="sidebar__user-role">Proprietário</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Overlay mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════ -->
+  <main class="main" id="main">
+
+    <!-- ── TOPBAR (mobile) ── -->
+    <div class="topbar">
+      <button class="topbar__burger" id="burgerBtn" aria-label="Abrir menu" aria-expanded="false"
+        aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar__logo">
+        <svg width="22" height="22" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect width="28" height="28" rx="7" fill="var(--gold)" />
+          <path d="M9 7L19 21M19 7L9 21" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        InBarber
+      </div>
+      <button class="topbar__new-btn" id="topbarNewClientBtn" aria-label="Novo cliente">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+         CLIENTES HEADER
+    ════════════════════════════════════════════ -->
+    <header class="clientes-header">
+      <div class="clientes-header__top">
+        <div>
+          <h1 class="clientes-header__title">Clientes</h1>
+          <p class="clientes-header__date" id="clientesDate"></p>
+        </div>
+        <button class="btn-primary-lg" id="openNewClientBtn">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M7.5 1.5v12M1.5 7.5h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          Novo Cliente
+        </button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="clientes-stats" id="clientesStats">
+        <!-- gerado via JS -->
+      </div>
+    </header>
+
+    <!-- ════════════════════════════════════════════
+         FILTROS + TABELA
+    ════════════════════════════════════════════ -->
+    <section class="clientes-section">
+
+      <!-- Barra de busca -->
+      <div class="clientes-toolbar">
+        <div class="search-wrapper">
+          <svg class="search-icon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5" />
+            <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+          <input
+            class="search-input"
+            id="clienteSearch"
+            type="search"
+            placeholder="Buscar por nome ou telefone…"
+            autocomplete="off"
+          />
+        </div>
+        <span class="clientes-count" id="clientesCount"></span>
+      </div>
+
+      <!-- Tabela -->
+      <div class="table-wrap">
+        <table class="clientes-table" id="clientesTable">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Telefone</th>
+              <th>Última visita</th>
+              <th>Status</th>
+              <th class="th-actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="clientesTableBody">
+            <!-- gerado via JS -->
+          </tbody>
+        </table>
+
+        <!-- Empty state -->
+        <div class="table-empty" id="tableEmpty" hidden>
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <circle cx="20" cy="16" r="8" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+            <path d="M6 36c0-6.627 6.268-12 14-12s14 5.373 14 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+          </svg>
+          <p>Nenhum cliente encontrado</p>
+        </div>
+      </div>
+
+      <!-- Paginação -->
+      <div class="pagination" id="pagination">
+        <!-- gerado via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: NOVO / EDITAR CLIENTE
+  ═══════════════════════════════════════════ -->
+  <div class="modal-overlay" id="clienteModalOverlay" role="dialog" aria-modal="true"
+    aria-labelledby="clienteModalTitle" hidden>
+    <div class="modal modal--sm">
+      <div class="modal__header">
+        <div class="modal__header-left">
+          <div class="modal__header-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.5" />
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="modal__title" id="clienteModalTitle">Novo Cliente</h2>
+            <p class="modal__subtitle" id="clienteModalSubtitle">Preencha os dados do cliente</p>
+          </div>
+        </div>
+        <button class="modal__close" id="clienteModalClose" aria-label="Fechar modal">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <div class="form-row">
+          <div class="form-group" style="grid-column: span 2">
+            <label class="form-label" for="cliNome">Nome completo <span class="form-required">*</span></label>
+            <input class="form-input" id="cliNome" type="text" placeholder="Ex: João da Silva" autocomplete="off" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="cliTel">Telefone <span class="form-required">*</span></label>
+            <input class="form-input" id="cliTel" type="tel" placeholder="(84) 99999-0000" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cliAniversario">Data de nascimento <span class="form-label__optional">(opcional)</span></label>
+            <input class="form-input" id="cliAniversario" type="date" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cliObs">Observações <span class="form-label__optional">(opcional)</span></label>
+          <textarea class="form-input form-textarea" id="cliObs" placeholder="Ex: Preferência por navalha, alergia a produtos…"></textarea>
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <button class="btn-ghost" id="clienteModalCancel">Cancelar</button>
+        <button class="btn-primary" id="clienteModalSave">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Salvar Cliente
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: DETALHES DO CLIENTE
+  ═══════════════════════════════════════════ -->
+  <div class="modal-overlay" id="detailModalOverlay" role="dialog" aria-modal="true"
+    aria-labelledby="detailModalTitle" hidden>
+    <div class="modal modal--detail">
+      <div class="modal__header">
+        <div class="modal__header-left">
+          <div class="modal__header-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.5" />
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="modal__title" id="detailModalTitle">Cliente</h2>
+            <p class="modal__subtitle" id="detailModalSubtitle"></p>
+          </div>
+        </div>
+        <button class="modal__close" id="detailModalClose" aria-label="Fechar modal">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal__body" id="detailModalBody">
+        <!-- gerado via JS -->
+      </div>
+      <div class="modal__footer modal__footer--actions">
+        <button class="btn-ghost" id="detailModalClose2">Fechar</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-whatsapp" id="detailWhatsApp">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <path d="M7.5 1C3.91 1 1 3.91 1 7.5c0 1.18.31 2.29.85 3.24L1 14l3.35-.83A6.48 6.48 0 0 0 7.5 14C11.09 14 14 11.09 14 7.5S11.09 1 7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+              <path d="M5.5 5.5s.3 1.5 1.5 2.5 2.5 1.5 2.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            WhatsApp
+          </button>
+          <button class="btn-primary" id="detailEditBtn">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+            Editar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: CONFIRMAR EXCLUSÃO
+  ═══════════════════════════════════════════ -->
+  <div class="modal-overlay" id="deleteModalOverlay" role="dialog" aria-modal="true"
+    aria-labelledby="deleteModalTitle" hidden>
+    <div class="modal modal--sm">
+      <div class="modal__header">
+        <div class="modal__header-left">
+          <div class="modal__header-icon modal__header-icon--red" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 4h12M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M6 7v5M10 7v5M3 4l1 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 class="modal__title" id="deleteModalTitle">Excluir Cliente</h2>
+        </div>
+        <button class="modal__close" id="deleteModalClose" aria-label="Fechar modal">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal__body">
+        <p class="delete-confirm-text">Tem certeza que deseja excluir <strong id="deleteClientName"></strong>? Essa ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal__footer">
+        <button class="btn-ghost" id="deleteModalCancel">Cancelar</button>
+        <button class="btn-danger" id="deleteModalConfirm">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 4h10M4 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M5 6v5M9 6v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TOAST NOTIFICATIONS
+  ═══════════════════════════════════════════ -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="js/clientes.js"></script>
+</body>
+
+</html>

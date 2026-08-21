@@ -1,0 +1,288 @@
+/* ═══════════════════════════════════════════════════════════
+   AUTH-CONFIRM — Profile button, Login modal, Confirmation popup
+═══════════════════════════════════════════════════════════ */
+
+/* ── PROFILE BUTTON (topbar pages: servicos, barbeiro, agendar) ── */
+.topbar-profile-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(191, 160, 106, 0.35);
+  background: rgba(191, 160, 106, 0.08);
+  color: #BFA06A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 200ms, border-color 200ms, transform 150ms;
+  flex-shrink: 0;
+}
+.topbar-profile-btn:hover {
+  background: rgba(191, 160, 106, 0.18);
+  border-color: rgba(191, 160, 106, 0.6);
+}
+.topbar-profile-btn:active {
+  transform: scale(0.92);
+}
+.topbar-profile-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Logged-in state: show initials */
+.topbar-profile-btn--logged .profile-initials {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1;
+}
+.topbar-profile-btn--logged {
+  background: #BFA06A;
+  border-color: #BFA06A;
+}
+.topbar-profile-btn--logged:hover {
+  background: #d4b87a;
+  border-color: #d4b87a;
+}
+
+/* ── MODAL OVERLAY (shared) ── */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms ease;
+}
+.auth-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── MODAL PANEL ── */
+.auth-panel {
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem 1.75rem;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  transform: translateY(16px) scale(0.97);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+.auth-overlay.is-open .auth-panel {
+  transform: translateY(0) scale(1);
+}
+
+/* Close button */
+.auth-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 180ms, color 180ms;
+}
+.auth-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ccc;
+}
+.auth-close svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── LOGIN/REGISTER MODAL ── */
+.auth-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.auth-header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(191, 160, 106, 0.12);
+  color: #BFA06A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem;
+}
+.auth-header-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.auth-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: #F0EBE1;
+  margin: 0 0 0.25rem;
+}
+.auth-subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #6B6762;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Form fields */
+.auth-field {
+  margin-bottom: 0.875rem;
+}
+.auth-label {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8A8580;
+  margin-bottom: 0.35rem;
+}
+.auth-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #F0EBE1;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 200ms;
+  box-sizing: border-box;
+}
+.auth-input::placeholder {
+  color: #4A4744;
+}
+.auth-input:focus {
+  border-color: rgba(191, 160, 106, 0.5);
+}
+
+/* Buttons */
+.auth-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 180ms, transform 100ms;
+  margin-top: 0.5rem;
+}
+.auth-btn:active {
+  transform: scale(0.97);
+}
+.auth-btn--primary {
+  background: #BFA06A;
+  color: #0A0A0A;
+}
+.auth-btn--primary:hover {
+  background: #d4b87a;
+}
+.auth-btn--ghost {
+  background: transparent;
+  color: #BFA06A;
+  margin-top: 0.25rem;
+}
+.auth-btn--ghost:hover {
+  background: rgba(191, 160, 106, 0.08);
+}
+
+.auth-divider {
+  text-align: center;
+  color: #4A4744;
+  font-size: 12px;
+  margin: 0.75rem 0;
+  position: relative;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 1.5rem);
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.auth-divider::before { left: 0; }
+.auth-divider::after { right: 0; }
+
+/* ── CONFIRMATION SUCCESS POPUP ── */
+.confirm-popup-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(76, 175, 121, 0.12);
+  color: #4CAF79;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+.confirm-popup-icon svg {
+  width: 28px;
+  height: 28px;
+}
+.confirm-popup-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: #F0EBE1;
+  text-align: center;
+  margin: 0 0 0.5rem;
+}
+.confirm-popup-details {
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #8A8580;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+.confirm-popup-details strong {
+  color: #BFA06A;
+  font-weight: 600;
+}
+
+.confirm-popup-hint {
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #4A4744;
+  margin-top: 0.75rem;
+}
+
+/* ── AUTH ERROR ── */
+.auth-error {
+  background: rgba(224, 84, 84, 0.08);
+  border: 1px solid rgba(224, 84, 84, 0.2);
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  font-size: 12px;
+  color: #E05454;
+  margin-bottom: 0.75rem;
+  display: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.auth-error.is-visible {
+  display: block;
+}

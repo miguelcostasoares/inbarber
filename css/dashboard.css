@@ -158,6 +158,11 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 /* Logo SVG: rect fill usa --gold (azul) */
 .sidebar__logo svg rect { fill: var(--gold); }
 
+.sidebar__img-logo{
+  height: 45px;
+  width: auto;
+}
+
 .sidebar__name {
   font-family: var(--ff-d);
   font-size: 18px;
@@ -429,7 +434,7 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 }
 .btn-pipeline:hover {
   border-color: rgba(0,71,255,0.4);
-  color: var(--gold-lt);
+  color: white;
   background: var(--gold-bg);
 }
 

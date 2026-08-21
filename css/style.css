@@ -665,6 +665,271 @@ a.brand:active .brand-mark { transform: scale(0.96); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ════════════════════════════════════════════════════════════════
+   HERO — REVISÃO
+   Colar no FIM do style.css. Vem depois do bloco .hero original,
+   por isso ganha por ordem de cascata sem precisar de !important.
+   Só o indicador de scroll é regra nova; o resto sobrepõe.
+════════════════════════════════════════════════════════════════ */
+
+.hero {
+  /* respiro para a barra de gestos do iOS + espaço do sticky CTA */
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+ 
+/* ─────────────────────────────────────────
+   VÍDEO — Ken Burns lento
+   Dá vida sem distrair. Escala mínima (1 → 1.06)
+   em 24s: o olho não percebe o movimento, só sente
+   que a imagem não está morta.
+───────────────────────────────────────── */
+.hero-img video,
+.hero-img img {
+  transform-origin: 55% 40%;
+  animation: heroKenBurns 24s ease-in-out infinite alternate;
+  will-change: transform;
+}
+ 
+@keyframes heroKenBurns {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
+}
+ 
+/* ─────────────────────────────────────────
+   OVERLAYS — legibilidade
+   Dois planos: gradiente vertical (já existia, mais
+   forte na base) + vinheta lateral que escurece o
+   canto inferior esquerdo, exatamente onde assenta
+   o texto. Sem isto o h1 branco compete com a pele
+   iluminada do vídeo.
+───────────────────────────────────────── */
+.hero-overlay {
+  background:
+    linear-gradient(to bottom,
+      rgba(10,10,10,0.62) 0%,
+      rgba(10,10,10,0.10) 26%,
+      rgba(10,10,10,0.55) 62%,
+      rgba(10,10,10,0.94) 86%,
+      rgba(10,10,10,1)    100%
+    );
+}
+ 
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 8% 100%,
+      rgba(10,10,10,0.72) 0%,
+      rgba(10,10,10,0.30) 42%,
+      transparent 72%
+    );
+}
+ 
+/* ─────────────────────────────────────────
+   WORDMARK "INBARBER"
+   Estava centrado, atrás do h1 — o resultado era
+   ruído por trás do texto. Passa para o terço
+   superior, com máscara que o dissolve antes de
+   chegar ao headline. Ganha presença de marca e
+   deixa de disputar espaço.
+───────────────────────────────────────── */
+.hero-title-wrap {
+  align-items: flex-start;
+  padding-top: calc(var(--offset) + 2.5rem);
+}
+ 
+.hero-big-word {
+  font-size: clamp(3.2rem, 17vw, 12rem);
+  -webkit-text-stroke: 1px rgba(0, 240, 255, 0.20);
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 92%);
+          mask-image: linear-gradient(to bottom, #000 30%, transparent 92%);
+}
+ 
+/* ─────────────────────────────────────────
+   TIPOGRAFIA
+───────────────────────────────────────── */
+.hero-eyebrow {
+  letter-spacing: 3px;
+  text-shadow: 0 1px 12px rgba(10,10,10,0.6);
+}
+ 
+.hero-h1 {
+  letter-spacing: -1.5px;
+  /* sombra difusa: separa o serifado do vídeo sem
+     parecer sombra — é quase só contraste local */
+  text-shadow: 0 2px 28px rgba(10,10,10,0.55);
+}
+ 
+/* O "importa." é a assinatura da hero — merece um
+   detalhe próprio: um traço que se estende por baixo
+   apenas da palavra, em cyan. */
+.hero-h1 em {
+  position: relative;
+  width: fit-content;
+}
+.hero-h1 em::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0.12em;
+  width: 100%;
+  height: 2px;
+  background: var(--gold-lt);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: heroUnderline 0.8s 1.05s var(--ease-out) forwards;
+  opacity: 0.55;
+}
+@keyframes heroUnderline {
+  to { transform: scaleX(1); }
+}
+ 
+.hero-desc {
+  color: var(--cream-2);
+  text-shadow: 0 1px 14px rgba(10,10,10,0.5);
+  margin-bottom: 2.25rem;
+}
+ 
+/* ─────────────────────────────────────────
+   BOTÕES — estados em falta
+   O CSS original não tinha :focus-visible em
+   nenhum dos dois. Teclado ficava sem feedback.
+───────────────────────────────────────── */
+.btn-fill:focus-visible,
+.btn-ghost-w:focus-visible {
+  outline: 2px solid var(--gold-lt);
+  outline-offset: 3px;
+}
+.btn-ghost-w:active { transform: scale(0.97); }
+ 
+.hero-btns { gap: 12px; }
+ 
+/* ─────────────────────────────────────────
+   STATS
+   tabular-nums impede o salto horizontal dos
+   dígitos durante o count-up — o número deixa de
+   "tremer" enquanto conta.
+───────────────────────────────────────── */
+.hero-stats {
+  border-top-color: rgba(255,255,255,0.10);
+  margin-top: 2rem;
+}
+ 
+.hero-stat strong {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  color: var(--gold-lt);
+}
+ 
+.hero-stat span {
+  letter-spacing: 2px;
+  color: var(--cream-2);
+  opacity: 0.55;
+}
+ 
+/* ─────────────────────────────────────────
+   INDICADOR DE SCROLL
+   Uma linha vertical de 28px cuja luz desce em
+   loop. Substitui a seta/chevron habitual.
+───────────────────────────────────────── */
+.hero-scroll {
+  position: absolute;
+  right: 1.25rem;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  z-index: 4;
+  width: 24px;
+  height: 40px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-radius: var(--r-sm);
+}
+ 
+.hero-scroll-line {
+  display: block;
+  width: 1px;
+  height: 28px;
+  background: rgba(255,255,255,0.14);
+  position: relative;
+  overflow: hidden;
+}
+.hero-scroll-line::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 10px;
+  background: var(--gold-lt);
+  animation: heroScrollDrop 2.2s var(--ease-out) infinite;
+}
+@keyframes heroScrollDrop {
+  0%        { transform: translateY(-100%); opacity: 0; }
+  25%       { opacity: 1; }
+  75%, 100% { transform: translateY(280%); opacity: 0; }
+}
+ 
+.hero-scroll:focus-visible {
+  outline: 2px solid var(--gold-lt);
+  outline-offset: 4px;
+}
+ 
+/* Esconder o indicador em ecrãs baixos (landscape mobile) */
+@media (max-height: 560px) {
+  .hero-scroll { display: none; }
+}
+ 
+/* Desktop: o indicador acompanha o padding da grelha */
+@media (min-width: 1024px) {
+  .hero-scroll { right: 4rem; }
+}
+ 
+/* ─────────────────────────────────────────
+   STICKY CTA — coordenação com a booking bar
+   As duas são fixed no fundo. Quando a booking bar
+   sobe, o sticky sai — senão ficam empilhados.
+───────────────────────────────────────── */
+.sticky-cta.is-suppressed {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-out), visibility 0s linear 200ms;
+}
+.sticky-cta.is-suppressed a { pointer-events: none; }
+ 
+/* Entrada do sticky: sobe em vez de só aparecer.
+   Nada no mundo real surge do nada. */
+.sticky-cta a {
+  transform: translateY(0);
+  transition:
+    opacity 150ms ease-out,
+    transform 320ms var(--ease-drawer);
+}
+.sticky-cta.is-hidden a,
+.sticky-cta.is-suppressed a {
+  transform: translateY(120%);
+}
+ 
+/* ─────────────────────────────────────────
+   REDUCED MOTION
+───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-img video,
+  .hero-img img {
+    animation: none;
+    transform: none;
+  }
+  .hero-h1 em::after {
+    animation: none;
+    transform: scaleX(1);
+  }
+  .hero-scroll-line::after { animation: none; opacity: 0.5; transform: none; }
+  .sticky-cta a { transition: opacity 150ms ease-out; }
+  .sticky-cta.is-hidden a,
+  .sticky-cta.is-suppressed a { transform: none; }
+}
+
 /* ════════════════════════════════════════
    SOBRE
 ════════════════════════════════════════ */

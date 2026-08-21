@@ -771,7 +771,7 @@
     bookingBar.classList.remove('visible');
     hideBarTimer = setTimeout(() => {
       hideBarTimer = null;
-      if (selected.size === 0) setStickyCtaVisible(true);
+      if (selected.size === 0) updateStickyCta();
     }, 320);
   }
 
@@ -843,14 +843,32 @@
     });
   });
 
-  /* ── Sticky CTA — some ao chegar na seção final ── */
-  const ctaFinal = $('.cta-final');
-  if (stickyCta && ctaFinal) {
+  /* ── Sticky CTA — escondido na Hero, aparece no Sobre, some na Localização ── */
+  const heroSection     = $('.hero');
+  const locationSection = $('#localizacao');
+
+  let heroVisible  = true;    // hero está no viewport
+  let inLocation   = false;   // seção "Onde estamos" está visível
+
+  function updateStickyCta() {
+    if (selected.size > 0) return;           // booking-bar toma conta
+    setStickyCtaVisible(!heroVisible && !inLocation);
+  }
+
+  if (stickyCta && heroSection) {
+    // Quando a hero sai completamente do viewport → botão aparece
     new IntersectionObserver(([e]) => {
-      if (selected.size === 0) {
-        setStickyCtaVisible(!e.isIntersecting);
-      }
-    }).observe(ctaFinal);
+      heroVisible = e.isIntersecting;
+      updateStickyCta();
+    }, { threshold: 0 }).observe(heroSection);
+  }
+
+  if (stickyCta && locationSection) {
+    // Quando a seção Localização entra na viewport → botão some
+    new IntersectionObserver(([e]) => {
+      inLocation = e.isIntersecting;
+      updateStickyCta();
+    }, { threshold: 0 }).observe(locationSection);
   }
 
   /* ════════════════════════════════════════

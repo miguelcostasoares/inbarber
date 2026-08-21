@@ -2157,7 +2157,7 @@ input, select, textarea {
 /* Célula de valor */
 .list-value {
   font-weight: 700;
-  color: var(--gold-lt);
+  color: #00a971;
   font-variant-numeric: tabular-nums;
 }
 

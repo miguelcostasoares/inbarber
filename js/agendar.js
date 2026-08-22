@@ -417,65 +417,8 @@
         try {
           sessionStorage.setItem('booking_datetime', JSON.stringify({ date: selectedDateStr, time: selectedTime }));
         } catch(_) {}
-        showConfirmationToast();
+        window.location.href = 'confirmacao.html';
       });
-    }
-
-    /* ── Toast ── */
-    function showConfirmationToast() {
-      const existing = document.querySelector('.confirm-toast');
-      if (existing) existing.remove();
-
-      const barberName = barber
-        ? (barber.id === 'qualquer' ? 'Primeiro disponível' : barber.name)
-        : 'Profissional';
-      const [y, m, d] = selectedDateStr.split('-').map(Number);
-      const dateObj = new Date(y, m - 1, d);
-      const dowFull = DAYS_FULL[dateObj.getDay()];
-
-      const toast = document.createElement('div');
-      toast.className = 'confirm-toast';
-      toast.innerHTML = `
-        <div class="toast-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <div class="toast-body">
-          <strong>Agendamento confirmado!</strong>
-          <span>${dowFull}, ${d} de ${MONTHS_PT[m-1]} às ${selectedTime} · ${barberName}</span>
-        </div>`;
-
-      Object.assign(toast.style, {
-        position: 'fixed', bottom: '6rem', left: '50%',
-        transform: 'translateX(-50%) translateY(20px)',
-        maxWidth: '420px', width: 'calc(100% - 2rem)',
-        background: '#1a1a1a', border: '1px solid rgba(191,160,106,0.4)',
-        borderRadius: '16px', padding: '1rem 1.25rem',
-        display: 'flex', alignItems: 'center', gap: '1rem', zIndex: '1000',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.7)', opacity: '0',
-        transition: 'opacity 300ms ease-out, transform 300ms ease-out',
-        fontFamily: "'DM Sans', system-ui, sans-serif", color: '#F0EBE1',
-      });
-      const icon = toast.querySelector('.toast-icon');
-      Object.assign(icon.style, {
-        width: '40px', height: '40px', borderRadius: '10px',
-        background: 'rgba(191,160,106,0.15)', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', flexShrink: '0', color: '#BFA06A',
-      });
-      icon.querySelector('svg').style.cssText = 'width:18px;height:18px;';
-      Object.assign(toast.querySelector('.toast-body').style, {
-        display: 'flex', flexDirection: 'column', gap: '2px',
-      });
-      toast.querySelector('strong').style.cssText = 'font-size:14px;font-weight:600;color:#FFFFFF;';
-      toast.querySelector('span').style.cssText = 'font-size:12px;color:#6B6762;line-height:1.4;';
-
-      document.body.appendChild(toast);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)';
-      }));
-      setTimeout(() => {
-        toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(16px)';
-        setTimeout(() => toast.remove(), 320);
-      }, 3500);
     }
 
     /* ── Eventos navegação ── */

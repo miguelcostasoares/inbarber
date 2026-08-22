@@ -1,0 +1,51 @@
+/* ═══════════════════════════════════════════════════════════
+   PROFILE-BTN — botão de perfil no topbar
+═══════════════════════════════════════════════════════════ */
+
+.topbar-profile-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 71, 255, 0.3);
+  background: rgba(0, 71, 255, 0.07);
+  color: #00f0ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 200ms, border-color 200ms, transform 150ms;
+  flex-shrink: 0;
+}
+
+.topbar-profile-btn:hover {
+  background: rgba(0, 71, 255, 0.15);
+  border-color: rgba(0, 71, 255, 0.55);
+}
+
+.topbar-profile-btn:active {
+  transform: scale(0.92);
+}
+
+.topbar-profile-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Estado logado: mostra iniciais */
+.topbar-profile-btn--logged {
+  background: #0047ff;
+  border-color: #0047ff;
+}
+
+.topbar-profile-btn--logged:hover {
+  background: #0055ff;
+  border-color: #0055ff;
+}
+
+.topbar-profile-btn--logged .profile-initials {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1;
+}

@@ -2,7 +2,7 @@
   /* ══ helpers ══ */
   const $ = id => document.getElementById(id);
 
-  const WEEKDAYS    = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const WEEKDAYS    = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
   const MONTHS      = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
   function formatDate(str) {
@@ -11,7 +11,7 @@
     const wd   = WEEKDAYS[date.getDay()];
     const dayStr = String(d).padStart(2, '0');
     const monStr = MONTHS[m - 1];
-    return { full: `${dayStr} ${monStr} ${y}`, weekday: `${wd}feira` };
+    return { full: `${dayStr} ${monStr} ${y}`, weekday: wd };
   }
 
   function addMinutes(time, mins) {
@@ -43,7 +43,27 @@
       ? (barber.id === 'qualquer' ? 'Primeiro disponível' : barber.name)
       : 'Não definido';
 
-    $('barber-av').textContent   = barberName.charAt(0).toUpperCase();
+    const isAnyBarber = !barber || barber.id === 'qualquer';
+    const avEl = $('barber-av');
+
+    if (isAnyBarber) {
+      /* Mesmo ícone usado no card "Sem preferência" da tela de barbeiros */
+      avEl.classList.add('barber-avatar--any');
+      avEl.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="7" r="3"/>
+          <path d="M3 19c0-3.3 2.7-6 6-6"/>
+          <circle cx="16" cy="7" r="3" opacity=".5"/>
+          <path d="M13 19c0-3.3 2.7-6 6-6" opacity=".5"/>
+          <path d="M19 13l2 2-2 2" stroke-width="1.2"/>
+          <path d="M5 15h4" stroke-width="1.2" opacity=".5"/>
+        </svg>`;
+    } else {
+      avEl.classList.remove('barber-avatar--any');
+      avEl.textContent = barberName.charAt(0).toUpperCase();
+    }
+
     $('barber-name').textContent = barberName;
     $('barber-role').textContent = barber && barber.id !== 'qualquer'
       ? (barber.specialty || 'Barbeiro') + (barber.experience ? ' · ' + barber.experience : '')
@@ -125,6 +145,100 @@
     setTimeout(showSuccess, 1200);
   });
 
+  /* ══ Evento de calendário (.ics / Google Agenda) ══ */
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  /* Devolve { start, end } no formato AAAAMMDDTHHMMSS (hora local) */
+  function eventStamps() {
+    if (!datetime || !datetime.date || !datetime.time) return null;
+    const [y, m, d]  = datetime.date.split('-').map(Number);
+    const [hh, mm]   = datetime.time.split(':').map(Number);
+    const start = new Date(y, m - 1, d, hh, mm);
+    const end   = new Date(start.getTime() + (totalDur > 0 ? totalDur : 60) * 60000);
+    const fmt = dt => `${dt.getFullYear()}${pad(dt.getMonth() + 1)}${pad(dt.getDate())}T${pad(dt.getHours())}${pad(dt.getMinutes())}00`;
+    return { start: fmt(start), end: fmt(end) };
+  }
+
+  function eventTitle() {
+    const list = services.map(s => s.name || s.title).filter(Boolean);
+    return 'Barbearia' + (list.length ? ' — ' + list.join(', ') : ' — Agendamento');
+  }
+
+  function eventDescription() {
+    const lines = [];
+    const list = services.map(s => s.name || s.title).filter(Boolean);
+    if (list.length) lines.push('Serviços: ' + list.join(', '));
+    if (barber) {
+      lines.push('Profissional: ' + (barber.id === 'qualquer' ? 'Primeiro disponível' : barber.name));
+    }
+    if (totalDur)   lines.push('Duração: ' + totalDur + ' min');
+    if (totalPrice) lines.push('Total: ' + fmtPrice(totalPrice));
+    lines.push('Chegue com 5 minutos de antecedência.');
+    return lines.join('\n');
+  }
+
+  /* Ficheiro .ics — funciona no calendário do telemóvel e do PC */
+  function buildICS() {
+    const st = eventStamps();
+    if (!st) return null;
+
+    const esc = txt => String(txt).replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
+    const now = new Date();
+    const stamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+
+    return [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//InBarber//Agendamento//PT',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      'UID:' + stamp + '-' + Math.random().toString(36).slice(2) + '@inbarber',
+      'DTSTAMP:' + stamp,
+      'DTSTART:' + st.start,
+      'DTEND:' + st.end,
+      'SUMMARY:' + esc(eventTitle()),
+      'DESCRIPTION:' + esc(eventDescription()),
+      'LOCATION:InBarber',
+      'BEGIN:VALARM',
+      'TRIGGER:-PT60M',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:' + esc('Lembrete: ' + eventTitle()),
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+  }
+
+  function downloadICS() {
+    const ics = buildICS();
+    if (!ics) return false;
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = 'agendamento-barbearia.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    return true;
+  }
+
+  function googleCalendarUrl() {
+    const st = eventStamps();
+    if (!st) return null;
+    const params = new URLSearchParams({
+      action:  'TEMPLATE',
+      text:    eventTitle(),
+      dates:   `${st.start}/${st.end}`,
+      details: eventDescription(),
+      location:'InBarber'
+    });
+    return 'https://calendar.google.com/calendar/render?' + params.toString();
+  }
+
   /* ══ Ecrã de sucesso ══ */
   function showSuccess() {
     const chips = $('success-chips');
@@ -162,6 +276,19 @@
       ? services.map(s => s.name || s.title).join(', ') + ' · confirmado com sucesso.'
       : 'Seu horário foi confirmado com sucesso.';
 
+    /* — Botão / link de calendário — */
+    const calBtn  = $('add-calendar-btn');
+    const calLink = $('gcal-link');
+    const gUrl    = googleCalendarUrl();
+
+    if (!gUrl) {
+      /* Sem data definida: não faz sentido mostrar */
+      if (calBtn)  calBtn.style.display  = 'none';
+      if (calLink) calLink.style.display = 'none';
+    } else if (calLink) {
+      calLink.href = gUrl;
+    }
+
     const overlay = $('success-overlay');
     overlay.removeAttribute('aria-hidden');
     overlay.classList.add('visible');
@@ -174,6 +301,27 @@
     el.innerHTML = html;
     return el;
   }
+
+  /* ══ Adicionar à agenda ══ */
+  $('add-calendar-btn')?.addEventListener('click', () => {
+    const btn = $('add-calendar-btn');
+    const ok  = downloadICS();
+    if (!ok) return;
+
+    const original = btn.innerHTML;
+    btn.classList.add('is-done');
+    btn.innerHTML = `
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="3,8.5 6.5,12 13,4.5"/>
+      </svg>
+      Evento baixado`;
+
+    setTimeout(() => {
+      btn.classList.remove('is-done');
+      btn.innerHTML = original;
+    }, 2600);
+  });
 
   /* ══ Ações pós-sucesso ══ */
   $('success-new-btn').addEventListener('click', () => {

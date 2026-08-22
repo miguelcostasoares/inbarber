@@ -3,71 +3,194 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InBarber — Agende o seu horário</title>
-<meta name="description" content="InBarber — corte, barba e cuidado masculino com agendamento online em segundos.">
+
+<!-- ═══ SEO ═══ -->
+<title data-i18n="meta.title">Corvo Barbearia — Barbearia na Consolação, São Paulo</title>
+<meta name="description" data-i18n-content="meta.desc" content="Corte, barba e ritual completo na Rua Augusta, Consolação. Agende online em segundos, escolha o barbeiro e o horário.">
 <meta name="theme-color" content="#0A0A0A">
+<!-- TROQUE: domínio real -->
+<link rel="canonical" href="https://corvobarbearia.com.br/">
 
 <!-- ═══ LOGO / ÍCONES ═══ -->
-<link rel="icon" href="/assets/favicon.ico" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/assets/logo.svg">
+<link rel="icon" href="/assets/corvo-logo.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 
-<!-- Open Graph -->
-<meta property="og:title" content="InBarber">
-<meta property="og:description" content="Agende o seu corte em segundos.">
-<meta property="og:image" content="/assets/logo.svg">
+<!-- ═══ OPEN GRAPH / TWITTER ═══
+     A imagem TEM de ser JPG ou PNG 1200×630. SVG não é renderizado
+     por WhatsApp, Facebook, Instagram nem LinkedIn. -->
+<meta property="og:site_name" content="Corvo Barbearia">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://corvobarbearia.com.br/">
+<meta property="og:title" data-i18n-content="meta.ogTitle" content="Corvo Barbearia — agende o seu corte em segundos">
+<meta property="og:description" data-i18n-content="meta.desc" content="Corte, barba e ritual completo na Rua Augusta, Consolação. Agende online em segundos, escolha o barbeiro e o horário.">
+<meta property="og:image" content="https://corvobarbearia.com.br/assets/og-corvo.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Corvo Barbearia — onde cada detalhe importa">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" data-i18n-content="meta.ogTitle" content="Corvo Barbearia — agende o seu corte em segundos">
+<meta name="twitter:description" data-i18n-content="meta.desc" content="Corte, barba e ritual completo na Rua Augusta, Consolação.">
+<meta name="twitter:image" content="https://corvobarbearia.com.br/assets/og-corvo.jpg">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/thin/style.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- ═══ ALTERNATES ═══ -->
+<link rel="alternate" hreflang="pt-BR" href="https://corvobarbearia.com.br/">
+<link rel="alternate" hreflang="en" href="https://corvobarbearia.com.br/?lang=en">
+<link rel="alternate" hreflang="es" href="https://corvobarbearia.com.br/?lang=es">
+<link rel="alternate" hreflang="x-default" href="https://corvobarbearia.com.br/">
+
+<!-- ═══ FONTES ═══ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<!-- CSS - Principal -->
+<!-- A foto do hero é o LCP e vem de terceiros: abrir a ligação cedo
+     poupa ~150ms. TROQUE por self-host quando as fotos reais entrarem. -->
+<link rel="preconnect" href="https://images.pexels.com" crossorigin>
+<link rel="preload" as="image" fetchpriority="high"
+      href="https://images.pexels.com/videos/4718402/pexels-photo-4718402.jpeg?auto=compress&cs=tinysrgb&w=1600"
+      imagesrcset="https://images.pexels.com/videos/4718402/pexels-photo-4718402.jpeg?auto=compress&cs=tinysrgb&w=768 768w,
+                   https://images.pexels.com/videos/4718402/pexels-photo-4718402.jpeg?auto=compress&cs=tinysrgb&w=1280 1280w,
+                   https://images.pexels.com/videos/4718402/pexels-photo-4718402.jpeg?auto=compress&cs=tinysrgb&w=1920 1920w"
+      imagesizes="100vw">
+
+<!-- ═══ CSS ═══
+     Leaflet e Chart.js já NÃO são carregados aqui: entram sob
+     IntersectionObserver, só quando o mapa / o gráfico se aproximam
+     do viewport. Ver js/app.js › LazyLib.
+     O Phosphor Icons foi removido — a página não usava uma única
+     classe .ph-, todos os ícones são SVG inline. -->
 <link rel="stylesheet" href="/css/style.css">
-<!-- CSS - Tela de confirmação -->
+<link rel="stylesheet" href="/css/landing-pack.css">
 <link rel="stylesheet" href="/css/auth-confirm.css">
+
+<!-- ═══ DADOS ESTRUTURADOS ═══
+     Alimenta as estrelas nos resultados do Google, o painel lateral
+     e o Google Business Profile. TROQUE os dados pelos reais. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HairSalon",
+  "@id": "https://corvobarbearia.com.br/#barbearia",
+  "name": "Corvo Barbearia",
+  "description": "Barbearia de corte, barba e ritual completo na Consolação, São Paulo. Agendamento online.",
+  "url": "https://corvobarbearia.com.br/",
+  "logo": "https://corvobarbearia.com.br/assets/icon-512.png",
+  "image": "https://corvobarbearia.com.br/assets/og-corvo.jpg",
+  "telephone": "+55-11-99999-9999",
+  "priceRange": "R$ 15 – R$ 65",
+  "currenciesAccepted": "BRL",
+  "paymentAccepted": "Dinheiro, Cartão, Pix",
+  "foundingDate": "2013",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Rua Augusta, 1200",
+    "addressLocality": "São Paulo",
+    "addressRegion": "SP",
+    "postalCode": "01304-001",
+    "addressCountry": "BR"
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": -23.5530, "longitude": -46.6620 },
+  "openingHoursSpecification": [
+    { "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+      "opens": "09:00", "closes": "20:00" },
+    { "@type": "OpeningHoursSpecification",
+      "dayOfWeek": "Saturday", "opens": "08:00", "closes": "18:00" }
+  ],
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9", "bestRating": "5", "reviewCount": "8200"
+  },
+  "sameAs": [
+    "https://instagram.com/corvobarbearia",
+    "https://www.facebook.com/corvobarbearia"
+  ],
+  "potentialAction": {
+    "@type": "ReserveAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://corvobarbearia.com.br/servicos.html",
+      "actionPlatform": [
+        "http://schema.org/DesktopWebPlatform",
+        "http://schema.org/MobileWebPlatform"
+      ]
+    },
+    "result": { "@type": "Reservation", "name": "Agendamento de horário" }
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Serviços",
+    "itemListElement": [
+      { "@type": "Offer", "price": "59", "priceCurrency": "BRL",
+        "itemOffered": { "@type": "Service", "name": "Corte + Barba" } },
+      { "@type": "Offer", "price": "35", "priceCurrency": "BRL",
+        "itemOffered": { "@type": "Service", "name": "Corte Social" } },
+      { "@type": "Offer", "price": "30", "priceCurrency": "BRL",
+        "itemOffered": { "@type": "Service", "name": "Barba Clássica" } },
+      { "@type": "Offer", "price": "40", "priceCurrency": "BRL",
+        "itemOffered": { "@type": "Service", "name": "Degradê" } },
+      { "@type": "Offer", "price": "45", "priceCurrency": "BRL",
+        "itemOffered": { "@type": "Service", "name": "Pigmentação" } },
+      { "@type": "Offer", "price": "55", "priceCurrency": "BRL",
+        "itemOffered": { "@type": "Service", "name": "Hot Towel Shave" } },
+      { "@type": "Offer", "price": "15", "priceCurrency": "BRL",
+        "itemOffered": { "@type": "Service", "name": "Sobrancelha" } }
+    ]
+  }
+}
+</script>
 
 </head>
 <body>
 
 <!--
   ═══════════════════════════════════════════════════════════════
-  LOGO INBARBER — componente único (.brand)
+  LOGO CORVO — componente único (.brand)
   Repetido na nav, no drawer e no rodapé. Para trocar a logo,
-  basta substituir o <svg> por:  <img src="/assets/logo.svg" alt="">
+  basta substituir o <img> de /assets/corvo-logo.svg.
   Tamanhos: .brand (38px) · .brand--sm (30px) · .brand--lg (48px)
   ═══════════════════════════════════════════════════════════════
 -->
 
+<a class="skip-link" href="#conteudo" data-i18n="a11y.skip">Saltar para o conteúdo</a>
+
 <!-- ═══════════════════════════════ NAV ═══════════════════════════════ -->
 <header class="nav" id="nav">
-  <a href="#" class="brand nav-brand" aria-label="InBarber — Início">
+  <a href="#" class="brand nav-brand" aria-label="Corvo Barbearia — Início">
     <span class="brand-mark" aria-hidden="true">
-      <img src="/assets/logo.svg" alt="">
+      <img src="/assets/corvo-logo.svg" alt="" width="38" height="38">
     </span>
     <span class="brand-text">
-      <span class="brand-name"><span>In</span>Barber</span>
-      <span class="brand-tag">Est. 2026</span>
+      <span class="brand-name"><span>Corvo</span> Barbearia</span>
+      <span class="brand-tag">Est. 2013</span>
     </span>
   </a>
 
   <nav class="nav-links" aria-label="Menu principal">
-    <a href="#sobre">Sobre</a>
-    <a href="#servicos">Serviços</a>
-    <a href="#galeria">Galeria</a>
-    <a href="#localizacao">Localização</a>
+    <a href="#sobre"       data-i18n="nav.about">Sobre</a>
+    <a href="#servicos"    data-i18n="nav.services">Serviços</a>
+    <a href="#equipa"      data-i18n="nav.team">Equipa</a>
+    <a href="#galeria"     data-i18n="nav.gallery">Galeria</a>
+    <a href="#localizacao" data-i18n="nav.location">Localização</a>
   </nav>
 
   <!-- Botões lado direito -->
   <div class="nav-actions">
-    <button class="nav-icon-btn" id="nav-profile-btn" aria-label="Perfil">
+    <!-- CTA de agendamento: o link mais valioso da página, visível em
+         100% do scroll. O href aponta para o destino real — o JS só
+         acrescenta a persistência da seleção. -->
+    <a href="servicos.html" class="nav-cta" data-book data-i18n="nav.cta">Agendar</a>
+
+    <button class="nav-icon-btn" id="nav-profile-btn" aria-label="Perfil" data-i18n-aria="nav.profile">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="10" cy="7" r="3.5"/>
         <path d="M2.5 17.5c0-4 3.36-7 7.5-7s7.5 3 7.5 7"/>
       </svg>
     </button>
-    <button class="nav-icon-btn nav-hamburger" id="nav-menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+    <button class="nav-icon-btn nav-hamburger" id="nav-menu-btn" aria-label="Menu" data-i18n-aria="nav.menu" aria-expanded="false" aria-controls="nav-drawer">
       <span class="ham-bar"></span>
       <span class="ham-bar"></span>
       <span class="ham-bar"></span>
@@ -82,20 +205,36 @@
     <div class="nav-drawer-header">
       <span class="brand brand--sm">
         <span class="brand-mark" aria-hidden="true">
-          <img src="/assets/logo.svg" alt="">
+          <img src="/assets/corvo-logo.svg" alt="" width="30" height="30">
         </span>
         <span class="brand-text">
-          <span class="brand-name">InBarber</span>
+          <span class="brand-name">Corvo</span>
           <span class="brand-tag" data-i18n="drawer.title">Menu</span>
         </span>
       </span>
-      <button class="nav-drawer-close" id="nav-drawer-close" aria-label="Fechar menu">
+      <button class="nav-drawer-close" id="nav-drawer-close" aria-label="Fechar menu" data-i18n-aria="drawer.close">
         <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
           <line x1="3" y1="3" x2="15" y2="15"/><line x1="15" y1="3" x2="3" y2="15"/>
         </svg>
       </button>
     </div>
     <div class="nav-drawer-body">
+
+      <!-- Agendar — primeiro item, é o que a página quer que aconteça -->
+      <a href="servicos.html" class="nav-drawer-item nav-drawer-item--cta" data-book>
+        <span class="nav-drawer-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2.5" y="4" width="15" height="14" rx="2"/><path d="M2.5 8h15M7 1.5v4M13 1.5v4"/>
+          </svg>
+        </span>
+        <span class="nav-drawer-item-text">
+          <strong data-i18n="drawer.book">Agendar horário</strong>
+          <small data-i18n="drawer.book_sub">Escolha serviço, barbeiro e hora</small>
+        </span>
+        <svg class="nav-drawer-arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 2l5 5-5 5"/>
+        </svg>
+      </a>
 
       <!-- Perfil -->
       <a href="perfil.html" class="nav-drawer-item">
@@ -129,7 +268,7 @@
             <strong data-i18n="drawer.language">Idioma</strong>
             <small class="lang-current-label">Português</small>
           </span>
-          <div class="lang-pills" role="group" aria-label="Selecionar idioma">
+          <div class="lang-pills" role="group" aria-label="Selecionar idioma" data-i18n-aria="drawer.langGroup">
             <button class="lang-pill active" data-lang="pt" aria-pressed="true">PT</button>
             <button class="lang-pill" data-lang="en" aria-pressed="false">EN</button>
             <button class="lang-pill" data-lang="es" aria-pressed="false">ES</button>
@@ -143,95 +282,142 @@
 
 <!-- ═══════════════════════════════ TICKER ═══════════════════════════════ -->
 <div class="ticker" aria-hidden="true">
-  <div class="ticker-track">
-    <span class="t-item">Corte Clássico <span class="t-bull">✦</span></span>
-    <span class="t-item">Barba Completa <span class="t-bull">✦</span></span>
-    <span class="t-item">Degradê <span class="t-bull">✦</span></span>
-    <span class="t-item">Pigmentação <span class="t-bull">✦</span></span>
-    <span class="t-item">Hot Towel Shave <span class="t-bull">✦</span></span>
-    <span class="t-item">Sobrancelha <span class="t-bull">✦</span></span>
-    <span class="t-item">Progressiva <span class="t-bull">✦</span></span>
-    <span class="t-item">Corte Clássico <span class="t-bull">✦</span></span>
-    <span class="t-item">Barba Completa <span class="t-bull">✦</span></span>
-    <span class="t-item">Degradê <span class="t-bull">✦</span></span>
-    <span class="t-item">Pigmentação <span class="t-bull">✦</span></span>
-    <span class="t-item">Hot Towel Shave <span class="t-bull">✦</span></span>
-    <span class="t-item">Sobrancelha <span class="t-bull">✦</span></span>
-    <span class="t-item">Progressiva <span class="t-bull">✦</span></span>
+  <div class="ticker-track" id="ticker-track">
+    <span class="t-item"><span data-i18n="tick.1">Corte Clássico</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.2">Barba Completa</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.3">Degradê</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.4">Pigmentação</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.5">Hot Towel Shave</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.6">Sobrancelha</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.7">Progressiva</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.1">Corte Clássico</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.2">Barba Completa</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.3">Degradê</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.4">Pigmentação</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.5">Hot Towel Shave</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.6">Sobrancelha</span> <span class="t-bull" aria-hidden="true">✦</span></span>
+    <span class="t-item"><span data-i18n="tick.7">Progressiva</span> <span class="t-bull" aria-hidden="true">✦</span></span>
   </div>
 </div>
+
+<main id="conteudo">
 
 <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
 <section class="hero" aria-label="Apresentação">
 
+  <!-- Foto, não vídeo.
+       Esta imagem É o LCP da página, por isso leva fetchpriority="high"
+       e não leva loading="lazy". O srcset entrega 768/1280/1920 conforme
+       o ecrã — em telemóvel descarregam-se ~120 KB em vez dos ~6 MB que
+       o MP4 custava.
+       TROQUE: foto real da barbearia, 1920×1080 ou maior, self-hosted. -->
   <div class="hero-img" aria-hidden="true">
-    <video
-      autoplay muted loop playsinline
-      poster="https://images.pexels.com/videos/4718402/pexels-photo-4718402.jpeg?auto=compress&cs=tinysrgb&h=627&fit=crop&w=1200">
-      <source src="https://videos.pexels.com/video-files/4718402/4718402-hd_1920_1080_25fps.mp4" type="video/mp4">
-    </video>
+    <img
+      id="hero-photo"
+      src="https://images.pexels.com/videos/4718402/pexels-photo-4718402.jpeg?auto=compress&cs=tinysrgb&w=1600"
+      srcset="https://images.pexels.com/videos/4718402/pexels-photo-4718402.jpeg?auto=compress&cs=tinysrgb&w=768 768w,
+              https://images.pexels.com/videos/4718402/pexels-photo-4718402.jpeg?auto=compress&cs=tinysrgb&w=1280 1280w,
+              https://images.pexels.com/videos/4718402/pexels-photo-4718402.jpeg?auto=compress&cs=tinysrgb&w=1920 1920w"
+      sizes="100vw"
+      alt=""
+      width="1920" height="1080"
+      fetchpriority="high"
+      decoding="async">
   </div>
 
   <div class="hero-overlay" aria-hidden="true"></div>
+  <!-- A vinheta existia no CSS desde sempre; faltava a div.
+       É ela que separa o h1 branco da pele iluminada do vídeo. -->
+  <div class="hero-vignette" aria-hidden="true"></div>
 
   <div class="hero-title-wrap" aria-hidden="true">
-    <span class="hero-big-word">INBARBER</span>
+    <span class="hero-big-word">CORVO</span>
   </div>
+
+  <!-- Pausa de movimento — WCAG 2.2.2. Controla vídeo, ticker e Ken Burns. -->
+  <button class="hero-motion" id="motion-toggle" aria-pressed="false"
+          aria-label="Pausar animações" data-i18n-aria="a11y.motionPause">
+    <svg class="mt-pause" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <rect x="3.5" y="2.5" width="3" height="11" rx="1"/><rect x="9.5" y="2.5" width="3" height="11" rx="1"/>
+    </svg>
+    <svg class="mt-play" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M4.5 2.8v10.4c0 .8.9 1.3 1.6.9l8.3-5.2c.6-.4.6-1.3 0-1.7L6.1 1.9c-.7-.4-1.6.1-1.6.9z"/>
+    </svg>
+  </button>
 
   <div class="hero-content">
     <p class="hero-eyebrow">
       <span class="hero-eyebrow-line"></span>
-      Desde 2010 · Arte & Tradição
+      <span data-i18n="hero.eyebrow">Desde 2013 · Arte &amp; Tradição</span>
     </p>
-    <h1 class="hero-h1">
+    <h1 class="hero-h1" data-i18n-html="hero.h1">
       Onde cada<br>
       detalhe<br>
       <em>importa.</em>
     </h1>
-    <p class="hero-desc">
+    <p class="hero-desc" data-i18n-html="hero.desc">
       Cortes precisos. Ambiente exclusivo.<br>
       A experiência que você merece.
     </p>
+
+    <!-- ═══ PRÓXIMOS HORÁRIOS ═══
+         A alavanca de conversão da página: mostra disponibilidade antes
+         de pedir compromisso e corta o funil de 4 passos para 1.
+         Preenchido por js/app.js › initHeroSlots() a partir do horário
+         de funcionamento real. Ligar à API de agenda em produção. -->
+    <div class="hero-slots" id="hero-slots" hidden>
+      <span class="hero-slots-label" data-i18n="slots.label">Próximos horários livres</span>
+      <div class="hero-slots-row" id="hero-slots-row"></div>
+      <a class="hero-slots-all" href="agendar.html" data-i18n="slots.all">Ver agenda completa →</a>
+    </div>
+
     <div class="hero-btns">
-      <a href="#agendar" class="btn-fill" id="agendar">Agendar horário</a>
-      <a href="#sobre" class="btn-ghost-w">Conhecer</a>
+      <a href="servicos.html" class="btn-fill" data-book data-i18n="hero.cta1">Agendar horário</a>
+      <a href="#sobre" class="btn-ghost-w" data-i18n="hero.cta2">Conhecer</a>
     </div>
   </div>
 
   <div class="hero-stats" aria-label="Números">
     <div class="hero-stat">
-      <strong data-count="14" data-suffix="+">0+</strong>
-      <span>Anos</span>
+      <!-- data-since: os anos são calculados a partir do ano de fundação,
+           nunca escritos à mão. Um número, uma fonte de verdade. -->
+      <strong data-count="13" data-suffix="+" data-since="2013">0+</strong>
+      <span data-i18n="hero.stat1">Anos</span>
     </div>
     <div class="hero-stat-div" aria-hidden="true"></div>
     <div class="hero-stat">
-      <strong data-count="8000" data-suffix="+">0+</strong>
-      <span>Clientes</span>
+      <strong data-count="8200" data-suffix="+">0+</strong>
+      <span data-i18n="hero.stat2">Clientes</span>
     </div>
     <div class="hero-stat-div" aria-hidden="true"></div>
     <div class="hero-stat">
       <strong data-count="4.9" data-suffix="★">0★</strong>
-      <span>Avaliação</span>
+      <span data-i18n="hero.stat3">Avaliação</span>
     </div>
   </div>
+
+  <!-- Indicador de scroll: também só existia no CSS. -->
+  <a class="hero-scroll" href="#sobre" aria-label="Ver mais" data-i18n-aria="a11y.scroll">
+    <span class="hero-scroll-line" aria-hidden="true"></span>
+  </a>
 
 </section>
 
 <!-- ═══════════════════════════════ SOBRE ═══════════════════════════════ -->
 <section class="about" id="sobre" aria-labelledby="about-h">
 
-  <!-- Fundo infinito com marca d'água INBARBER -->
+  <!-- Fundo infinito com marca d'água CORVO -->
   <div class="about-bg" aria-hidden="true">
     <div class="about-bg-glow"></div>
-    <span class="about-bg-word">INBARBER</span>
+    <span class="about-bg-word">CORVO</span>
     <div class="about-bg-grain"></div>
   </div>
 
   <div class="about-inner">
 
     <div class="about-top">
-      <p class="label-tag">Nossa história</p>
-      <h2 class="section-h" id="about-h">
+      <p class="label-tag" data-i18n="about.tag">Nossa história</p>
+      <h2 class="section-h" id="about-h" data-i18n-html="about.h">
         Uma tradição<br>
         de <em>excelência.</em>
       </h2>
@@ -241,21 +427,21 @@
 
       <div class="about-visual">
         <div class="about-img-wrap">
-          <!-- TROQUE: <img src="sobre.jpg" alt="Interior da barbearia"> -->
+          <!-- TROQUE: <img src="/assets/sobre.jpg" alt="Interior da barbearia" width="900" height="1100"> -->
           <div class="about-img-ph">
-            <svg viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="28" rx="1" stroke-width="1"/><circle cx="18" cy="20" r="4" stroke-width="1"/><path d="M6 38l10-10 7 7 8-10 11 13" stroke-width="1"/></svg>
-            <span>Foto do ambiente</span>
+            <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="6" y="10" width="36" height="28" rx="1" stroke-width="1"/><circle cx="18" cy="20" r="4" stroke-width="1"/><path d="M6 38l10-10 7 7 8-10 11 13" stroke-width="1"/></svg>
+            <span data-i18n="about.ph">Foto do ambiente</span>
           </div>
           <div class="about-img-frame" aria-hidden="true"></div>
         </div>
         <div class="about-badge">
           <strong>100%</strong>
-          <span>Satisfação</span>
+          <span data-i18n="about.badge">Satisfação</span>
         </div>
       </div>
 
       <div class="about-copy">
-        <p class="body-txt">
+        <p class="body-txt" data-i18n="about.body">
           Nascemos com uma missão simples: resgatar o ritual do cuidado masculino. Cada corte é uma obra — técnica apurada, atenção ao detalhe e um ambiente que te faz sentir em casa.
         </p>
 
@@ -265,8 +451,8 @@
               <svg viewBox="0 0 20 20" fill="none"><path d="M10 2l2 6h6l-5 3.6 1.9 6L10 14l-4.9 3.6L7 11.6 2 8h6z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <div>
-              <h3>Técnica impecável</h3>
-              <p>Barbeiros certificados com anos de experiência em cortes clássicos e modernos.</p>
+              <h3 data-i18n="about.p1h">Técnica impecável</h3>
+              <p data-i18n="about.p1b">Barbeiros certificados com anos de experiência em cortes clássicos e modernos.</p>
             </div>
           </li>
           <li class="pillar">
@@ -274,8 +460,8 @@
               <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="1" stroke-width="1.2"/><path d="M7 10h6M10 7v6" stroke-width="1.2" stroke-linecap="round"/></svg>
             </span>
             <div>
-              <h3>Ambiente exclusivo</h3>
-              <p>Um espaço pensado para relaxar enquanto cuidamos do seu visual.</p>
+              <h3 data-i18n="about.p2h">Ambiente exclusivo</h3>
+              <p data-i18n="about.p2b">Um espaço pensado para relaxar enquanto cuidamos do seu visual.</p>
             </div>
           </li>
           <li class="pillar">
@@ -283,8 +469,8 @@
               <svg viewBox="0 0 20 20" fill="none"><path d="M10 3C6.13 3 3 6.13 3 10s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7z" stroke-width="1.2"/><path d="M10 6v4l3 2" stroke-width="1.2" stroke-linecap="round"/></svg>
             </span>
             <div>
-              <h3>Produtos premium</h3>
-              <p>Só marcas selecionadas para o melhor resultado na barba e no cabelo.</p>
+              <h3 data-i18n="about.p3h">Produtos premium</h3>
+              <p data-i18n="about.p3b">Só marcas selecionadas para o melhor resultado na barba e no cabelo.</p>
             </div>
           </li>
         </ul>
@@ -298,138 +484,261 @@
 <!-- ═══════════════════════════════ SERVIÇOS ═══════════════════════════════ -->
 <section class="services" id="servicos" aria-labelledby="svc-h">
   <div class="services-top">
-    <p class="label-tag">O que oferecemos</p>
-    <h2 class="section-h" id="svc-h">Monte seu<br><em>atendimento.</em></h2>
-    <p class="svc-hint">Toque nos serviços que deseja e veja o total na hora.</p>
+    <p class="label-tag" data-i18n="svc.tag">O que oferecemos</p>
+    <h2 class="section-h" id="svc-h" data-i18n-html="svc.h">Monte seu<br><em>atendimento.</em></h2>
+    <p class="svc-hint" data-i18n="svc.hint">Toque nos serviços que deseja e veja o total na hora.</p>
   </div>
 
+  <!-- Cada cartão é um <button> dentro do <li>: aria-pressed só é válido
+       em role="button" — num listitem é ignorado pelos leitores de ecrã.
+       Enter e Espaço passam a vir de graça do próprio elemento. -->
   <ul class="svc-list" role="list" id="svc-list">
 
-    <li class="svc-card" role="listitem"
-        data-id="corte-barba" data-name="Corte + Barba" data-price="65" data-dur="60 min"
-        tabindex="0" aria-pressed="false">
-      <div class="svc-card-inner">
-        <div class="svc-check" aria-hidden="true">
-          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="svc-meta">
-          <span class="svc-badge">Mais pedido</span>
-          <h3 class="svc-name">Corte + Barba</h3>
-          <p class="svc-desc">Combo completo com lavagem, corte, barba na navalha e finalização.</p>
-        </div>
-        <div class="svc-foot">
-          <span class="svc-price">R$ 65</span>
-          <span class="svc-dur">60 min</span>
-        </div>
-      </div>
+    <li>
+      <button type="button" class="svc-card"
+              data-id="corte-barba" data-name="Corte + Barba" data-price="59" data-dur="60 min"
+              aria-pressed="false">
+        <span class="svc-card-inner">
+          <span class="svc-check" aria-hidden="true">
+            <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="svc-meta">
+            <span class="svc-badge" data-i18n="svc.1badge">Mais pedido</span>
+            <span class="svc-name" data-i18n="svc.1name">Corte + Barba</span>
+            <span class="svc-desc" data-i18n="svc.1desc">Combo completo com lavagem, corte, barba na navalha e finalização.</span>
+          </span>
+          <span class="svc-foot">
+            <span class="svc-price"><s class="svc-price-was">R$ 65</s> R$ 59</span>
+            <span class="svc-dur">60 min</span>
+            <span class="svc-save" data-i18n="svc.1save">poupa R$ 6</span>
+          </span>
+        </span>
+      </button>
     </li>
 
-    <li class="svc-card" role="listitem"
-        data-id="corte" data-name="Corte Social" data-price="35" data-dur="40 min"
-        tabindex="0" aria-pressed="false">
-      <div class="svc-card-inner">
-        <div class="svc-check" aria-hidden="true">
-          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="svc-meta">
-          <h3 class="svc-name">Corte Social</h3>
-          <p class="svc-desc">Corte clássico com tesoura e máquina, acabamento impecável.</p>
-        </div>
-        <div class="svc-foot">
-          <span class="svc-price">R$ 35</span>
-          <span class="svc-dur">40 min</span>
-        </div>
-      </div>
+    <li>
+      <button type="button" class="svc-card"
+              data-id="corte" data-name="Corte Social" data-price="35" data-dur="40 min"
+              aria-pressed="false">
+        <span class="svc-card-inner">
+          <span class="svc-check" aria-hidden="true">
+            <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="svc-meta">
+            <span class="svc-name" data-i18n="svc.2name">Corte Social</span>
+            <span class="svc-desc" data-i18n="svc.2desc">Corte clássico com tesoura e máquina, acabamento impecável.</span>
+          </span>
+          <span class="svc-foot">
+            <span class="svc-price">R$ 35</span>
+            <span class="svc-dur">40 min</span>
+          </span>
+        </span>
+      </button>
     </li>
 
-    <li class="svc-card" role="listitem"
-        data-id="barba" data-name="Barba Clássica" data-price="30" data-dur="35 min"
-        tabindex="0" aria-pressed="false">
-      <div class="svc-card-inner">
-        <div class="svc-check" aria-hidden="true">
-          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="svc-meta">
-          <h3 class="svc-name">Barba Clássica</h3>
-          <p class="svc-desc">Barba modelada com navalha, toalha quente e hidratação.</p>
-        </div>
-        <div class="svc-foot">
-          <span class="svc-price">R$ 30</span>
-          <span class="svc-dur">35 min</span>
-        </div>
-      </div>
+    <li>
+      <button type="button" class="svc-card"
+              data-id="barba" data-name="Barba Clássica" data-price="30" data-dur="35 min"
+              aria-pressed="false">
+        <span class="svc-card-inner">
+          <span class="svc-check" aria-hidden="true">
+            <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="svc-meta">
+            <span class="svc-name" data-i18n="svc.3name">Barba Clássica</span>
+            <span class="svc-desc" data-i18n="svc.3desc">Barba modelada com navalha, toalha quente e hidratação.</span>
+          </span>
+          <span class="svc-foot">
+            <span class="svc-price">R$ 30</span>
+            <span class="svc-dur">35 min</span>
+          </span>
+        </span>
+      </button>
     </li>
 
-    <li class="svc-card" role="listitem"
-        data-id="degrade" data-name="Degradê" data-price="40" data-dur="45 min"
-        tabindex="0" aria-pressed="false">
-      <div class="svc-card-inner">
-        <div class="svc-check" aria-hidden="true">
-          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="svc-meta">
-          <h3 class="svc-name">Degradê</h3>
-          <p class="svc-desc">Fade perfeito do zero ao comprimento desejado, sem marcas.</p>
-        </div>
-        <div class="svc-foot">
-          <span class="svc-price">R$ 40</span>
-          <span class="svc-dur">45 min</span>
-        </div>
-      </div>
+    <li>
+      <button type="button" class="svc-card"
+              data-id="degrade" data-name="Degradê" data-price="40" data-dur="45 min"
+              aria-pressed="false">
+        <span class="svc-card-inner">
+          <span class="svc-check" aria-hidden="true">
+            <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="svc-meta">
+            <span class="svc-name" data-i18n="svc.4name">Degradê</span>
+            <span class="svc-desc" data-i18n="svc.4desc">Fade perfeito do zero ao comprimento desejado, sem marcas.</span>
+          </span>
+          <span class="svc-foot">
+            <span class="svc-price">R$ 40</span>
+            <span class="svc-dur">45 min</span>
+          </span>
+        </span>
+      </button>
     </li>
 
-    <li class="svc-card" role="listitem"
-        data-id="pigmentacao" data-name="Pigmentação" data-price="45" data-dur="50 min"
-        tabindex="0" aria-pressed="false">
-      <div class="svc-card-inner">
-        <div class="svc-check" aria-hidden="true">
-          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="svc-meta">
-          <h3 class="svc-name">Pigmentação</h3>
-          <p class="svc-desc">Cobertura de falhas e uniformização da cor da barba.</p>
-        </div>
-        <div class="svc-foot">
-          <span class="svc-price">R$ 45</span>
-          <span class="svc-dur">50 min</span>
-        </div>
-      </div>
+    <li>
+      <button type="button" class="svc-card"
+              data-id="pigmentacao" data-name="Pigmentação" data-price="45" data-dur="50 min"
+              aria-pressed="false">
+        <span class="svc-card-inner">
+          <span class="svc-check" aria-hidden="true">
+            <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="svc-meta">
+            <span class="svc-name" data-i18n="svc.5name">Pigmentação</span>
+            <span class="svc-desc" data-i18n="svc.5desc">Cobertura de falhas e uniformização da cor da barba.</span>
+          </span>
+          <span class="svc-foot">
+            <span class="svc-price">R$ 45</span>
+            <span class="svc-dur">50 min</span>
+          </span>
+        </span>
+      </button>
     </li>
 
-    <li class="svc-card" role="listitem"
-        data-id="hot-towel" data-name="Hot Towel Shave" data-price="55" data-dur="55 min"
-        tabindex="0" aria-pressed="false">
-      <div class="svc-card-inner">
-        <div class="svc-check" aria-hidden="true">
-          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="svc-meta">
-          <h3 class="svc-name">Hot Towel Shave</h3>
-          <p class="svc-desc">Ritual completo com toalha quente, espuma e navalha reta.</p>
-        </div>
-        <div class="svc-foot">
-          <span class="svc-price">R$ 55</span>
-          <span class="svc-dur">55 min</span>
-        </div>
-      </div>
+    <li>
+      <button type="button" class="svc-card"
+              data-id="hot-towel" data-name="Hot Towel Shave" data-price="55" data-dur="55 min"
+              aria-pressed="false">
+        <span class="svc-card-inner">
+          <span class="svc-check" aria-hidden="true">
+            <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="svc-meta">
+            <span class="svc-name" data-i18n="svc.6name">Hot Towel Shave</span>
+            <span class="svc-desc" data-i18n="svc.6desc">Ritual completo com toalha quente, espuma e navalha reta.</span>
+          </span>
+          <span class="svc-foot">
+            <span class="svc-price">R$ 55</span>
+            <span class="svc-dur">55 min</span>
+          </span>
+        </span>
+      </button>
     </li>
 
-    <li class="svc-card" role="listitem"
-        data-id="sobrancelha" data-name="Sobrancelha" data-price="15" data-dur="20 min"
-        tabindex="0" aria-pressed="false">
-      <div class="svc-card-inner">
-        <div class="svc-check" aria-hidden="true">
-          <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <li>
+      <button type="button" class="svc-card"
+              data-id="sobrancelha" data-name="Sobrancelha" data-price="15" data-dur="20 min"
+              aria-pressed="false">
+        <span class="svc-card-inner">
+          <span class="svc-check" aria-hidden="true">
+            <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="svc-meta">
+            <span class="svc-name" data-i18n="svc.7name">Sobrancelha</span>
+            <span class="svc-desc" data-i18n="svc.7desc">Design e definição com linha, pinça ou navalha.</span>
+          </span>
+          <span class="svc-foot">
+            <span class="svc-price">R$ 15</span>
+            <span class="svc-dur">20 min</span>
+          </span>
+        </span>
+      </button>
+    </li>
+
+  </ul>
+
+  <!-- As três objeções silenciosas que fazem alguém fechar o separador -->
+  <ul class="svc-terms" role="list">
+    <li data-i18n="svc.term1">Sem pagamento antecipado</li>
+    <li data-i18n="svc.term2">Cancele até 2h antes, sem custo</li>
+    <li data-i18n="svc.term3">Não precisa de conta para marcar</li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════ EQUIPA ═══════════════════════════════ -->
+<section class="team" id="equipa" aria-labelledby="team-h">
+  <div class="team-hd">
+    <p class="label-tag" data-i18n="team.tag">Quem vai cortar</p>
+    <h2 class="section-h" id="team-h" data-i18n-html="team.h">A mão por trás<br>do <em>corte.</em></h2>
+    <p class="team-sub" data-i18n="team.sub">Numa barbearia escolhe-se a pessoa antes do serviço. Marque com quem já o conhece.</p>
+  </div>
+
+  <ul class="team-list" role="list">
+
+    <!-- TROQUE: <img class="team-av" src="/assets/equipa/rafael.jpg" alt="Rafael Nunes" width="220" height="220"> -->
+    <li class="team-card">
+      <span class="team-av" aria-hidden="true"><span>RN</span></span>
+      <div class="team-body">
+        <h3 class="team-name">Rafael Nunes</h3>
+        <p class="team-role" data-i18n="team.1role">Degradê e navalha</p>
+        <div class="team-meta">
+          <span class="team-rating"><span aria-hidden="true">★</span> 4,9</span>
+          <span class="team-dot" aria-hidden="true">·</span>
+          <span class="team-since" data-i18n="team.1since">9 anos na casa</span>
         </div>
-        <div class="svc-meta">
-          <h3 class="svc-name">Sobrancelha</h3>
-          <p class="svc-desc">Design e definição com linha, pinça ou navalha.</p>
-        </div>
-        <div class="svc-foot">
-          <span class="svc-price">R$ 15</span>
-          <span class="svc-dur">20 min</span>
-        </div>
+        <ul class="team-tags" role="list">
+          <li data-i18n="team.tagFade">Degradê</li>
+          <li data-i18n="team.tagRazor">Navalha</li>
+          <li data-i18n="team.tagBeard">Barba</li>
+        </ul>
       </div>
+      <a class="team-cta" href="servicos.html?barbeiro=rafael-nunes" data-book>
+        <span data-i18n="team.cta">Agendar com</span> Rafael
+      </a>
+    </li>
+
+    <li class="team-card">
+      <span class="team-av" aria-hidden="true"><span>DM</span></span>
+      <div class="team-body">
+        <h3 class="team-name">Diego Matos</h3>
+        <p class="team-role" data-i18n="team.2role">Clássicos e tesoura</p>
+        <div class="team-meta">
+          <span class="team-rating"><span aria-hidden="true">★</span> 4,8</span>
+          <span class="team-dot" aria-hidden="true">·</span>
+          <span class="team-since" data-i18n="team.2since">6 anos na casa</span>
+        </div>
+        <ul class="team-tags" role="list">
+          <li data-i18n="team.tagSocial">Corte Social</li>
+          <li data-i18n="team.tagScissor">Tesoura</li>
+          <li data-i18n="team.tagBrow">Sobrancelha</li>
+        </ul>
+      </div>
+      <a class="team-cta" href="servicos.html?barbeiro=diego-matos" data-book>
+        <span data-i18n="team.cta">Agendar com</span> Diego
+      </a>
+    </li>
+
+    <li class="team-card">
+      <span class="team-av" aria-hidden="true"><span>BA</span></span>
+      <div class="team-body">
+        <h3 class="team-name">Bruno Alencar</h3>
+        <p class="team-role" data-i18n="team.3role">Barba e ritual quente</p>
+        <div class="team-meta">
+          <span class="team-rating"><span aria-hidden="true">★</span> 5,0</span>
+          <span class="team-dot" aria-hidden="true">·</span>
+          <span class="team-since" data-i18n="team.3since">4 anos na casa</span>
+        </div>
+        <ul class="team-tags" role="list">
+          <li data-i18n="team.tagHot">Hot Towel</li>
+          <li data-i18n="team.tagPig">Pigmentação</li>
+          <li data-i18n="team.tagBeard">Barba</li>
+        </ul>
+      </div>
+      <a class="team-cta" href="servicos.html?barbeiro=bruno-alencar" data-book>
+        <span data-i18n="team.cta">Agendar com</span> Bruno
+      </a>
+    </li>
+
+    <li class="team-card">
+      <span class="team-av" aria-hidden="true"><span>TR</span></span>
+      <div class="team-body">
+        <h3 class="team-name">Thiago Reis</h3>
+        <p class="team-role" data-i18n="team.4role">Texturizados e visagismo</p>
+        <div class="team-meta">
+          <span class="team-rating"><span aria-hidden="true">★</span> 4,9</span>
+          <span class="team-dot" aria-hidden="true">·</span>
+          <span class="team-since" data-i18n="team.4since">3 anos na casa</span>
+        </div>
+        <ul class="team-tags" role="list">
+          <li data-i18n="team.tagTex">Texturizado</li>
+          <li data-i18n="team.tagProg">Progressiva</li>
+          <li data-i18n="team.tagVis">Visagismo</li>
+        </ul>
+      </div>
+      <a class="team-cta" href="servicos.html?barbeiro=thiago-reis" data-book>
+        <span data-i18n="team.cta">Agendar com</span> Thiago
+      </a>
     </li>
 
   </ul>
@@ -499,164 +808,167 @@
 
   <!-- Cabeçalho -->
   <div class="gallery-hd">
-    <p class="label-tag">Nosso trabalho</p>
-    <h2 class="section-h" id="gal-h">Cada corte,<br><em>uma obra.</em></h2>
+    <p class="label-tag" data-i18n="gal.tag">Nosso trabalho</p>
+    <h2 class="section-h" id="gal-h" data-i18n-html="gal.h">Cada corte,<br><em>uma obra.</em></h2>
   </div>
 
-  <!-- Filtro de categorias -->
-  <div class="gallery-filters" role="tablist" aria-label="Filtrar trabalhos por categoria">
-    <button class="gf-pill active" role="tab" aria-selected="true"  data-filter="todos">Todos</button>
-    <button class="gf-pill"        role="tab" aria-selected="false" data-filter="cabelo">Cabelo</button>
-    <button class="gf-pill"        role="tab" aria-selected="false" data-filter="barba">Barba</button>
-    <button class="gf-pill"        role="tab" aria-selected="false" data-filter="ambiente">Ambiente</button>
-    <button class="gf-pill"        role="tab" aria-selected="false" data-filter="video">Vídeos</button>
+  <!-- Filtro de categorias — botões de alternância, não separadores.
+       role="tab" sem tabpanel deixava o leitor de ecrã a anunciar
+       "separador 1 de 5" sem encontrar painel nenhum. -->
+  <div class="gallery-filters" role="group" aria-label="Filtrar trabalhos por categoria" data-i18n-aria="gal.filterGroup">
+    <button type="button" class="gf-pill active" aria-pressed="true"  data-filter="todos"    data-i18n="gal.f1">Todos</button>
+    <button type="button" class="gf-pill"        aria-pressed="false" data-filter="cabelo"   data-i18n="gal.f2">Cabelo</button>
+    <button type="button" class="gf-pill"        aria-pressed="false" data-filter="barba"    data-i18n="gal.f3">Barba</button>
+    <button type="button" class="gf-pill"        aria-pressed="false" data-filter="ambiente" data-i18n="gal.f4">Ambiente</button>
+    <button type="button" class="gf-pill"        aria-pressed="false" data-filter="video"    data-i18n="gal.f5">Vídeos</button>
   </div>
+  <p class="gallery-live" role="status" aria-live="polite"></p>
 
   <!-- Grid Bento unificado -->
   <div class="bento-grid" role="list">
 
     <!-- Item 1 — DESTAQUE (3 colunas) — ambiente -->
-    <div class="b-cell b-cell-feat" role="listitem" data-category="ambiente">
+    <div class="b-cell b-cell-feat" role="listitem" data-category="ambiente" tabindex="0">
       <div class="b-thumb">
         <img
           src="https://images.pexels.com/photos/3998389/pexels-photo-3998389.jpeg?auto=compress&cs=tinysrgb&w=1400"
-          alt="Nossa Barbearia"
-          loading="lazy"
+          alt="Salão da Corvo Barbearia com cadeiras e espelhos"
+          loading="lazy" decoding="async" width="1400" height="933"
           style="object-position: center 40%"
         >
         <div class="b-overlay" aria-hidden="true"></div>
       </div>
       <div class="b-info">
-        <span class="b-tag">✦ Ambiente</span>
-        <p class="b-name">Nossa Barbearia</p>
-        <p class="b-desc">Um espaço pensado para você se sentir em casa.</p>
+        <span class="b-tag">✦ <span data-i18n="gal.f4">Ambiente</span></span>
+        <p class="b-name" data-i18n="gal.i1">Nossa Barbearia</p>
+        <p class="b-desc" data-i18n="gal.i1d">Um espaço pensado para você se sentir em casa.</p>
       </div>
     </div>
 
     <!-- Item 2 — foto — cabelo -->
-    <div class="b-cell" role="listitem" data-category="cabelo">
+    <div class="b-cell" role="listitem" data-category="cabelo" tabindex="0">
       <div class="b-thumb">
         <img
           src="https://images.pexels.com/photos/3998403/pexels-photo-3998403.jpeg?auto=compress&cs=tinysrgb&w=800"
-          alt="Degradê Clássico"
-          loading="lazy"
+          alt="Degradê clássico finalizado"
+          loading="lazy" decoding="async" width="800" height="1200"
           style="object-position: center 20%"
         >
         <div class="b-overlay" aria-hidden="true"></div>
       </div>
       <div class="b-info">
-        <span class="b-tag">Cabelo</span>
-        <p class="b-name">Degradê Clássico</p>
+        <span class="b-tag" data-i18n="gal.f2">Cabelo</span>
+        <p class="b-name" data-i18n="gal.i2">Degradê Clássico</p>
       </div>
     </div>
 
     <!-- Item 3 — foto — barba -->
-    <div class="b-cell" role="listitem" data-category="barba">
+    <div class="b-cell" role="listitem" data-category="barba" tabindex="0">
       <div class="b-thumb">
         <img
           src="https://images.pexels.com/photos/3998430/pexels-photo-3998430.jpeg?auto=compress&cs=tinysrgb&w=800"
-          alt="Delineado"
-          loading="lazy"
+          alt="Delineado de barba com navalha"
+          loading="lazy" decoding="async" width="800" height="1200"
           style="object-position: center 25%"
         >
         <div class="b-overlay" aria-hidden="true"></div>
       </div>
       <div class="b-info">
-        <span class="b-tag">Barba</span>
-        <p class="b-name">Delineado</p>
+        <span class="b-tag" data-i18n="gal.f3">Barba</span>
+        <p class="b-name" data-i18n="gal.i3">Delineado</p>
       </div>
     </div>
 
     <!-- Item 4 — vídeo — barba -->
-    <div class="b-cell b-cell-video" role="listitem" data-category="video" data-category-2="barba">
+    <div class="b-cell b-cell-video" role="listitem" data-category="video" data-category-2="barba" tabindex="0">
       <div class="b-thumb">
-        <!-- TROQUE: <video autoplay muted loop playsinline src="galeria/video-barba.mp4"></video> -->
+        <!-- TROQUE: <video muted loop playsinline preload="none" src="/assets/galeria/video-barba.mp4"></video> -->
         <img
           src="https://images.pexels.com/photos/3998431/pexels-photo-3998431.jpeg?auto=compress&cs=tinysrgb&w=800"
-          alt="Barba Completa"
-          loading="lazy"
+          alt="Barba completa em execução"
+          loading="lazy" decoding="async" width="800" height="1200"
           style="object-position: center 30%"
         >
-        <div class="b-play-btn" aria-label="Play vídeo">
-          <svg viewBox="0 0 20 20" fill="none"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
+        <div class="b-play-btn" aria-label="Play vídeo" data-i18n-aria="gal.play">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
         </div>
         <div class="b-overlay" aria-hidden="true"></div>
       </div>
       <div class="b-info">
-        <span class="b-tag">Processo</span>
-        <p class="b-name">Barba Completa</p>
+        <span class="b-tag" data-i18n="gal.tagProcess">Processo</span>
+        <p class="b-name" data-i18n="gal.i4">Barba Completa</p>
       </div>
     </div>
 
     <!-- Item 5 — foto — cabelo -->
-    <div class="b-cell" role="listitem" data-category="cabelo">
+    <div class="b-cell" role="listitem" data-category="cabelo" tabindex="0">
       <div class="b-thumb">
         <img
           src="https://images.pexels.com/photos/3998404/pexels-photo-3998404.jpeg?auto=compress&cs=tinysrgb&w=800"
-          alt="Texturizado"
-          loading="lazy"
+          alt="Corte texturizado"
+          loading="lazy" decoding="async" width="800" height="1200"
           style="object-position: center 15%"
         >
         <div class="b-overlay" aria-hidden="true"></div>
       </div>
       <div class="b-info">
-        <span class="b-tag">Cabelo</span>
-        <p class="b-name">Texturizado</p>
+        <span class="b-tag" data-i18n="gal.f2">Cabelo</span>
+        <p class="b-name" data-i18n="gal.i5">Texturizado</p>
       </div>
     </div>
 
     <!-- Item 6 — vídeo — barba -->
-    <div class="b-cell b-cell-video" role="listitem" data-category="video" data-category-2="barba">
+    <div class="b-cell b-cell-video" role="listitem" data-category="video" data-category-2="barba" tabindex="0">
       <div class="b-thumb">
-        <!-- TROQUE: <video autoplay muted loop playsinline src="galeria/video-hot-towel.mp4"></video> -->
+        <!-- TROQUE: <video muted loop playsinline preload="none" src="/assets/galeria/video-hot-towel.mp4"></video> -->
         <img
           src="https://images.pexels.com/photos/3998427/pexels-photo-3998427.jpeg?auto=compress&cs=tinysrgb&w=800"
-          alt="Hot Towel Shave"
-          loading="lazy"
+          alt="Ritual de toalha quente"
+          loading="lazy" decoding="async" width="800" height="1200"
           style="object-position: center 35%"
         >
-        <div class="b-play-btn" aria-label="Play vídeo">
-          <svg viewBox="0 0 20 20" fill="none"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
+        <div class="b-play-btn" aria-label="Play vídeo" data-i18n-aria="gal.play">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
         </div>
         <div class="b-overlay" aria-hidden="true"></div>
       </div>
       <div class="b-info">
-        <span class="b-tag">Tutorial</span>
-        <p class="b-name">Hot Towel Shave</p>
+        <span class="b-tag" data-i18n="gal.tagTutorial">Tutorial</span>
+        <p class="b-name" data-i18n="gal.i6">Hot Towel Shave</p>
       </div>
     </div>
 
     <!-- Item 7 — foto — cabelo -->
-    <div class="b-cell" role="listitem" data-category="cabelo">
+    <div class="b-cell" role="listitem" data-category="cabelo" tabindex="0">
       <div class="b-thumb">
         <img
           src="https://images.pexels.com/photos/3998429/pexels-photo-3998429.jpeg?auto=compress&cs=tinysrgb&w=800"
-          alt="Corte Clássico"
-          loading="lazy"
+          alt="Corte clássico finalizado"
+          loading="lazy" decoding="async" width="800" height="1200"
           style="object-position: center 50%"
         >
         <div class="b-overlay" aria-hidden="true"></div>
       </div>
       <div class="b-info">
-        <span class="b-tag">Cabelo</span>
-        <p class="b-name">Corte Clássico</p>
+        <span class="b-tag" data-i18n="gal.f2">Cabelo</span>
+        <p class="b-name" data-i18n="gal.i7">Corte Clássico</p>
       </div>
     </div>
 
     <!-- Item 8 — foto — barba -->
-    <div class="b-cell" role="listitem" data-category="barba">
+    <div class="b-cell" role="listitem" data-category="barba" tabindex="0">
       <div class="b-thumb">
         <img
           src="https://images.pexels.com/photos/3998428/pexels-photo-3998428.jpeg?auto=compress&cs=tinysrgb&w=800"
-          alt="Pigmentação Perfeita"
-          loading="lazy"
+          alt="Pigmentação de barba"
+          loading="lazy" decoding="async" width="800" height="1200"
           style="object-position: center 30%"
         >
         <div class="b-overlay" aria-hidden="true"></div>
       </div>
       <div class="b-info">
-        <span class="b-tag">Barba</span>
-        <p class="b-name">Pigmentação Perfeita</p>
+        <span class="b-tag" data-i18n="gal.f3">Barba</span>
+        <p class="b-name" data-i18n="gal.i8">Pigmentação Perfeita</p>
       </div>
     </div>
 
@@ -668,8 +980,8 @@
 <section class="reviews" aria-labelledby="rev-h">
   <div class="reviews-hd">
     <div class="reviews-intro">
-      <p class="label-tag">O que dizem</p>
-      <h2 class="section-h" id="rev-h">Clientes que<br><em>voltam sempre.</em></h2>
+      <p class="label-tag" data-i18n="rev.tag">O que dizem</p>
+      <h2 class="section-h" id="rev-h" data-i18n-html="rev.h">Clientes que<br><em>voltam sempre.</em></h2>
     </div>
 
     <div class="reviews-panel" aria-label="Estatísticas de avaliação">
@@ -678,7 +990,7 @@
           <span class="rp-score" data-count="4.9">4.9</span>
           <div class="rp-top-info">
             <span class="rp-stars" aria-hidden="true">★★★★★</span>
-            <span class="rp-total">+8.200 avaliações</span>
+            <span class="rp-total"><span data-i18n="rev.total">+8.200 avaliações</span></span>
           </div>
         </div>
 
@@ -686,107 +998,113 @@
 
         <div class="rp-stat">
           <span class="rp-stat-val" data-count="98" data-suffix="%">0%</span>
-          <span class="rp-stat-label">Recomendam</span>
+          <span class="rp-stat-label" data-i18n="rev.s1">Recomendam</span>
         </div>
 
         <span class="rp-divider" aria-hidden="true"></span>
 
         <div class="rp-stat">
           <span class="rp-stat-val" data-count="8.2" data-suffix="k">0k</span>
-          <span class="rp-stat-label">Clientes</span>
+          <span class="rp-stat-label" data-i18n="rev.s2">Clientes</span>
         </div>
       </div>
 
       <div class="rp-bars">
         <div class="rp-chart-hd">
-          <span class="rp-chart-label">Satisfação dos clientes</span>
-          <span class="rp-chart-delta">+14% em 90 dias</span>
+          <span class="rp-chart-label" data-i18n="rev.chart">Satisfação dos clientes</span>
+          <span class="rp-chart-delta" data-i18n="rev.delta">+14% em 90 dias</span>
         </div>
         <div class="rp-spark-wrap">
-          <canvas id="rpSparkline" class="rp-spark" role="img" aria-label="Gráfico de satisfação dos clientes nos últimos 90 dias, em tendência de alta">Satisfação dos clientes subiu 14% nos últimos 90 dias.</canvas>
+          <canvas id="rpSparkline" class="rp-spark" role="img" aria-label="Gráfico de satisfação dos clientes nos últimos 90 dias, em tendência de alta" data-i18n-aria="rev.chartAlt">Satisfação dos clientes subiu 14% nos últimos 90 dias.</canvas>
         </div>
       </div>
     </div>
   </div>
 
+  <!--
+    TROQUE: as quatro avaliações abaixo são conteúdo de demonstração.
+    O selo "Avaliação verificada no Google" só é honesto quando aponta
+    para a review real. Ligar ao Places API (place_id) e substituir o
+    href de cada .rv-verified pelo link da avaliação de origem.
+  -->
   <div class="reviews-track" role="list">
     <article class="rv-card" role="listitem">
       <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
 
-      <p class="rv-txt">Melhor barbearia que já fui. Atenção incrível aos detalhes — o barbeiro entendeu exatamente o que eu queria.</p>
+      <p class="rv-txt" data-i18n="rev.q1">Melhor barbearia que já fui. Atenção incrível aos detalhes — o barbeiro entendeu exatamente o que eu queria.</p>
 
-      <span class="rv-verified">
+      <a class="rv-verified" href="https://www.google.com/maps/place/?q=place_id:PLACE_ID_AQUI" target="_blank" rel="noopener nofollow">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
-        Avaliação verificada
-      </span>
+        <span data-i18n="rev.verified">Avaliação verificada no Google</span>
+      </a>
 
       <footer class="rv-foot">
-        <img class="rv-av" src="https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="Rafael Mendes" width="40" height="40" loading="lazy">
+        <img class="rv-av" src="https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
         <div class="rv-id">
           <strong class="rv-name">Rafael Mendes</strong>
-          <span class="rv-date">há 3 dias</span>
+          <span class="rv-date" data-i18n="rev.d1">há 3 dias</span>
         </div>
-        <span class="rv-stars" aria-label="5 estrelas">★★★★★</span>
+        <span class="rv-stars" aria-label="5 estrelas" data-i18n-aria="rev.stars">★★★★★</span>
       </footer>
     </article>
 
     <article class="rv-card" role="listitem">
       <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
 
-      <p class="rv-txt">Ambiente super aconchegante, atendimento impecável. Já é minha barbearia fixa. Recomendo demais!</p>
+      <p class="rv-txt" data-i18n="rev.q2">Ambiente super aconchegante, atendimento impecável. Já é minha barbearia fixa. Recomendo demais!</p>
 
-      <span class="rv-verified">
+      <a class="rv-verified" href="https://www.google.com/maps/place/?q=place_id:PLACE_ID_AQUI" target="_blank" rel="noopener nofollow">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
-        Avaliação verificada
-      </span>
+        <span data-i18n="rev.verified">Avaliação verificada no Google</span>
+      </a>
 
       <footer class="rv-foot">
-        <img class="rv-av" src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="Carlos Santos" width="40" height="40" loading="lazy">
+        <img class="rv-av" src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
         <div class="rv-id">
           <strong class="rv-name">Carlos Santos</strong>
-          <span class="rv-date">há 1 semana</span>
+          <span class="rv-date" data-i18n="rev.d2">há 1 semana</span>
         </div>
-        <span class="rv-stars" aria-label="5 estrelas">★★★★★</span>
+        <span class="rv-stars" aria-label="5 estrelas" data-i18n-aria="rev.stars">★★★★★</span>
       </footer>
     </article>
 
     <article class="rv-card" role="listitem">
       <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
 
-      <p class="rv-txt">Fiz corte + barba e saí completamente diferente. Profissionalismo do início ao fim, sem pressa.</p>
+      <p class="rv-txt" data-i18n="rev.q3">Fiz corte + barba e saí completamente diferente. Profissionalismo do início ao fim, sem pressa.</p>
 
-      <span class="rv-verified">
+      <a class="rv-verified" href="https://www.google.com/maps/place/?q=place_id:PLACE_ID_AQUI" target="_blank" rel="noopener nofollow">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
-        Avaliação verificada
-      </span>
+        <span data-i18n="rev.verified">Avaliação verificada no Google</span>
+      </a>
 
       <footer class="rv-foot">
-        <img class="rv-av" src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="Lucas Pereira" width="40" height="40" loading="lazy">
+        <img class="rv-av" src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
         <div class="rv-id">
           <strong class="rv-name">Lucas Pereira</strong>
-          <span class="rv-date">há 2 semanas</span>
+          <span class="rv-date" data-i18n="rev.d3">há 2 semanas</span>
         </div>
-        <span class="rv-stars" aria-label="5 estrelas">★★★★★</span>
+        <span class="rv-stars" aria-label="5 estrelas" data-i18n-aria="rev.stars">★★★★★</span>
       </footer>
     </article>
 
     <article class="rv-card" role="listitem">
       <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
 
-      <p class="rv-txt">O agendamento online é prático demais. Fácil de usar e sempre tem horário disponível. 10/10.</p>
+      <p class="rv-txt" data-i18n="rev.q4">O agendamento online é prático demais. Fácil de usar e sempre tem horário disponível. 10/10.</p>
 
-      <span class="rv-verified">
+      <a class="rv-verified" href="https://www.google.com/maps/place/?q=place_id:PLACE_ID_AQUI" target="_blank" rel="noopener nofollow">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
-        Avaliação verificada
-      </span>
+        <span data-i18n="rev.verified">Avaliação verificada no Google</span>
+      </a>
 
       <footer class="rv-foot">
-        <img class="rv-av" src="https://images.pexels.com/photos/15946547/pexels-photo-15946547.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="Felipe Oliveira" width="40" height="40" loading="lazy">
+        <img class="rv-av" src="https://images.pexels.com/photos/15946547/pexels-photo-15946547.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
         <div class="rv-id">
           <strong class="rv-name">Felipe Oliveira</strong>
-          <span class="rv-date">há 1 mês</span>
+          <span class="rv-date" data-i18n="rev.d4">há 1 mês</span>
         </div>
-        <span class="rv-stars" aria-label="5 estrelas">★★★★★</span>
+        <span class="rv-stars" aria-label="5 estrelas" data-i18n-aria="rev.stars">★★★★★</span>
       </footer>
     </article>
   </div>
@@ -795,131 +1113,144 @@
 <!-- ═══════════════════════════════ LOCALIZAÇÃO ═══════════════════════════════ -->
 <section class="location" id="localizacao" aria-labelledby="loc-h">
   <div class="location-container">
- 
+
     <!-- INFORMAÇÕES -->
     <div class="loc-info-col">
       <div class="location-hd">
-        <p class="label-tag">Onde estamos</p>
-        <h2 class="section-h" id="loc-h">Venha nos<br><em>visitar.</em></h2>
-        <p class="loc-subtitle">Estamos localizados no coração da cidade. Uma experiência premium começa pelo ambiente.</p>
+        <p class="label-tag" data-i18n="loc.tag">Onde estamos</p>
+        <h2 class="section-h" id="loc-h" data-i18n-html="loc.h">Venha nos<br><em>visitar.</em></h2>
+        <p class="loc-subtitle" data-i18n="loc.sub">Na Rua Augusta, a dois minutos do metro Consolação. Uma experiência premium começa pelo ambiente.</p>
       </div>
- 
+
       <dl class="loc-grid">
         <div class="loc-item">
           <dt aria-hidden="true">
             <svg viewBox="0 0 18 18" fill="none"><path d="M9 1C6.24 1 4 3.24 4 6c0 3.75 5 11 5 11s5-7.25 5-11c0-2.76-2.24-5-5-5z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="6" r="1.8" stroke-width="1.2"/></svg>
           </dt>
           <div class="loc-body">
-            <span class="loc-label">Endereço</span>
+            <span class="loc-label" data-i18n="loc.addr">Endereço</span>
             <!-- TROQUE: endereço real -->
             <dd>Rua Augusta, 1200<br>Consolação — São Paulo / SP</dd>
           </div>
         </div>
- 
+
         <div class="loc-item">
           <dt aria-hidden="true">
             <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke-width="1.2"/><path d="M9 5v4l3 2" stroke-width="1.2" stroke-linecap="round"/></svg>
           </dt>
           <div class="loc-body">
-            <span class="loc-label">Horários</span>
-            <!-- TROQUE: horários reais -->
-            <dd>Seg–Sex: 9h–20h<br>Sáb: 8h–18h</dd>
+            <span class="loc-label" data-i18n="loc.hours">Horários</span>
+            <!-- Fonte única de verdade do horário: js/app.js › BUSINESS_HOURS.
+                 Os chips do hero e este bloco leem daqui. -->
+            <dd data-i18n-html="loc.hoursVal">Seg–Sex: 9h–20h<br>Sáb: 8h–18h<br>Dom: encerrado</dd>
           </div>
         </div>
- 
+
         <div class="loc-item">
           <dt aria-hidden="true">
             <svg viewBox="0 0 18 18" fill="none"><path d="M16 12.9v2.1a1.4 1.4 0 01-1.5 1.4 13.8 13.8 0 01-6-2.1A13.6 13.6 0 012.8 8.4 13.8 13.8 0 01.7 2.5 1.4 1.4 0 012.1 1h2.1c.7 0 1.3.5 1.4 1.2.1.7.3 1.4.6 2-.2.4-.1.8.2 1l1.3 1.3c.9 1.6 2.2 3 3.8 3.8l1.3 1.3c.3.2.7.3 1.1.2.6-.3 1.3-.5 2-.6.7-.1 1.2.7 1.2 1.4z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </dt>
           <div class="loc-body">
-            <span class="loc-label">Contato</span>
+            <span class="loc-label" data-i18n="loc.contact">Contato</span>
             <!-- TROQUE: número real -->
-            <dd>(11) 99999-9999<br>WhatsApp disponível</dd>
+            <dd><a href="tel:+5511999999999">(11) 99999-9999</a><br><span data-i18n="loc.wa">WhatsApp disponível</span></dd>
           </div>
         </div>
       </dl>
     </div>
- 
+
     <!-- MAPA + AÇÕES -->
     <div class="loc-map-col">
       <div class="map-box">
         <div class="map-badge">
           <span class="dot" aria-hidden="true"></span>
-          InBarber
+          Corvo
         </div>
- 
-        <div id="loc-map" class="map-canvas is-static" role="img" aria-label="Mapa mostrando a localização da InBarber em São Paulo"></div>
- 
+
+        <div id="loc-map" class="map-canvas is-static" role="img" aria-label="Mapa mostrando a localização da Corvo Barbearia em São Paulo" data-i18n-aria="loc.mapAlt"></div>
+
         <button type="button" class="map-expand" id="loc-map-expand">
           <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h5v5M7 16H2v-5M16 2l-6 6M2 16l6-6"/></svg>
-          Interagir
+          <span data-i18n="loc.interact">Interagir</span>
         </button>
       </div>
- 
+
       <div class="map-actions">
-        <!-- TROQUE: link real de agendamento -->
-        <a href="#" class="map-cta-primary">
+        <a href="servicos.html" class="map-cta-primary" data-book>
           <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="14" height="13" rx="2"/><path d="M2 7h14M6 1v4M12 1v4"/></svg>
-          Agendar horário
+          <span data-i18n="loc.book">Agendar horário</span>
         </a>
- 
+
         <div class="map-cta-row">
-          <!-- TROQUE: número real -->
-          <a href="https://wa.me/5511999999999" target="_blank" rel="noopener" class="map-cta-secondary map-cta-whatsapp">
+          <!-- TROQUE: número real. O ?text= já vai pré-preenchido: menos
+               atrito do que abrir o WhatsApp num ecrã em branco. -->
+          <a href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20queria%20marcar%20um%20hor%C3%A1rio%20na%20Corvo" target="_blank" rel="noopener" class="map-cta-secondary map-cta-whatsapp" data-wa>
             <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 8.7a6.7 6.7 0 10-3 5.7l3.1.8-.8-3a6.7 6.7 0 00.7-3.5z"/></svg>
             WhatsApp
           </a>
           <!-- TROQUE: @ real -->
-          <a href="https://instagram.com/inbarber" target="_blank" rel="noopener" class="map-cta-secondary map-cta-instagram">
+          <a href="https://instagram.com/corvobarbearia" target="_blank" rel="noopener" class="map-cta-secondary map-cta-instagram">
             <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="14" height="14" rx="4"/><circle cx="9" cy="9" r="3.3"/><circle cx="13" cy="5" r="0.6" fill="currentColor"/></svg>
             Instagram
           </a>
         </div>
       </div>
     </div>
- 
+
   </div>
 </section>
 
 <!-- ═══════════════════════════════ CTA FINAL ═══════════════════════════════ -->
 <section class="cta-final" aria-labelledby="cta-h" id="agendar-section">
   <div class="cta-inner">
-    <p class="label-tag label-dark">Pronto para o próximo nível?</p>
-    <h2 class="cta-h" id="cta-h">
+    <p class="label-tag label-dark" data-i18n="cta.tag">Pronto para o próximo nível?</p>
+    <h2 class="cta-h" id="cta-h" data-i18n-html="cta.h">
       Seu visual<br>começa<br><em>agora.</em>
     </h2>
-    <p class="cta-sub">Escolha seu horário e deixa o resto com a gente.</p>
-    <a href="#agendar" class="btn-fill-dark">Agendar meu horário →</a>
+    <p class="cta-sub" data-i18n="cta.sub">Escolha seu horário e deixa o resto com a gente.</p>
+
+    <!-- Quem chega aqui sem ter clicado no primeiro botão já rejeitou esse
+         caminho uma vez. A segunda saída é de baixo atrito: WhatsApp. -->
+    <div class="cta-btns">
+      <a href="servicos.html" class="btn-fill-dark" data-book data-i18n="cta.btn">Agendar meu horário →</a>
+      <a href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20queria%20marcar%20um%20hor%C3%A1rio%20na%20Corvo" target="_blank" rel="noopener" class="btn-wa-dark" data-wa>
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 8.7a6.7 6.7 0 10-3 5.7l3.1.8-.8-3a6.7 6.7 0 00.7-3.5z"/></svg>
+        <span data-i18n="cta.wa">Falar no WhatsApp</span>
+      </a>
+    </div>
   </div>
   <div class="cta-bg-word" aria-hidden="true">BOOK</div>
 </section>
 
+</main>
+
 <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
 <footer class="footer">
   <div class="footer-top">
-    <a href="#" class="brand brand--sm footer-brand" aria-label="InBarber — Início">
+    <a href="#" class="brand brand--sm footer-brand" aria-label="Corvo Barbearia — Início">
       <span class="brand-mark" aria-hidden="true">
-        <img src="/assets/logo.svg" alt="">
+        <img src="/assets/corvo-logo.svg" alt="" width="30" height="30">
       </span>
       <span class="brand-text">
-        <span class="brand-name">InBarber</span>
-        <span class="brand-tag">Est. 2026</span>
+        <span class="brand-name">Corvo Barbearia</span>
+        <span class="brand-tag">Est. 2013</span>
       </span>
     </a>
-    <p class="footer-desc">Tradição, técnica e estilo. Um espaço onde cada detalhe importa.</p>
+    <p class="footer-desc" data-i18n="foot.desc">Tradição, técnica e estilo. Um espaço onde cada detalhe importa.</p>
   </div>
 
   <nav class="footer-links" aria-label="Links do rodapé">
-    <a href="#sobre">Sobre</a>
-    <a href="#servicos">Serviços</a>
-    <a href="#galeria">Galeria</a>
-    <a href="#localizacao">Localização</a>
-    <a href="#">Privacidade</a>
+    <a href="#sobre"       data-i18n="nav.about">Sobre</a>
+    <a href="#servicos"    data-i18n="nav.services">Serviços</a>
+    <a href="#equipa"      data-i18n="nav.team">Equipa</a>
+    <a href="#galeria"     data-i18n="nav.gallery">Galeria</a>
+    <a href="#localizacao" data-i18n="nav.location">Localização</a>
+    <a href="#"            data-i18n="foot.privacy">Privacidade</a>
   </nav>
 
   <div class="footer-bottom">
-    <p>© 2026 InBarber. Todos os direitos reservados.</p>
-    <p>Powered by <strong><a href="https://www.incode.com" target="_blank">InCode</a></strong></p>
+    <p><span data-i18n="foot.rights">© 2026 Corvo Barbearia. Todos os direitos reservados.</span></p>
+    <p><span data-i18n="foot.by">Agendamento por</span> <strong><a href="https://www.incode.com" target="_blank" rel="noopener">InBarber</a></strong> · InCode</p>
   </div>
 </footer>
 
@@ -932,21 +1263,25 @@
       <div class="booking-dropdown-inner">
 
         <div class="booking-dropdown-header">
-          <p class="booking-dropdown-title">Seu atendimento</p>
-          <button class="booking-clear-btn" id="booking-clear-btn" aria-label="Cancelar todos os serviços">
+          <p class="booking-dropdown-title" data-i18n="book.title">Seu atendimento</p>
+          <button class="booking-clear-btn" id="booking-clear-btn" aria-label="Cancelar todos os serviços" data-i18n-aria="book.clearAria">
             <svg width="9" height="9" viewBox="0 0 12 12" fill="none" aria-hidden="true">
               <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            Cancelar tudo
+            <span data-i18n="book.clear">Cancelar tudo</span>
           </button>
         </div>
 
         <ul class="booking-dropdown-list" id="booking-dropdown-list"></ul>
 
+        <!-- Ninguém agenda por minutos: agenda por janela.
+             Esta linha diz a que horas a pessoa sai. -->
+        <p class="booking-window" id="booking-window" hidden></p>
+
         <div class="booking-dropdown-footer">
           <div class="booking-footer-left">
-            <span class="booking-dropdown-label">Total</span>
+            <span class="booking-dropdown-label" data-i18n="book.total">Total</span>
             <span class="booking-footer-duration" id="booking-footer-duration">
               <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                 <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/>
@@ -965,6 +1300,7 @@
 
       <button class="booking-cart-btn" id="booking-cart-btn"
               aria-label="Ver serviços selecionados"
+              data-i18n-aria="book.cartAria"
               aria-expanded="false"
               aria-controls="booking-dropdown">
         <svg class="cart-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -979,10 +1315,10 @@
         <span class="booking-summary-text" id="booking-summary-text"></span>
       </div>
 
-      <a href="#agendar" class="booking-bar-cta" id="booking-bar-cta">
+      <a href="servicos.html" class="booking-bar-cta" id="booking-bar-cta" data-book>
         <span class="booking-total" id="booking-total">R$ 0</span>
-        <span class="booking-cta-label">Agendar</span>
-        <span class="booking-arrow">→</span>
+        <span class="booking-cta-label" data-i18n="book.cta">Agendar</span>
+        <span class="booking-arrow" aria-hidden="true">→</span>
       </a>
 
     </div>
@@ -991,14 +1327,11 @@
 
 <!-- Sticky CTA mobile -->
 <div class="sticky-cta is-hidden" id="sticky-cta">
-  <a href="#agendar">
-    Agendar horário
-    <span class="sticky-arrow">→</span>
+  <a href="servicos.html" data-book>
+    <span data-i18n="hero.cta1">Agendar horário</span>
+    <span class="sticky-arrow" aria-hidden="true">→</span>
   </a>
 </div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
 <!--
   ⚠ NÃO carregar /js/servicos.js aqui.
@@ -1006,9 +1339,13 @@
   carregados na mesma página, as declarações repetidas (const nav,
   const selected, …) provocam "Identifier already declared" e o
   segundo script nem chega a correr — foi o que matou os botões da nav.
+
+  Leaflet e Chart.js também já não estão aqui: js/app.js carrega-os
+  sob IntersectionObserver, só quando o mapa / o gráfico se aproximam.
 -->
-<script src="/js/app.js"></script>
-<script src="/js/auth-confirm.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/js/app.js" defer></script>
+<script src="/js/auth-confirm.js" defer></script>
 
 </body>
 </html>

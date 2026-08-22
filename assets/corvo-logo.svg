@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Corvo Barbearia">
+  <rect width="64" height="64" rx="16" fill="#0047FF"/>
+  <path fill="#0A0A0A" d="M39 13c11 0 19 7.5 19 18.4C58 43 49.6 51.4 38.4 51.4c-7 0-12.6-3.2-15.6-8.6L5.4 34.3c-1.4-.7-1.4-3.9 0-4.6l17.3-9.4C25.8 15.5 31.7 13 39 13Z"/>
+  <circle cx="43.4" cy="27.6" r="3.7" fill="#00F0FF"/>
+  <path stroke="#0047FF" stroke-width="1.9" stroke-linecap="round" d="M8.8 32.4h13.4"/>
+</svg>

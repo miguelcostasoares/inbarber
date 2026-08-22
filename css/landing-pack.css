@@ -1,0 +1,653 @@
+/* ════════════════════════════════════════════════════════════════
+   CORVO — LANDING PACK
+   Carregado depois de style.css.
+
+   Só componentes NOVOS e duas correções de contraste feitas ao
+   nível dos tokens (:root), não por sobreposição de regras. O
+   style.css não foi tocado: continua a ser a fonte única do
+   desenho existente, e este ficheiro só acrescenta.
+
+   Índice
+     1. Tokens corrigidos (contraste)
+     2. Skip link
+     3. CTA da nav + item de agendamento no drawer
+     4. Hero — pausa de movimento, foto, horários livres
+     5. Serviços — cartões como <button>, preço riscado, condições
+     6. Equipa
+     7. Galeria — região live · Mapa — empilhamento
+     8. CTA final — saída por WhatsApp
+     9. Carrinho — janela de tempo
+    10. Movimento pausado (WCAG 2.2.2)
+════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────
+   1. TOKENS — contraste
+
+   --muted #6B6762 sobre --bg-2 dava 3,42:1: abaixo do mínimo de
+   4,5:1 da WCAG AA para texto pequeno, e a página usa --muted em
+   legendas de 10px. #918B83 dá 5,6:1 sobre --bg-2 e 5,9:1 sobre
+   --bg, sem mudar a temperatura da cor.
+───────────────────────────────────────── */
+:root {
+  --muted: #918B83;
+  --wa:    #25D366;
+}
+
+/* Os rótulos das estatísticas do hero assentam sobre vídeo, onde o
+   contraste muda frame a frame. Menos transparência, mais corpo. */
+.hero-stat span {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+/* ─────────────────────────────────────────
+   2. SKIP LINK
+   Primeiro elemento focável da página. Invisível até ser focado.
+───────────────────────────────────────── */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 999;
+  transform: translateY(-160%);
+  background: var(--gold);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  padding: 10px 16px;
+  border-radius: var(--r-sm);
+  transition: transform 180ms var(--ease-out);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--gold-lt);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────
+   3. CTA DA NAV
+
+   A barra de topo é o único elemento visível em 100% do scroll em
+   desktop. Numa página cujo objetivo único é marcar horário, era o
+   sítio mais valioso e estava vazio.
+───────────────────────────────────────── */
+.nav-cta {
+  display: none;                 /* no telemóvel manda o sticky CTA */
+  align-items: center;
+  height: 36px;
+  padding: 0 1.05rem;
+  background: var(--gold);
+  color: var(--white);
+  border-radius: var(--r-sm);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 160ms ease-out, transform 110ms var(--ease-out);
+}
+.nav-cta:hover  { background: #0038cc; }
+.nav-cta:active { transform: scale(0.97); }
+.nav-cta:focus-visible {
+  outline: 2px solid var(--gold-lt);
+  outline-offset: 3px;
+}
+
+@media (min-width: 900px) {
+  .nav-cta { display: inline-flex; }
+}
+
+/* Agendar é o primeiro item do drawer: é o que a página quer que
+   aconteça, não o último sítio onde se procura. */
+.nav-drawer-item--cta .nav-drawer-icon {
+  background: var(--gold-bg);
+  color: var(--gold-lt);
+}
+.nav-drawer-item--cta strong { color: var(--white); }
+
+/* ─────────────────────────────────────────
+   4. HERO
+───────────────────────────────────────── */
+
+/* ── Botão de pausa de movimento ── */
+.hero-motion {
+  position: absolute;
+  z-index: 4;
+  top: calc(var(--offset) + 0.75rem);
+  right: 1.25rem;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 50%;
+  background: rgba(10,10,10,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--cream-2);
+  cursor: pointer;
+  transition: background 160ms ease-out, color 160ms ease-out, border-color 160ms ease-out;
+}
+.hero-motion:hover {
+  background: rgba(10,10,10,0.8);
+  color: var(--white);
+  border-color: rgba(255,255,255,0.3);
+}
+.hero-motion:focus-visible {
+  outline: 2px solid var(--gold-lt);
+  outline-offset: 3px;
+}
+.hero-motion svg { width: 12px; height: 12px; }
+.hero-motion .mt-play  { display: none; }
+.hero-motion[aria-pressed="true"] .mt-pause { display: none; }
+.hero-motion[aria-pressed="true"] .mt-play  { display: block; }
+
+@media (min-width: 1024px) {
+  .hero-motion { right: 4rem; }
+}
+
+/* ── Foto do hero ──
+   O <video> saiu; entrou uma <img> com srcset. O Ken Burns lento que
+   já existia no style.css aplica-se tal e qual à imagem — o que muda
+   é que agora se pode desligar, aqui e no botão de pausa. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-img img { animation: none !important; transform: none !important; }
+}
+
+/* ── Próximos horários livres ── */
+.hero-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.75rem;
+  animation: slideUp 0.7s 0.5s var(--ease-out) both;
+}
+.hero-slots[hidden] { display: none; }
+
+.hero-slots-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--cream-2);
+  opacity: 0.75;
+}
+.hero-slots-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold-lt);
+  box-shadow: 0 0 0 3px rgba(0,240,255,0.18);
+  flex-shrink: 0;
+}
+
+.hero-slots-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0.5rem 0.85rem;
+  min-width: 84px;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: var(--r-sm);
+  background: rgba(10,10,10,0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 160ms ease-out, background 160ms ease-out, transform 110ms var(--ease-out);
+}
+.hero-slot:hover {
+  border-color: var(--gold-lt);
+  background: rgba(0,71,255,0.14);
+}
+.hero-slot:active { transform: scale(0.97); }
+.hero-slot:focus-visible {
+  outline: 2px solid var(--gold-lt);
+  outline-offset: 3px;
+}
+
+.hero-slot-day {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--cream-2);
+  opacity: 0.7;
+}
+.hero-slot-time {
+  font-family: var(--ff-d);
+  font-size: 1.15rem;
+  line-height: 1;
+  color: var(--white);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-slots-empty {
+  font-size: 12px;
+  color: var(--cream-2);
+  opacity: 0.75;
+}
+
+.hero-slots-all {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gold-lt);
+  opacity: 0.85;
+  width: fit-content;
+  transition: opacity 160ms ease-out;
+}
+.hero-slots-all:hover { opacity: 1; }
+.hero-slots-all:focus-visible {
+  outline: 2px solid var(--gold-lt);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* Em ecrãs baixos (landscape de telemóvel) os chips roubam o hero */
+@media (max-height: 620px) {
+  .hero-slots { display: none; }
+}
+
+/* ─────────────────────────────────────────
+   5. SERVIÇOS
+
+   O cartão passou de <li role="listitem" aria-pressed> para
+   <li><button aria-pressed></button></li>. aria-pressed só é
+   válido em role="button" — num item de lista era ignorado, e o
+   leitor de ecrã anunciava "item de lista" sem nunca dizer se
+   estava selecionado.
+───────────────────────────────────────── */
+.svc-list > li { display: flex; }
+
+.svc-card {
+  width: 100%;
+  display: block;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* Os filhos passaram de <div>/<h3>/<p> para <span> — dentro de
+   .svc-meta (que é bloco) precisam de display explícito. */
+.svc-name,
+.svc-desc { display: block; }
+
+/* Preço de combo: o riscado torna a poupança visível.
+   Antes, "Corte + Barba" a R$ 65 era exatamente a soma dos avulsos
+   (35 + 30) — o badge "Mais pedido" prometia um valor que não
+   existia. */
+.svc-badge { white-space: nowrap; }
+
+.svc-save {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  color: var(--gold-lt);
+  white-space: nowrap;
+}
+
+.svc-price-was {
+  font-family: var(--ff-b);
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration-thickness: 1px;
+  margin-right: 4px;
+  vertical-align: 1px;
+}
+
+/* Condições: as três objeções silenciosas que fecham o separador */
+.svc-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  padding: 1.5rem 1.25rem 0;
+  max-width: 640px;
+}
+.svc-terms li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.svc-terms li::before {
+  content: '';
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,240,255,0.45);
+  background:
+    linear-gradient(45deg, transparent 44%, var(--gold-lt) 44%, var(--gold-lt) 56%, transparent 56%),
+    linear-gradient(-45deg, transparent 44%, var(--gold-lt) 44%, var(--gold-lt) 56%, transparent 56%);
+  background-size: 7px 1.5px, 7px 1.5px;
+  background-position: 1.5px 6px, 4px 5px;
+  background-repeat: no-repeat;
+}
+
+@media (min-width: 640px) {
+  .svc-terms { padding-inline: 2rem; }
+}
+@media (min-width: 1024px) {
+  .svc-terms { padding-inline: 4rem; }
+}
+
+/* ─────────────────────────────────────────
+   6. EQUIPA
+
+   Numa barbearia escolhe-se a pessoa antes do serviço. A landing
+   não mostrava uma cara, apesar de existir uma página inteira de
+   escolha de barbeiro no fluxo.
+───────────────────────────────────────── */
+.team {
+  padding: 4rem 1.25rem;
+  background: var(--bg-2);
+  border-top: 1px solid var(--divider);
+}
+
+.team-hd {
+  max-width: 560px;
+  margin-bottom: 2.25rem;
+}
+.team-sub {
+  margin-top: 0.9rem;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.team-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.team-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "av body"
+    "cta cta";
+  align-items: start;
+  gap: 1rem;
+  padding: 1.15rem;
+  background: var(--bg-3);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-md);
+  transition: border-color 200ms ease-out, transform 200ms var(--ease-out);
+}
+.team-card:hover {
+  border-color: rgba(0,71,255,0.32);
+  transform: translateY(-2px);
+}
+
+/* TROQUE: quando entrarem as fotos reais, este bloco vira <img>
+   com a mesma dimensão — o resto do cartão não muda. */
+.team-av {
+  grid-area: av;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(150deg, rgba(0,71,255,0.28), rgba(0,240,255,0.10));
+  border: 1px solid rgba(0,240,255,0.22);
+  object-fit: cover;
+}
+.team-av > span {
+  font-family: var(--ff-d);
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  color: var(--cream);
+}
+
+.team-body { grid-area: body; min-width: 0; }
+
+.team-name {
+  font-family: var(--ff-d);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.2;
+}
+.team-role {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--cream-2);
+}
+
+.team-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.team-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gold-lt);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.team-dot { opacity: 0.5; }
+
+.team-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 0.85rem;
+}
+.team-tags li {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cream-2);
+  background: var(--bg-4);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-full);
+  padding: 3px 9px;
+}
+
+.team-cta {
+  grid-area: cta;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 0.35rem;
+  height: 40px;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(0,71,255,0.35);
+  background: var(--gold-bg);
+  color: var(--cream);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  transition: background 160ms ease-out, color 160ms ease-out, border-color 160ms ease-out;
+}
+.team-cta:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--white);
+}
+.team-cta:focus-visible {
+  outline: 2px solid var(--gold-lt);
+  outline-offset: 3px;
+}
+
+@media (min-width: 640px) {
+  .team { padding-inline: 2rem; }
+  .team-list { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .team { padding: 6rem 4rem; }
+  .team-list { grid-template-columns: repeat(4, 1fr); }
+  .team-card {
+    grid-template-columns: 1fr;
+    grid-template-areas: "av" "body" "cta";
+    gap: 0.9rem;
+    padding: 1.4rem;
+  }
+  .team-av { width: 64px; height: 64px; }
+  .team-cta { margin-top: auto; }
+}
+
+/* ─────────────────────────────────────────
+   7. GALERIA — anúncio do filtro
+
+   Visualmente o grid muda; para quem usa leitor de ecrã, nada
+   acontecia. Esta região diz quantos trabalhos ficaram visíveis.
+───────────────────────────────────────── */
+.gallery-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────
+   MAPA — a nav tem de ficar por cima
+
+   O Leaflet usa z-index altos e absolutos nos seus próprios
+   elementos: 400 nos painéis, 800 nos controlos, 1000 nos cantos.
+   A nav está a 200 e o ticker a 199, por isso o mapa passava-lhes
+   à frente ao fazer scroll.
+
+   Subir a nav para 1001 seria uma corrida sem fim. O correto é
+   isolar: `isolation: isolate` faz da .map-box um contexto de
+   empilhamento próprio, e todos os z-index do Leaflet passam a ser
+   relativos a ela — deixam de existir para o resto da página.
+───────────────────────────────────────── */
+.map-box {
+  isolation: isolate;
+  z-index: 0;
+}
+
+/* Cinto e suspensórios: mesmo dentro da caixa, os controlos não
+   precisam de 1000. */
+.map-box .leaflet-pane   { z-index: 4; }
+.map-box .leaflet-top,
+.map-box .leaflet-bottom { z-index: 6; }
+.map-box .leaflet-control { z-index: 5; }
+
+/* A badge e o botão "Interagir" continuam acima do mapa */
+.map-box .map-badge,
+.map-box .map-expand { z-index: 10; }
+
+/* Se o Leaflet não carregar, o buraco do mapa não fica mudo */
+.map-canvas.map-failed::after {
+  content: 'Rua Augusta, 1200 — Consolação, São Paulo / SP';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────
+   8. CTA FINAL — segunda saída
+
+   Quem chega ao fundo sem ter clicado no primeiro botão já
+   rejeitou esse caminho uma vez. Repeti-lo não converte.
+───────────────────────────────────────── */
+.cta-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-wa-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 1.3rem;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(10,10,10,0.28);
+  background: transparent;
+  color: var(--bg);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  transition: background 160ms ease-out, color 160ms ease-out, border-color 160ms ease-out;
+}
+.btn-wa-dark svg { width: 15px; height: 15px; flex-shrink: 0; }
+.btn-wa-dark:hover {
+  background: var(--wa);
+  border-color: var(--wa);
+  color: #062d14;
+}
+.btn-wa-dark:active { transform: scale(0.97); }
+.btn-wa-dark:focus-visible {
+  outline: 2px solid var(--bg);
+  outline-offset: 3px;
+}
+
+/* ─────────────────────────────────────────
+   9. CARRINHO — janela de tempo
+
+   O total dizia "95 min". Ninguém agenda por minutos: agenda por
+   janela. Esta linha responde a "entro às 14:00, saio a tempo de
+   quê?".
+───────────────────────────────────────── */
+.booking-window {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.55rem 1.1rem 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--cream-2);
+}
+.booking-window[hidden] { display: none; }
+.booking-window::before {
+  content: '';
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold-lt);
+}
+
+/* ─────────────────────────────────────────
+   10. MOVIMENTO PAUSADO — WCAG 2.2.2
+
+   O prefers-reduced-motion desliga as animações CSS, mas não o
+   vídeo em loop nem o marquee. O botão do hero desliga os três.
+───────────────────────────────────────── */
+.motion-paused .ticker-track,
+.motion-paused .hero-img img,
+.motion-paused .about-bg-word,
+.motion-paused .gal-icon,
+.motion-paused .hero-scroll-line::after {
+  animation-play-state: paused !important;
+}

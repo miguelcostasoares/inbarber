@@ -1,5 +1,6 @@
 /* ════════════════════════════════════════════════════════════════
-   InBarber — app.js  (página principal)
+   Corvo Barbearia — app.js  (landing)
+   Agendamento por InBarber · InCode
 
    ⚠ Tudo dentro de um IIFE.
    As constantes deixam de viver no escopo global, por isso este
@@ -13,30 +14,179 @@
   const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
 
   /* ════════════════════════════════════════
-     i18n — Traduções
+     i18n
+     As traduções vivem em js/i18n.js (carregado antes deste
+     ficheiro). Aqui só se lê. Se por alguma razão o módulo não
+     carregar, t() devolve o fallback passado e a página continua
+     a funcionar em português.
   ════════════════════════════════════════ */
-  const i18n = {
-    pt: { 'drawer.profile': 'Perfil', 'drawer.profile_sub': 'Gerir a sua conta', 'drawer.language': 'Idioma', 'lang.label': 'Português' },
-    en: { 'drawer.profile': 'Profile', 'drawer.profile_sub': 'Manage your account', 'drawer.language': 'Language', 'lang.label': 'English' },
-    es: { 'drawer.profile': 'Perfil', 'drawer.profile_sub': 'Gestionar tu cuenta', 'drawer.language': 'Idioma', 'lang.label': 'Español' },
+  const t = (key, vars, fallback) =>
+    (window.I18N ? window.I18N.t(key, vars) : (fallback !== undefined ? fallback : key));
+
+  const currentLang = () => (window.I18N ? window.I18N.lang : 'pt');
+  const localeTag   = () => ({ pt: 'pt-BR', en: 'en-US', es: 'es-ES' }[currentLang()] || 'pt-BR');
+
+  /* ════════════════════════════════════════
+     LAZYLIB — carrega bibliotecas de terceiros a pedido
+
+     O Leaflet (mapa) e o Chart.js (sparkline) servem conteúdo que
+     está muito abaixo da dobra. Carregá-los no <head> custava
+     ~250 KB a toda a gente, incluindo a quem sai antes de chegar
+     lá. Agora entram sob IntersectionObserver.
+
+     Cada URL é pedida no máximo uma vez: a promessa fica em cache.
+  ════════════════════════════════════════ */
+  const LazyLib = (() => {
+    const cache = new Map();
+
+    function load(url, kind) {
+      if (cache.has(url)) return cache.get(url);
+
+      const promise = new Promise((resolve, reject) => {
+        const el = kind === 'css'
+          ? Object.assign(document.createElement('link'), { rel: 'stylesheet', href: url })
+          : Object.assign(document.createElement('script'), { src: url, async: true });
+
+        el.onload  = () => resolve();
+        el.onerror = () => reject(new Error('Falhou a carregar ' + url));
+        document.head.appendChild(el);
+      });
+
+      cache.set(url, promise);
+      return promise;
+    }
+
+    return {
+      script: url => load(url, 'js'),
+      style : url => load(url, 'css'),
+      /* Dispara uma vez, quando o alvo se aproxima do viewport */
+      whenNear(target, margin, fn) {
+        if (!target) return;
+        if (!('IntersectionObserver' in window)) { fn(); return; }
+        const io = new IntersectionObserver(entries => {
+          if (!entries.some(e => e.isIntersecting)) return;
+          io.disconnect();
+          fn();
+        }, { rootMargin: margin || '400px' });
+        io.observe(target);
+      }
+    };
+  })();
+
+  const CDN = {
+    leafletCss: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+    leafletJs : 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    chartJs   : 'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js'
   };
 
-  let currentLang = localStorage.getItem('lang') || 'pt';
+  /* ════════════════════════════════════════
+     HORÁRIO DE FUNCIONAMENTO — fonte única de verdade
+     Alimenta os chips do hero e a linha "termina às" do carrinho.
+     Em produção, trocar por uma chamada à agenda real.
+  ════════════════════════════════════════ */
+  const BUSINESS_HOURS = {
+    /* 0 = domingo … 6 = sábado. null = encerrado. */
+    0: null,
+    1: { open: 9, close: 20 },
+    2: { open: 9, close: 20 },
+    3: { open: 9, close: 20 },
+    4: { open: 9, close: 20 },
+    5: { open: 9, close: 20 },
+    6: { open: 8, close: 18 }
+  };
+  const SLOT_MINUTES = 30;
 
-  function applyLang(lang) {
-    currentLang = lang;
-    localStorage.setItem('lang', lang);
-    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : lang;
-    const t = i18n[lang] || i18n.pt;
-    document.querySelectorAll('[data-i18n]').forEach(el => { if (t[el.dataset.i18n]) el.textContent = t[el.dataset.i18n]; });
-    const label = document.querySelector('.lang-current-label');
-    if (label) label.textContent = t['lang.label'];
-    document.querySelectorAll('.lang-pill').forEach(p => {
-      const active = p.dataset.lang === lang;
-      p.classList.toggle('active', active);
-      p.setAttribute('aria-pressed', String(active));
-    });
-  }
+  /* ════════════════════════════════════════
+     SCHEDULE — disponibilidade
+
+     Calcula os próximos horários livres a partir do horário de
+     funcionamento. Em produção isto passa a ser uma chamada à
+     agenda real; a forma da resposta é a mesma, por isso só muda
+     o corpo de nextSlots().
+
+     A ocupação abaixo é determinística (semente = dia + hora), para
+     que o mockup não mude de horários a cada refresh.
+  ════════════════════════════════════════ */
+  const Schedule = (() => {
+
+    function isBooked(date) {
+      const seed = date.getDate() * 137 + date.getHours() * 31 + date.getMinutes();
+      return (seed * 2654435761 % 100) < 45;   /* ~45% ocupado */
+    }
+
+    function nextSlots(count) {
+      const out = [];
+      const cursor = new Date();
+
+      /* Arredonda para o próximo múltiplo de SLOT_MINUTES, com 30 min
+         de antecedência mínima para o cliente chegar. */
+      cursor.setSeconds(0, 0);
+      cursor.setMinutes(cursor.getMinutes() + 30);
+      cursor.setMinutes(Math.ceil(cursor.getMinutes() / SLOT_MINUTES) * SLOT_MINUTES);
+
+      /* Procura até 14 dias à frente. */
+      for (let guard = 0; guard < 14 * 24 * 4 && out.length < count; guard++) {
+        const hours = BUSINESS_HOURS[cursor.getDay()];
+
+        if (!hours) {                       /* encerrado: salta para o dia seguinte */
+          cursor.setDate(cursor.getDate() + 1);
+          cursor.setHours(0, 0, 0, 0);
+          continue;
+        }
+
+        const minutesOfDay = cursor.getHours() * 60 + cursor.getMinutes();
+        const opens  = hours.open  * 60;
+        const closes = hours.close * 60 - 60;   /* último horário: 1h antes de fechar */
+
+        if (minutesOfDay < opens) {
+          cursor.setHours(hours.open, 0, 0, 0);
+          continue;
+        }
+        if (minutesOfDay > closes) {
+          cursor.setDate(cursor.getDate() + 1);
+          cursor.setHours(0, 0, 0, 0);
+          continue;
+        }
+
+        if (!isBooked(cursor)) out.push({ date: new Date(cursor) });
+        cursor.setMinutes(cursor.getMinutes() + SLOT_MINUTES);
+      }
+
+      return out;
+    }
+
+    function isSameDay(a, b) {
+      return a.getFullYear() === b.getFullYear()
+          && a.getMonth() === b.getMonth()
+          && a.getDate() === b.getDate();
+    }
+
+    function dayLabel(date) {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      if (isSameDay(date, now))      return t('slots.today', null, 'Hoje');
+      if (isSameDay(date, tomorrow)) return t('slots.tomorrow', null, 'Amanhã');
+      return t('day.' + date.getDay(), null, '');
+    }
+
+    function timeLabel(date) {
+      return date.toLocaleTimeString(localeTag(), {
+        hour: '2-digit', minute: '2-digit', hour12: currentLang() === 'en'
+      });
+    }
+
+    /* ISO local (sem UTC) — é o que a página de agendamento espera */
+    function isoLocal(date) {
+      const pad = n => String(n).padStart(2, '0');
+      return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate())
+           + 'T' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+    }
+
+    return { nextSlots, dayLabel, timeLabel, isoLocal };
+  })();
+
 
   /* ════════════════════════════════════════
      NAV DRAWER
@@ -80,11 +230,11 @@
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
 
-    document.querySelectorAll('.lang-pill').forEach(pill => {
-      pill.addEventListener('click', () => applyLang(pill.dataset.lang));
+    /* As pills de idioma são ligadas em js/i18n.js — aqui só se fecha
+       o drawer depois da troca, para a pessoa ver a página traduzida. */
+    document.addEventListener('i18n:change', () => {
+      if (drawer.classList.contains('open')) closeDrawer();
     });
-
-    applyLang(currentLang);
   })();
 
   /* ════════════════════════════════════════
@@ -114,15 +264,28 @@
     const raw = el.dataset.count, suffix = el.dataset.suffix || '';
     const target = parseFloat(raw), isFloat = raw.includes('.');
     const dur = 1500, start = performance.now();
-    const easeOut = t => 1 - Math.pow(1 - t, 3);
+    const easeOut = x => 1 - Math.pow(1 - x, 3);
     (function step(now) {
       const p = Math.min((now - start) / dur, 1), val = target * easeOut(p);
-      el.textContent = (isFloat ? val.toFixed(1) : Math.round(val).toLocaleString('pt-BR')) + suffix;
+      el.textContent = (isFloat ? val.toFixed(1) : Math.round(val).toLocaleString(localeTag())) + suffix;
       if (p < 1) requestAnimationFrame(step);
     })(performance.now());
   }
+  /* Se o elemento já ficou para trás (link de âncora, refresh a meio
+     da página, voltar atrás no histórico), o IntersectionObserver
+     nunca dispara e o número ficava em "0". Nesse caso escreve-se o
+     valor final de uma vez — sem animação, mas com o número certo. */
+  function settleCount(el) {
+    const raw = el.dataset.count, suffix = el.dataset.suffix || '';
+    const target = parseFloat(raw), isFloat = raw.includes('.');
+    el.textContent = (isFloat ? target.toFixed(1) : target.toLocaleString(localeTag())) + suffix;
+  }
+
   const countIO = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { animCount(e.target); countIO.unobserve(e.target); } });
+    entries.forEach(e => {
+      if (e.isIntersecting) { animCount(e.target); countIO.unobserve(e.target); }
+      else if (e.boundingClientRect.bottom < 0) { settleCount(e.target); countIO.unobserve(e.target); }
+    });
   }, { threshold: 0.6 });
   $$('[data-count]').forEach(el => countIO.observe(el));
 
@@ -218,16 +381,24 @@
       document.querySelectorAll('.rp-stat-val[data-count]').forEach(animateCount);
     }
 
+    /* O count-up não depende de biblioteca nenhuma: arranca já.
+       O Chart.js só é pedido quando a secção se aproxima — e se
+       falhar, o <canvas> mantém o texto alternativo que já lá está. */
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting && !hasAnimated) {
+        if (hasAnimated) return;
+        /* Intersecta, ou já ficou acima do viewport (âncora / refresh
+           a meio da página): em qualquer dos casos há que resolver. */
+        if (entry.isIntersecting || entry.boundingClientRect.bottom < 0) {
           hasAnimated = true;
-          initReviewsSparkline();
-          initReviewsCountUp();
           observer.disconnect();
+          initReviewsCountUp();
+          LazyLib.script(CDN.chartJs)
+            .then(initReviewsSparkline)
+            .catch(err => console.warn('[corvo] sparkline:', err.message));
         }
       });
-    }, { threshold: 0.3 });
+    }, { threshold: 0.3, rootMargin: '300px' });
 
     observer.observe(reviewsSection);
   })();
@@ -404,19 +575,34 @@
       });
     }
 
+    /* Estes são botões de alternância, não separadores.
+       role="tab" sem tabpanel nem aria-controls deixava o leitor de
+       ecrã a anunciar "separador 1 de 5" e a procurar um painel que
+       não existe. aria-pressed diz a verdade sobre o que são. */
+    const liveRegion = $('.gallery-live', section);
+
+    function announce() {
+      if (!liveRegion) return;
+      const visible = $$('.b-cell', section).filter(c => !c.classList.contains('is-hidden')).length;
+      liveRegion.textContent = visible === 1
+        ? t('gal.liveOne', null, '')
+        : t('gal.live', { n: visible }, '');
+    }
+
     pills.forEach(pill => {
       pill.addEventListener('click', () => {
         pills.forEach(p => {
           p.classList.remove('active');
-          p.setAttribute('aria-selected', 'false');
+          p.setAttribute('aria-pressed', 'false');
         });
         pill.classList.add('active');
-        pill.setAttribute('aria-selected', 'true');
+        pill.setAttribute('aria-pressed', 'true');
 
         applyFilter(pill.dataset.filter);
+        announce();
       });
 
-      /* Acessibilidade: setas entre tabs */
+      /* Acessibilidade: setas percorrem o grupo de filtros */
       pill.addEventListener('keydown', e => {
         const idx = pills.indexOf(pill);
         if (e.key === 'ArrowRight') { e.preventDefault(); pills[(idx + 1) % pills.length].focus(); }
@@ -643,6 +829,27 @@
     return `${m} min`;
   }
 
+  /* ── Janela de tempo ──
+     Ninguém agenda por minutos: agenda por janela. Esta linha diz
+     a que horas a pessoa sai, a contar do próximo horário livre. */
+  const bookingWindow = $('#booking-window');
+
+  function updateWindow(mins) {
+    if (!bookingWindow) return;
+    if (!mins) { bookingWindow.hidden = true; return; }
+
+    const slot = Schedule.nextSlots(1)[0];
+    if (!slot) { bookingWindow.hidden = true; return; }
+
+    const end = new Date(slot.date.getTime() + mins * 60000);
+    bookingWindow.hidden = false;
+    bookingWindow.textContent = t('book.window', {
+      day  : Schedule.dayLabel(slot.date).toLowerCase(),
+      start: Schedule.timeLabel(slot.date),
+      end  : Schedule.timeLabel(end)
+    }, '');
+  }
+
   /* ── Extrai minutos de uma string como "60 min" ── */
   function parseMins(durStr) {
     return parseInt(durStr, 10) || 0;
@@ -665,7 +872,7 @@
   function updateBadge(n) {
     if (!cartBadge) return;
     cartBadge.textContent = n;
-    cartBadge.setAttribute('aria-label', `${n} ${n === 1 ? 'item' : 'itens'}`);
+    cartBadge.setAttribute('aria-label', n === 1 ? t('book.item') : t('book.items', { n }));
     cartBadge.classList.remove('bump');
     void cartBadge.offsetWidth;
     cartBadge.classList.add('bump');
@@ -677,7 +884,7 @@
     const items = [...selected.values()];
     bookingSummary.textContent = !items.length ? ''
       : items.length === 1 ? items[0].name
-      : `${items[0].name} e mais ${items.length - 1}...`;
+      : t('book.more', { name: items[0].name, n: items.length - 1 });
   }
 
   /* ── Totais: preço + duração ── */
@@ -687,6 +894,7 @@
     animTotal(bookingTotal, total);
     animTotal(bookingDropTotal, total);
     if (bookingDuration) bookingDuration.textContent = fmtDuration(mins);
+    updateWindow(mins);
   }
 
   /* ── Linha no dropdown ── */
@@ -698,7 +906,7 @@
     li.style.animationDelay = `${(selected.size - 1) * 30}ms`;
     li.innerHTML = `
       <div class="drop-item-left">
-        <button class="drop-item-remove" aria-label="Remover ${name}">×</button>
+        <button class="drop-item-remove" aria-label="${t('book.remove', { name })}">×</button>
         <span class="drop-item-name">${name}</span>
       </div>
       <div class="drop-item-right">
@@ -733,9 +941,19 @@
     if (selected.size === 0) { closeDropdown(); hideBar(); }
   }
 
+  /* ── Nome visível do cartão ──
+     O data-name é a chave estável (vai no sessionStorage e na URL);
+     o rótulo que a pessoa lê vem do DOM, que está traduzido. Sem
+     isto o carrinho mostrava "Corte + Barba" numa página em inglês. */
+  function cardLabel(card) {
+    const el = card.querySelector('.svc-name');
+    return (el && el.textContent.trim()) || card.dataset.name;
+  }
+
   /* ── Toggle card ── */
   function toggleCard(card) {
-    const { id, name, price, dur } = card.dataset;
+    const { id, price, dur } = card.dataset;
+    const name = cardLabel(card);
     if (selected.has(id)) {
       removeService(id);
     } else {
@@ -835,40 +1053,59 @@
     if (e.key === 'Escape' && dropdownOpen) closeDropdown();
   });
 
-  /* ── Cards de serviço ── */
+  /* ── Cards de serviço ──
+     Já são <button>: Enter e Espaço vêm do próprio elemento, o
+     keydown manual deixou de ser preciso. */
   $$('.svc-card').forEach(card => {
     card.addEventListener('click', () => toggleCard(card));
-    card.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCard(card); }
-    });
   });
 
-  /* ── Sticky CTA — escondido na Hero, aparece no Sobre, some na Localização ── */
-  const heroSection     = $('.hero');
-  const locationSection = $('#localizacao');
+  /* ── Trocar de idioma redesenha o que já está no carrinho ── */
+  document.addEventListener('i18n:change', () => {
+    if (!selected.size) return;
+    selected.forEach((data, id) => {
+      const card = $(`.svc-card[data-id="${id}"]`);
+      if (card) data.name = cardLabel(card);
+    });
+    if (bookingDropList) bookingDropList.textContent = '';
+    selected.forEach((data, id) => addDropItem(id, data.name, data.price, data.dur));
+    updateBadge(selected.size);
+    updateSummary();
+    updateTotals();
+  });
 
-  let heroVisible  = true;    // hero está no viewport
-  let inLocation   = false;   // seção "Onde estamos" está visível
+  /* ── Sticky CTA — zonas mortas ──
+
+     O botão flutuante só faz sentido onde não há outro caminho para
+     agendar à vista. Em quatro sítios há:
+
+       .hero        → tem os chips de horário e o botão principal
+       #localizacao → tem "Agendar horário" e o WhatsApp
+       .cta-final   → é o CTA final, com dois botões
+       .footer      → fim da página; o flutuante tapava os links
+
+     Basta uma destas zonas estar no viewport para o botão sair. */
+  const deadZones = ['.hero', '#localizacao', '.cta-final', '.footer']
+    .map(sel => $(sel))
+    .filter(Boolean);
+
+  const visibleZones = new Set();
 
   function updateStickyCta() {
     if (selected.size > 0) return;           // booking-bar toma conta
-    setStickyCtaVisible(!heroVisible && !inLocation);
+    setStickyCtaVisible(visibleZones.size === 0);
   }
 
-  if (stickyCta && heroSection) {
-    // Quando a hero sai completamente do viewport → botão aparece
-    new IntersectionObserver(([e]) => {
-      heroVisible = e.isIntersecting;
+  if (stickyCta) {
+    const zoneIO = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) visibleZones.add(e.target);
+        else visibleZones.delete(e.target);
+      });
       updateStickyCta();
-    }, { threshold: 0 }).observe(heroSection);
-  }
+    }, { threshold: 0 });
 
-  if (stickyCta && locationSection) {
-    // Quando a seção Localização entra na viewport → botão some
-    new IntersectionObserver(([e]) => {
-      inLocation = e.isIntersecting;
-      updateStickyCta();
-    }, { threshold: 0 }).observe(locationSection);
+    deadZones.forEach(zone => zoneIO.observe(zone));
   }
 
   /* ════════════════════════════════════════
@@ -882,14 +1119,31 @@
     const LOCATION = {
       lat: -23.5530,
       lng: -46.6620,
-      name: "InBarber Barbearia",
+      name: "Corvo Barbearia",
       address: "Rua Augusta, 1200 — Consolação, São Paulo / SP",
       mapsUrl: "https://www.google.com/maps/dir/?api=1&destination=Rua+Augusta+1200+São+Paulo",
     };
 
     const mapEl = document.getElementById("loc-map");
     const expandBtn = document.getElementById("loc-map-expand");
-    if (!mapEl || typeof L === "undefined") return;
+    if (!mapEl) return;
+
+    /* O Leaflet (CSS + JS) só é pedido quando o mapa se aproxima do
+       viewport. Quem sai antes da secção Localização nunca o paga. */
+    LazyLib.whenNear(mapEl, '400px', () => {
+      Promise.all([
+        LazyLib.style(CDN.leafletCss),
+        LazyLib.script(CDN.leafletJs)
+      ])
+        .then(buildMap)
+        .catch(err => {
+          console.warn('[corvo] mapa:', err.message);
+          mapEl.classList.add('map-failed');
+        });
+    });
+
+    function buildMap() {
+    if (typeof L === "undefined") return;
 
     const map = L.map(mapEl, {
       center: [LOCATION.lat, LOCATION.lng],
@@ -934,7 +1188,7 @@
       <div class="map-popup">
         <div class="map-popup-title">${LOCATION.name}</div>
         <div class="map-popup-address">${LOCATION.address}</div>
-        <a class="map-popup-link" href="${LOCATION.mapsUrl}" target="_blank" rel="noopener">Traçar rota →</a>
+        <a class="map-popup-link" href="${LOCATION.mapsUrl}" target="_blank" rel="noopener">${t('loc.route', null, 'Traçar rota →')}</a>
       </div>
     `);
 
@@ -954,7 +1208,7 @@
           map.zoomControl.addTo(map);
           expandBtn.innerHTML = `
             <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l8 8M13 5l-8 8"/></svg>
-            Fechar
+            ${t('loc.close', null, 'Fechar')}
           `;
         } else {
           map.dragging.disable();
@@ -964,7 +1218,7 @@
           map.zoomControl.remove();
           expandBtn.innerHTML = `
             <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h5v5M7 16H2v-5M16 2l-6 6M2 16l6-6"/></svg>
-            Interagir
+            ${t('loc.interact', null, 'Interagir')}
           `;
         }
       });
@@ -979,6 +1233,7 @@
     setTimeout(function () {
       map.invalidateSize();
     }, 300);
+    } /* /buildMap */
   })();
 
   /* ════════════════════════════════════════
@@ -1012,6 +1267,7 @@
           const card = document.querySelector(`[data-id="${id}"]`);
           if (!card) return;
 
+          data.name = cardLabel(card);
           selected.set(id, data);
           card.classList.add('selected');
           card.setAttribute('aria-pressed', 'true');
@@ -1028,29 +1284,127 @@
       } catch (_) {}
     }
 
-    /* ── Navega para a página de serviços ── */
-    function goToServices(e) {
-      e.preventDefault();
-      persistSelected();
-      window.location.href = 'servicos.html';
-    }
+    /* ── Botões de agendamento ──
+       Antes, todos os CTAs eram href="#agendar" e o JS fazia
+       preventDefault() para os redirecionar. Como o id="agendar"
+       estava no próprio botão do hero, sem JS o utilizador era
+       atirado para o topo da página em vez de agendar.
 
-    const agendarSelectors = [
-      'a.btn-fill[href="#agendar"]',
-      'a.nav-cta[href="#agendar"]',
-      'a.btn-fill-dark[href="#agendar"]',
-      '#booking-bar-cta',
-      '.sticky-cta a',
-      '.map-cta-primary',
-    ];
-
-    agendarSelectors.forEach(sel => {
-      document.querySelectorAll(sel).forEach(el => {
-        el.addEventListener('click', goToServices);
-      });
+       Agora o href leva o destino real e o JS só acrescenta a
+       persistência da seleção. O link funciona sozinho; o script
+       apenas melhora. Marcar um CTA novo = pôr-lhe data-book. */
+    document.querySelectorAll('[data-book]').forEach(el => {
+      el.addEventListener('click', persistSelected);
     });
 
     restoreFromSession();
+  })();
+
+  /* ════════════════════════════════════════
+     PRÓXIMOS HORÁRIOS NO HERO
+
+     A alavanca de conversão da página. Mostrar disponibilidade
+     antes de pedir compromisso corta o funil de quatro passos
+     (serviço → barbeiro → dia → confirmação) para um.
+  ════════════════════════════════════════ */
+  (function initHeroSlots() {
+    const wrap = $('#hero-slots');
+    const row  = $('#hero-slots-row');
+    if (!wrap || !row) return;
+
+    function render() {
+      const slots = Schedule.nextSlots(3);
+      row.textContent = '';
+
+      if (!slots.length) {
+        const p = document.createElement('p');
+        p.className = 'hero-slots-empty';
+        p.textContent = t('slots.closed', null, '');
+        row.appendChild(p);
+        wrap.hidden = false;
+        return;
+      }
+
+      slots.forEach(slot => {
+        const day  = Schedule.dayLabel(slot.date);
+        const time = Schedule.timeLabel(slot.date);
+
+        const a = document.createElement('a');
+        a.className = 'hero-slot';
+        a.href = 'agendar.html?slot=' + encodeURIComponent(Schedule.isoLocal(slot.date));
+        a.setAttribute('data-book', '');
+        a.setAttribute('aria-label', t('slots.aria', { day: day, time: time }));
+
+        const d = document.createElement('span');
+        d.className = 'hero-slot-day';
+        d.textContent = day;
+
+        const h = document.createElement('span');
+        h.className = 'hero-slot-time';
+        h.textContent = time;
+
+        a.append(d, h);
+        row.appendChild(a);
+      });
+
+      wrap.hidden = false;
+    }
+
+    render();
+    document.addEventListener('i18n:change', render);
+
+    /* Os horários envelhecem: recalcula de 5 em 5 minutos para o
+       chip nunca mostrar uma hora que já passou. */
+    setInterval(render, 5 * 60 * 1000);
+  })();
+
+  /* ════════════════════════════════════════
+     ANOS DE CASA — derivados do ano de fundação
+
+     Antes havia quatro números a contradizerem-se na página
+     ("Desde 2010", "Est. 2026", "14+ anos"). Agora existe um ano
+     e tudo o resto é calculado a partir dele.
+  ════════════════════════════════════════ */
+  (function initYears() {
+    $$('[data-since]').forEach(el => {
+      const since = parseInt(el.dataset.since, 10);
+      if (!since) return;
+      el.dataset.count = String(new Date().getFullYear() - since);
+    });
+  })();
+
+  /* ════════════════════════════════════════
+     PAUSA DE MOVIMENTO — WCAG 2.2.2
+
+     O prefers-reduced-motion desliga as animações CSS, mas não o
+     vídeo em loop nem o marquee do ticker. Este botão desliga os
+     três, e a escolha fica guardada.
+  ════════════════════════════════════════ */
+  (function initMotionToggle() {
+    const btn = $('#motion-toggle');
+    if (!btn) return;
+
+    const KEY = 'corvo.motion';
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let stored = null;
+    try { stored = localStorage.getItem(KEY); } catch (_) {}
+    let paused = stored === null ? reduced : stored === 'paused';
+
+    function apply(state) {
+      paused = state;
+      document.documentElement.classList.toggle('motion-paused', paused);
+      btn.setAttribute('aria-pressed', String(paused));
+      btn.setAttribute('aria-label', paused
+        ? t('a11y.motionPlay', null, 'Retomar animações')
+        : t('a11y.motionPause', null, 'Pausar animações'));
+
+      try { localStorage.setItem(KEY, paused ? 'paused' : 'playing'); } catch (_) {}
+    }
+
+    btn.addEventListener('click', () => apply(!paused));
+    document.addEventListener('i18n:change', () => apply(paused));
+    apply(paused);
   })();
 
 })();

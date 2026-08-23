@@ -685,7 +685,8 @@ a.brand:active .brand-mark { transform: scale(0.96); }
 ───────────────────────────────────────── */
 .hero-img video,
 .hero-img img {
-  transform-origin: 55% 40%;
+  transform-origin: 60% 40%;
+  object-position: center 35%;
   animation: heroKenBurns 24s ease-in-out infinite alternate;
   will-change: transform;
 }
@@ -3221,21 +3222,344 @@ a.brand:active .brand-mark { transform: scale(0.96); }
 }
 
 /* ──────────────────────────────────────
+   ABOUT — DESKTOP REDESIGN (1024px+)
+────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .about {
+    padding: 7rem 4rem 8rem;
+  }
+
+  .about-inner {
+    max-width: 1280px;
+    gap: 3rem;
+  }
+
+  .about-top {
+    text-align: left;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .about-top .section-h {
+    font-size: clamp(2.8rem, 3.8vw, 4.2rem);
+  }
+
+  .about-grid {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 5rem;
+  }
+
+  .about-visual {
+    flex: 0 0 400px;
+    max-width: 420px;
+    position: sticky;
+    top: calc(var(--offset) + 2rem);
+    align-self: flex-start;
+  }
+
+  .about-img-wrap {
+    aspect-ratio: 3/4;
+    border-radius: var(--r-lg);
+  }
+
+  .about-badge {
+    bottom: -1.5rem;
+    right: -1.5rem;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .about-badge strong {
+    font-size: 2.5rem;
+  }
+
+  .about-copy {
+    flex: 1;
+    max-width: none;
+    gap: 2.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .about-copy .body-txt {
+    font-size: 1.1rem;
+    line-height: 1.85;
+    max-width: 560px;
+  }
+
+  .pillars {
+    gap: 1rem;
+  }
+
+  .pillar {
+    padding: 1.5rem 1.75rem;
+    gap: 20px;
+  }
+
+  .pillar-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .pillar-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .pillar h3 {
+    font-size: 1.15rem;
+  }
+
+  .pillar p {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .about-bg-word {
+    font-size: clamp(10rem, 18vw, 20rem);
+    top: 80%;
+  }
+
+  .about-bg-glow {
+    background: radial-gradient(
+      ellipse 70% 60% at 30% 50%,
+      rgba(0,71,255,0.10) 0%,
+      rgba(0,71,255,0.04) 35%,
+      transparent 70%
+    );
+  }
+}
+
+/* ──────────────────────────────────────
    DESKTOP — min-width: 1024px
 ────────────────────────────────────── */
 @media (min-width: 1024px) {
-  .nav { padding: 0 4rem; }
+  :root { --nav-h: 72px; --tick-h: 32px; --offset: 104px; }
 
-  .hero-content { padding: 0 4rem; max-width: 680px; }
-  .hero-stats   { padding: 0 4rem; }
+  /* ═══ TICKER DESKTOP ═══ */
+  .ticker {
+    height: var(--tick-h);
+  }
 
-  .about { padding: 3.1rem 4rem 7rem; }
+  .t-item {
+    font-size: 10px;
+    letter-spacing: 3.5px;
+    padding: 0 2rem;
+    gap: 1.2rem;
+  }
+
+  /* ═══ NAVBAR DESKTOP REDESIGN ═══ */
+  .nav {
+    padding: 0 4rem;
+    height: var(--nav-h);
+    background: rgba(10,10,10,0.70);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .nav.scrolled {
+    background: rgba(10,10,10,0.92);
+    border-bottom-color: rgba(255,255,255,0.10);
+  }
+
+  .nav-links {
+    gap: 2.5rem;
+  }
+
+  .nav-links a {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    padding: 6px 0;
+    color: rgba(255,255,255,0.55);
+  }
+
+  .nav-links a:hover {
+    color: var(--cream);
+  }
+
+  .nav-links a::after {
+    bottom: -2px;
+    height: 1.5px;
+    background: var(--gold-lt);
+  }
+
+  .nav-actions {
+    gap: 10px;
+  }
+
+  .nav-icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nav-hamburger {
+    display: none;
+  }
+
+  .nav-cta {
+    height: 40px;
+    padding: 0 1.4rem;
+    font-size: 11px;
+    letter-spacing: 2px;
+    border-radius: var(--r-sm);
+  }
+
+  /* ═══ HERO DESKTOP REDESIGN ═══ */
+  .hero {
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 100svh;
+  }
+
+  .hero-img img {
+    object-position: 30% center;
+  }
+
+  .hero-overlay {
+    background:
+      linear-gradient(255deg,
+        rgba(10,10,10,0.92) 0%,
+        rgba(10,10,10,0.80) 26%,
+        rgba(10,10,10,0.38) 48%,
+        rgba(10,10,10,0.10) 65%,
+        rgba(10,10,10,0.20) 100%
+      ),
+      linear-gradient(to bottom,
+        rgba(10,10,10,0.55) 0%,
+        transparent 20%,
+        transparent 80%,
+        rgba(10,10,10,0.70) 100%
+      );
+  }
+
+  .hero-vignette {
+    background:
+      radial-gradient(80% 100% at 100% 100%,
+        rgba(10,10,10,0.65) 0%,
+        transparent 60%
+      );
+  }
+
+  .hero-content {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    max-width: 620px;
+    padding: calc(var(--offset) + 3rem) 4rem 6rem 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .hero-eyebrow {
+    font-size: 10px;
+    letter-spacing: 3.5px;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-h1 {
+    font-size: clamp(3.5rem, 4.8vw, 5.8rem);
+    letter-spacing: -2px;
+    line-height: 0.95;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    line-height: 1.8;
+    max-width: 420px;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-btns {
+    gap: 14px;
+  }
+
+  .hero-btns .btn-fill {
+    padding: 14px 32px;
+    font-size: 13px;
+  }
+
+  .hero-btns .btn-ghost-w {
+    padding: 14px 28px;
+    font-size: 13px;
+  }
+
+  .hero-stats {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0 4rem;
+    margin-top: 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    background: rgba(10,10,10,0.60);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .hero-stat {
+    padding: 1.4rem 1.5rem;
+  }
+
+  .hero-stat strong {
+    font-size: 2rem;
+  }
+
+  .hero-stat span {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+  }
+
+  .hero-title-wrap {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding-left: 4rem;
+    padding-right: 0;
+    padding-top: calc(var(--offset) + 3rem);
+  }
+
+  .hero-big-word {
+    font-size: clamp(6rem, 10vw, 14rem);
+    -webkit-text-stroke: 1px rgba(0, 240, 255, 0.12);
+    opacity: 0.7;
+  }
+
+  .hero-slots {
+    display: flex !important;
+  }
+
+  .about { padding: 7rem 4rem 8rem; }
 
   .services { padding: 7rem 0; }
-  .services-top { padding: 0 4rem; }
-  .svc-list { padding: 0 4rem; gap: 10px; }
-  .svc-card { flex: calc(33.333% - 7px); }
-  .svc-card-inner { padding: 1.5rem; }
+  .services-top { padding: 0 4rem; margin-bottom: 2.5rem; }
+  .svc-list { padding: 0 4rem; gap: 14px; }
+  .svc-card {
+    flex: calc(33.333% - 10px);
+    border-radius: var(--r-lg);
+    transition:
+      background 180ms ease-out,
+      border-color 180ms ease-out,
+      transform 200ms var(--ease-out),
+      box-shadow 200ms ease-out;
+  }
+  .svc-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    background: rgba(255,255,255,0.04);
+  }
+  .svc-card-inner {
+    padding: 1.6rem 1.5rem;
+    gap: 1.15rem;
+  }
+  .svc-check { width: 24px; height: 24px; }
+  .svc-check-icon { width: 12px; height: 12px; }
+  .svc-name { font-size: 1.15rem; margin-bottom: 4px; }
+  .svc-desc { font-size: 12px; line-height: 1.6; }
+  .svc-badge { font-size: 9px; letter-spacing: 2.2px; padding: 3px 10px; }
+  .svc-price { font-size: 1.1rem; }
+  .svc-dur { font-size: 11px; }
   .booking-bar-inner { margin: 0 4rem 1.5rem; }
   .booking-dropdown  { margin: 0 4rem 0; }
 
@@ -3258,4 +3582,70 @@ a.brand:active .brand-mark { transform: scale(0.96); }
   .location  { padding: 7rem 4rem; }
   .cta-final { padding: 7rem 4rem; }
   .footer    { padding: 3.5rem 4rem 2.5rem; }
+}
+
+/* ──────────────────────────────────────
+   WIDE DESKTOP — min-width: 1440px
+────────────────────────────────────── */
+@media (min-width: 1440px) {
+  .nav {
+    padding: 0 6rem;
+  }
+
+  .hero-content {
+    padding-right: 6rem;
+    max-width: 680px;
+  }
+
+  .hero-h1 {
+    font-size: 5.5rem;
+  }
+
+  .hero-desc {
+    font-size: 16px;
+    max-width: 460px;
+  }
+
+  .hero-stats {
+    padding: 0 6rem;
+  }
+
+  .hero-stat strong {
+    font-size: 2.2rem;
+  }
+
+  .hero-title-wrap {
+    padding-left: 6rem;
+  }
+
+  .hero-big-word {
+    font-size: 15rem;
+  }
+
+  .about {
+    padding: 8rem 6rem 9rem;
+  }
+
+  .about-inner {
+    max-width: 1400px;
+  }
+
+  .about-visual {
+    flex: 0 0 440px;
+  }
+
+  .about-copy .body-txt {
+    font-size: 1.15rem;
+  }
+
+  .about-top .section-h {
+    font-size: 4.2rem;
+  }
+
+  .services-top { padding: 0 6rem; }
+  .svc-list { padding: 0 6rem; gap: 16px; }
+  .svc-card-inner { padding: 1.8rem 1.7rem; gap: 1.25rem; }
+  .svc-name { font-size: 1.25rem; }
+  .svc-desc { font-size: 12.5px; }
+  .svc-price { font-size: 1.15rem; }
 }

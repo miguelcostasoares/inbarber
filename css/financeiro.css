@@ -802,6 +802,7 @@ textarea {
     gap: 0;
     margin-bottom: 24px;
     align-items: stretch;
+    height: 698px;
     background: var(--bg-2);
     border: 1px solid var(--divider);
     border-radius: var(--r-lg);
@@ -811,17 +812,19 @@ textarea {
 @media (max-width: 1100px) {
     .caixa-section {
         grid-template-columns: 1fr;
+        height: auto;
     }
 }
 
 /* Coluna do donut (esquerda) */
 .caixa-donut-col {
-    padding: 22px;
+    padding: 18px 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 14px;
     border-right: 1px solid var(--divider);
+    overflow: hidden;
 }
 
 @media (max-width: 1100px) {
@@ -833,8 +836,8 @@ textarea {
 
 .caixa-donut-wrap {
     position: relative;
-    width: 200px;
-    height: 200px;
+    width: 170px;
+    height: 170px;
     flex-shrink: 0;
 }
 
@@ -910,19 +913,22 @@ textarea {
 
 /* Payment cards grid */
 .caixa-cards-wrap {
-    padding: 22px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .caixa-cards-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     gap: 12px;
 }
 
 .caixa-cards-title {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--cream);
 }
@@ -949,7 +955,7 @@ textarea {
 }
 
 .caixa-total-badge__value {
-    font-size: 22px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--white);
     letter-spacing: -0.03em;
@@ -958,7 +964,10 @@ textarea {
 .caixa-payment-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 7px;
+    flex: 1;
+    overflow-y: auto;
+    align-content: start;
 }
 
 @media (max-width: 1400px) {
@@ -977,7 +986,7 @@ textarea {
     background: var(--bg-3);
     border: 1px solid var(--divider);
     border-radius: var(--r-md);
-    padding: 14px;
+    padding: 9px 11px;
     border-top: 2px solid transparent;
 }
 
@@ -985,7 +994,7 @@ textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .payment-card__badge {
@@ -1004,17 +1013,17 @@ textarea {
 }
 
 .payment-card__total {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--white);
     letter-spacing: -0.02em;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
 }
 
 .payment-card__count {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 /* Progress bar */
@@ -1022,7 +1031,7 @@ textarea {
     height: 2px;
     background: var(--divider);
     border-radius: var(--r-full);
-    margin-bottom: 12px;
+    margin-bottom: 7px;
 }
 
 .payment-card__bar-fill {
@@ -1036,7 +1045,7 @@ textarea {
     display: flex;
     flex-direction: column;
     gap: 0;
-    max-height: 120px;
+    max-height: 100px;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--bg-4) transparent;
@@ -1046,7 +1055,7 @@ textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 0;
+    padding: 4px 0;
     border-bottom: 1px solid var(--divider);
     gap: 8px;
 }

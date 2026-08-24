@@ -73,14 +73,35 @@ const PAYMENT_METHODS = [
 const SAIDAS_TOTAL = 2_340;
 
 // Mock data para Metas & Comissões
+// meta agora é em R$ (valor gerado), não em cortes
 const METAS_DATA = [
-    { id: 'marcos', meta: 120, comissaoPct: 30 },
-    { id: 'joao',   meta: 100, comissaoPct: 28 },
-    { id: 'andre',  meta:  90, comissaoPct: 25 },
-    { id: 'carlos', meta:  60, comissaoPct: 22 },
+    { id: 'marcos', meta: 9_000, comissaoPct: 30 },
+    { id: 'joao',   meta: 7_500, comissaoPct: 28 },
+    { id: 'andre',  meta: 6_500, comissaoPct: 25 },
+    { id: 'carlos', meta: 4_000, comissaoPct: 22 },
 ];
 
 const META_BARBEARIA_TOTAL = 28_000;
+
+// Mock data para Saídas
+let SAIDAS_DATA = [
+    { id: 1,  data: '2025-08-01', desc: 'Aluguel do espaço',           categoria: 'Aluguel',      valor: 2200, pgto: 'Transferência' },
+    { id: 2,  data: '2025-08-03', desc: 'Shampoo e condicionadores',   categoria: 'Produtos',     valor: 340,  pgto: 'PIX'           },
+    { id: 3,  data: '2025-08-05', desc: 'Manutenção das cadeiras',     categoria: 'Manutenção',   valor: 480,  pgto: 'PIX'           },
+    { id: 4,  data: '2025-08-07', desc: 'Energia elétrica',            categoria: 'Utilidades',   valor: 310,  pgto: 'Boleto'        },
+    { id: 5,  data: '2025-08-08', desc: 'Cera e pomadas',              categoria: 'Produtos',     valor: 210,  pgto: 'Dinheiro'      },
+    { id: 6,  data: '2025-08-10', desc: 'Anúncios Instagram/Meta',     categoria: 'Marketing',    valor: 400,  pgto: 'Cartão'        },
+    { id: 7,  data: '2025-08-12', desc: 'Lâminas e descartáveis',      categoria: 'Produtos',     valor: 155,  pgto: 'PIX'           },
+    { id: 8,  data: '2025-08-14', desc: 'Conta de água',               categoria: 'Utilidades',   valor: 90,   pgto: 'Boleto'        },
+    { id: 9,  data: '2025-08-15', desc: 'Conserto da máquina de corte',categoria: 'Manutenção',   valor: 220,  pgto: 'Dinheiro'      },
+    { id: 10, data: '2025-08-17', desc: 'Internet e telefone',         categoria: 'Utilidades',   valor: 130,  pgto: 'Boleto'        },
+    { id: 11, data: '2025-08-18', desc: 'Toalhas e capas',             categoria: 'Equipamentos', valor: 190,  pgto: 'PIX'           },
+    { id: 12, data: '2025-08-20', desc: 'Material de limpeza',         categoria: 'Outros',       valor: 85,   pgto: 'Dinheiro'      },
+    { id: 13, data: '2025-08-21', desc: 'Adiantamento de pessoal',     categoria: 'Pessoal',      valor: 800,  pgto: 'PIX'           },
+    { id: 14, data: '2025-08-22', desc: 'Tinta e coloração',           categoria: 'Produtos',     valor: 280,  pgto: 'Cartão'        },
+    { id: 15, data: '2025-08-23', desc: 'Cadeira de espera nova',      categoria: 'Equipamentos', valor: 650,  pgto: 'Cartão'        },
+];
+let _saidasNextId = 16;
 
 // Dados para o gráfico de linha por período
 const LINE_DATA = {
@@ -527,7 +548,8 @@ const BARBER_PROGRESS_COLORS = {
 function calcMetasState() {
     return FIN_BARBERS.map(b => {
         const m = METAS_DATA.find(x => x.id === b.id);
-        const pct = Math.round((b.cortes / m.meta) * 100);
+        // % atingido agora é baseado no faturamento (valor gerado)
+        const pct = Math.round((b.faturamento / m.meta) * 100);
         const comissaoVal = Math.round(b.faturamento * (m.comissaoPct / 100));
         return { ...b, meta: m.meta, comissaoPct: m.comissaoPct, pct, comissaoVal };
     });
@@ -542,10 +564,17 @@ function renderMetasKPIs(state) {
     document.getElementById('metaTotalBarFill').style.width = Math.min(parseFloat(pctMeta), 100) + '%';
     document.getElementById('metaTotalPct').textContent = pctMeta.replace('.', ',') + '%';
 
-    // KPI barras por barbeiro
+    // KPI barras por barbeiro — cores sólidas do sistema, sem degradê
+    const BARBER_SOLID_COLORS = {
+        marcos: 'var(--gold)',
+        joao:   'var(--blue)',
+        andre:  'var(--green)',
+        carlos: 'var(--orange)',
+    };
+
     const list = document.getElementById('barberProgressList');
     list.innerHTML = state.map(b => {
-        const color = BARBER_PROGRESS_COLORS[b.id];
+        const color = BARBER_SOLID_COLORS[b.id];
         const pct = Math.min(b.pct, 100);
         return `
             <div class="barber-progress-item">
@@ -577,6 +606,8 @@ function renderMetasTable(state) {
         }
 
         const pctColor = b.pct >= 100 ? 'var(--green)' : b.pct >= 80 ? 'var(--orange)' : 'var(--red)';
+        // Formata o valor da meta para exibição no input
+        const metaFormatted = b.meta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         return `
             <tr data-barber-id="${b.id}">
@@ -586,19 +617,18 @@ function renderMetasTable(state) {
                         <span class="metas-barber-name">${b.name}</span>
                     </div>
                 </td>
-                <td style="font-weight: 600; color: var(--white);">${b.cortes}</td>
+                <td><span class="metas-fat-val">${fmt(b.faturamento)}</span></td>
                 <td>
-                    <label class="metas-editable" title="Clique para editar a meta">
-                        <span class="metas-editable__prefix">meta:</span>
+                    <label class="metas-editable" title="Clique para editar a meta em R$">
+                        <span class="metas-editable__prefix">R$</span>
                         <input
-                            type="number"
-                            min="1"
-                            value="${b.meta}"
+                            type="text"
+                            inputmode="decimal"
+                            value="${metaFormatted}"
                             data-field="meta"
                             data-id="${b.id}"
-                            aria-label="Meta individual de ${b.name.split(' ')[0]}"
+                            aria-label="Meta individual de ${b.name.split(' ')[0]} em reais"
                         />
-                        <span class="metas-editable__suffix">cortes</span>
                     </label>
                 </td>
                 <td style="font-weight: 700; color: ${pctColor};">${b.pct}%</td>
@@ -607,12 +637,21 @@ function renderMetasTable(state) {
         `;
     }).join('');
 
-    // Listener de edição de meta
+    // Listener de edição de meta (com máscara R$)
     tbody.querySelectorAll('input[data-field="meta"]').forEach(input => {
+        // Máscara de moeda ao digitar
+        input.addEventListener('input', () => {
+            let raw = input.value.replace(/\D/g, '');
+            if (!raw) { input.value = ''; return; }
+            const num = parseInt(raw, 10) / 100;
+            input.value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        });
+
         input.addEventListener('change', () => {
             const id = input.dataset.id;
-            const val = parseInt(input.value, 10);
-            if (!val || val < 1) return;
+            const raw = input.value.replace(/\./g, '').replace(',', '.');
+            const val = parseFloat(raw);
+            if (!val || val <= 0) return;
             const m = METAS_DATA.find(x => x.id === id);
             if (m) m.meta = val;
             refreshMetas();
@@ -668,6 +707,333 @@ function refreshMetas() {
     renderMetasKPIs(state);
     renderMetasTable(state);
     renderComissoesTable(state);
+}
+
+/* ─── 8. SAÍDAS ─────────────────────────────────────────── */
+
+const SAIDAS_PGTO_COLORS = {
+    'PIX':          '#00d68f',
+    'Cartão':       '#0047ff',
+    'Dinheiro':     '#ff9c40',
+    'Boleto':       '#4da6ff',
+    'Transferência':'#00f0ff',
+};
+
+const SAIDAS_CAT_COLORS = {
+    'Aluguel':      'var(--gold)',
+    'Produtos':     'var(--green)',
+    'Manutenção':   'var(--orange)',
+    'Marketing':    'var(--blue)',
+    'Utilidades':   'var(--red)',
+    'Pessoal':      'var(--gold-lt)',
+    'Equipamentos': 'var(--purple)',
+    'Outros':       'var(--muted)',
+};
+
+let saidasPgtoChart = null;
+
+function getSaidasFiltradas() {
+    const cat   = document.getElementById('saidasFiltroCategoria')?.value || '';
+    const pgto  = document.getElementById('saidasFiltroPgto')?.value     || '';
+    return SAIDAS_DATA.filter(s =>
+        (!cat  || s.categoria === cat) &&
+        (!pgto || s.pgto === pgto)
+    );
+}
+
+function renderSaidasKPIs(data) {
+    const total = data.reduce((a, s) => a + s.valor, 0);
+    document.getElementById('kpiSaidasTotal').textContent = fmt(total);
+    document.getElementById('kpiSaidasTrend').textContent = '↑ 7,3%';
+
+    // Maior categoria
+    const catMap = {};
+    data.forEach(s => { catMap[s.categoria] = (catMap[s.categoria] || 0) + s.valor; });
+    let maiorCat = '—'; let maiorVal = 0;
+    Object.entries(catMap).forEach(([cat, val]) => {
+        if (val > maiorVal) { maiorVal = val; maiorCat = cat; }
+    });
+    document.getElementById('kpiMaiorCategoria').textContent = maiorCat;
+    document.getElementById('kpiMaiorCategoriaVal').textContent = fmt(maiorVal);
+
+    // Donut por forma de pagamento
+    const pgtoMap = {};
+    data.forEach(s => { pgtoMap[s.pgto] = (pgtoMap[s.pgto] || 0) + s.valor; });
+    const pgtoEntries = Object.entries(pgtoMap).sort((a, b) => b[1] - a[1]);
+
+    document.getElementById('saidasPgtoTotal').textContent = fmtK(total);
+
+    const listEl = document.getElementById('saidasPgtoList');
+    listEl.innerHTML = pgtoEntries.map(([pgto, val]) => {
+        const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
+        const col = SAIDAS_PGTO_COLORS[pgto] || 'var(--muted)';
+        return `
+            <div class="saidas-pgto-item">
+                <span class="saidas-pgto-dot" style="background: ${col}"></span>
+                <span class="saidas-pgto-name">${pgto}</span>
+                <div class="saidas-pgto-bar-wrap">
+                    <div class="saidas-pgto-bar-fill" style="width: ${pct}%; background: ${col};"></div>
+                </div>
+                <span class="saidas-pgto-pct">${pct}%</span>
+                <span class="saidas-pgto-val">${fmtK(val)}</span>
+            </div>
+        `;
+    }).join('');
+
+    // Gráfico de pizza
+    const ctx = document.getElementById('saidasPgtoChart').getContext('2d');
+    if (saidasPgtoChart) saidasPgtoChart.destroy();
+
+    if (pgtoEntries.length === 0) return;
+
+    saidasPgtoChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: pgtoEntries.map(([p]) => p),
+            datasets: [{
+                data: pgtoEntries.map(([, v]) => v),
+                backgroundColor: pgtoEntries.map(([p]) => SAIDAS_PGTO_COLORS[p] || '#6B6762'),
+                borderColor: '#0A0A0A00',
+                borderWidth: 3,
+                hoverOffset: 5,
+            }],
+        },
+        options: {
+            cutout: '68%',
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            animation: { duration: 600, easing: 'easeInOutQuart' },
+        },
+    });
+}
+
+function renderSaidasTable(data) {
+    const tbody = document.getElementById('saidasTableBody');
+    const sub   = document.getElementById('saidasTableSub');
+
+    if (data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: var(--muted); font-size: 13px;">
+                    Nenhuma saída encontrada para os filtros selecionados.
+                </td>
+            </tr>`;
+        sub.textContent = '0 registros encontrados';
+        return;
+    }
+
+    sub.textContent = `${data.length} ${data.length === 1 ? 'registro encontrado' : 'registros encontrados'}`;
+
+    const sorted = [...data].sort((a, b) => b.data.localeCompare(a.data));
+
+    tbody.innerHTML = sorted.map(s => {
+        const [y, m, d] = s.data.split('-');
+        const dataFmt = `${d}/${m}/${y}`;
+        const catColor = SAIDAS_CAT_COLORS[s.categoria] || 'var(--muted)';
+        return `
+            <tr>
+                <td style="color: var(--muted); font-size: 12px; font-weight: 600;">${dataFmt}</td>
+                <td style="font-weight: 600; color: var(--cream);">${s.desc}</td>
+                <td>
+                    <span class="saidas-cat-badge" style="--cat-color: ${catColor};">${s.categoria}</span>
+                </td>
+                <td style="font-weight: 700; color: var(--red);">${fmt(s.valor)}</td>
+                <td>
+                    <span class="saidas-pgto-badge">${s.pgto}</span>
+                </td>
+                <td>
+                    <div class="saidas-actions">
+                        <button class="saidas-action-btn saidas-action-btn--edit" data-id="${s.id}" aria-label="Editar saída">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                                <path d="M9 2l2 2-7 7H2V9l7-7z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                        <button class="saidas-action-btn saidas-action-btn--del" data-id="${s.id}" data-desc="${s.desc}" aria-label="Excluir saída">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                                <path d="M2 3h9M5 3V2h3v1M4 3v7h5V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    // Ação editar
+    tbody.querySelectorAll('.saidas-action-btn--edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = parseInt(btn.dataset.id, 10);
+            const saida = SAIDAS_DATA.find(s => s.id === id);
+            if (!saida) return;
+            openSaidasModal(saida);
+        });
+    });
+
+    // Ação excluir
+    tbody.querySelectorAll('.saidas-action-btn--del').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id   = parseInt(btn.dataset.id, 10);
+            const desc = btn.dataset.desc;
+            openDeleteModal(id, desc);
+        });
+    });
+}
+
+function refreshSaidas() {
+    const data = getSaidasFiltradas();
+    renderSaidasKPIs(data);
+    renderSaidasTable(data);
+}
+
+/* Modal Saídas */
+function openSaidasModal(saida = null) {
+    const overlay = document.getElementById('saidasModalOverlay');
+    const title   = document.getElementById('saidasModalTitle');
+    const idInput = document.getElementById('saidasModalId');
+    const desc    = document.getElementById('saidasModalDesc');
+    const data    = document.getElementById('saidasModalData');
+    const cat     = document.getElementById('saidasModalCategoria');
+    const valor   = document.getElementById('saidasModalValor');
+    const pgto    = document.getElementById('saidasModalPgto');
+
+    if (saida) {
+        title.textContent     = 'Editar Saída';
+        idInput.value         = saida.id;
+        desc.value            = saida.desc;
+        data.value            = saida.data;
+        cat.value             = saida.categoria;
+        valor.value           = saida.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        pgto.value            = saida.pgto;
+    } else {
+        title.textContent = 'Nova Saída';
+        idInput.value     = '';
+        desc.value        = '';
+        data.value        = new Date().toISOString().split('T')[0];
+        cat.value         = '';
+        valor.value       = '';
+        pgto.value        = '';
+    }
+
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('is-open');
+    desc.focus();
+}
+
+function closeSaidasModal() {
+    const overlay = document.getElementById('saidasModalOverlay');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.classList.remove('is-open');
+}
+
+function openDeleteModal(id, desc) {
+    document.getElementById('saidasDeleteDesc').textContent = desc;
+    document.getElementById('saidasDeleteConfirm').dataset.id = id;
+    const overlay = document.getElementById('saidasDeleteOverlay');
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('is-open');
+}
+
+function closeDeleteModal() {
+    const overlay = document.getElementById('saidasDeleteOverlay');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.classList.remove('is-open');
+}
+
+function initSaidasModals() {
+    // Máscara de moeda no valor
+    const valorInput = document.getElementById('saidasModalValor');
+    valorInput?.addEventListener('input', () => {
+        let raw = valorInput.value.replace(/\D/g, '');
+        if (!raw) { valorInput.value = ''; return; }
+        const num = parseInt(raw, 10) / 100;
+        valorInput.value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    });
+
+    // Botão Nova Saída
+    document.getElementById('btnNovaSaida')?.addEventListener('click', () => openSaidasModal());
+
+    // Fechar modal edição
+    document.getElementById('saidasModalClose')?.addEventListener('click', closeSaidasModal);
+    document.getElementById('saidasModalCancel')?.addEventListener('click', closeSaidasModal);
+    document.getElementById('saidasModalOverlay')?.addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeSaidasModal();
+    });
+
+    // Salvar
+    document.getElementById('saidasModalSave')?.addEventListener('click', () => {
+        const idVal  = document.getElementById('saidasModalId').value;
+        const desc   = document.getElementById('saidasModalDesc').value.trim();
+        const data   = document.getElementById('saidasModalData').value;
+        const cat    = document.getElementById('saidasModalCategoria').value;
+        const raw    = document.getElementById('saidasModalValor').value.replace(/\./g, '').replace(',', '.');
+        const valor  = parseFloat(raw);
+        const pgto   = document.getElementById('saidasModalPgto').value;
+
+        if (!desc || !data || !cat || !valor || !pgto) {
+            showToast('Preencha todos os campos.', 'warn');
+            return;
+        }
+
+        if (idVal) {
+            // Editar
+            const idx = SAIDAS_DATA.findIndex(s => s.id === parseInt(idVal, 10));
+            if (idx !== -1) {
+                SAIDAS_DATA[idx] = { id: parseInt(idVal, 10), data, desc, categoria: cat, valor, pgto };
+            }
+            showToast('Saída atualizada com sucesso.', 'success');
+        } else {
+            // Novo
+            SAIDAS_DATA.push({ id: _saidasNextId++, data, desc, categoria: cat, valor, pgto });
+            showToast('Saída cadastrada com sucesso.', 'success');
+        }
+
+        closeSaidasModal();
+        refreshSaidas();
+    });
+
+    // Fechar modal exclusão
+    document.getElementById('saidasDeleteClose')?.addEventListener('click', closeDeleteModal);
+    document.getElementById('saidasDeleteCancel')?.addEventListener('click', closeDeleteModal);
+    document.getElementById('saidasDeleteOverlay')?.addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeDeleteModal();
+    });
+
+    // Confirmar exclusão
+    document.getElementById('saidasDeleteConfirm')?.addEventListener('click', e => {
+        const id = parseInt(e.currentTarget.dataset.id, 10);
+        SAIDAS_DATA = SAIDAS_DATA.filter(s => s.id !== id);
+        closeDeleteModal();
+        refreshSaidas();
+        showToast('Saída excluída.', 'success');
+    });
+
+    // Filtros
+    ['saidasFiltroCategoria', 'saidasFiltroPgto', 'saidasFiltroPeriodo'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', () => {
+            const periodoEl = document.getElementById('saidasFiltroPeriodo');
+            const periodoMap = {
+                dia: 'Hoje', semana: 'Esta semana', mes: 'Este mês',
+                trimestre: 'Trimestre', semestre: 'Semestre', ano: 'Este ano',
+            };
+            const badge = document.getElementById('saidasPeriodoBadge');
+            if (badge && periodoEl) badge.textContent = periodoMap[periodoEl.value] || 'Este mês';
+            refreshSaidas();
+        });
+    });
+}
+
+/* Toast (caso não exista) */
+function showToast(msg, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `saidas-toast saidas-toast--${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('is-visible'));
+    setTimeout(() => {
+        toast.classList.remove('is-visible');
+        setTimeout(() => toast.remove(), 320);
+    }, 2800);
 }
 
 /* ─── 8. PERIOD FILTER ──────────────────────────────────── */
@@ -775,4 +1141,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
     initTooltipHide();
     refreshMetas();
+    refreshSaidas();
+    initSaidasModals();
 });

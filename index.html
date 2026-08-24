@@ -649,16 +649,19 @@
 <!-- ═══════════════════════════════ EQUIPA ═══════════════════════════════ -->
 <section class="team" id="equipa" aria-labelledby="team-h">
   <div class="team-hd">
-    <p class="label-tag" data-i18n="team.tag">Quem vai cortar</p>
-    <h2 class="section-h" id="team-h" data-i18n-html="team.h">A mão por trás<br>do <em>corte.</em></h2>
-    <p class="team-sub" data-i18n="team.sub">Numa barbearia escolhe-se a pessoa antes do serviço. Marque com quem já o conhece.</p>
+    <p class="label-tag" data-i18n="team.tag">A nossa equipa</p>
+    <h2 class="section-h" id="team-h" data-i18n-html="team.h">Conheça quem cuida<br>do seu <em>visual.</em></h2>
+    <p class="team-sub" data-i18n="team.sub">Profissionais apaixonados pelo que fazem. Clique na foto para conhecer melhor cada um.</p>
   </div>
 
   <ul class="team-list" role="list">
 
-    <!-- TROQUE: <img class="team-av" src="/assets/equipa/rafael.jpg" alt="Rafael Nunes" width="220" height="220"> -->
-    <li class="team-card">
-      <span class="team-av" aria-hidden="true"><span>RN</span></span>
+    <li class="team-card" data-barber="rafael-nunes">
+      <button type="button" class="team-av team-av--photo" aria-label="Ver perfil de Rafael Nunes"
+              style="background-image:url('/assets/equipa/rafael.jpg')">
+        <span class="team-av-initials">RN</span>
+        <span class="team-av-hint" data-i18n="team.avHint">ver perfil</span>
+      </button>
       <div class="team-body">
         <h3 class="team-name">Rafael Nunes</h3>
         <p class="team-role" data-i18n="team.1role">Degradê e navalha</p>
@@ -678,8 +681,12 @@
       </a>
     </li>
 
-    <li class="team-card">
-      <span class="team-av" aria-hidden="true"><span>DM</span></span>
+    <li class="team-card" data-barber="diego-matos">
+      <button type="button" class="team-av team-av--photo" aria-label="Ver perfil de Diego Matos"
+              style="background-image:url('/assets/equipa/diego.jpg')">
+        <span class="team-av-initials">DM</span>
+        <span class="team-av-hint" data-i18n="team.avHint">ver perfil</span>
+      </button>
       <div class="team-body">
         <h3 class="team-name">Diego Matos</h3>
         <p class="team-role" data-i18n="team.2role">Clássicos e tesoura</p>
@@ -699,8 +706,12 @@
       </a>
     </li>
 
-    <li class="team-card">
-      <span class="team-av" aria-hidden="true"><span>BA</span></span>
+    <li class="team-card" data-barber="bruno-alencar">
+      <button type="button" class="team-av team-av--photo" aria-label="Ver perfil de Bruno Alencar"
+              style="background-image:url('/assets/equipa/bruno.jpg')">
+        <span class="team-av-initials">BA</span>
+        <span class="team-av-hint" data-i18n="team.avHint">ver perfil</span>
+      </button>
       <div class="team-body">
         <h3 class="team-name">Bruno Alencar</h3>
         <p class="team-role" data-i18n="team.3role">Barba e ritual quente</p>
@@ -720,8 +731,12 @@
       </a>
     </li>
 
-    <li class="team-card">
-      <span class="team-av" aria-hidden="true"><span>TR</span></span>
+    <li class="team-card" data-barber="thiago-reis">
+      <button type="button" class="team-av team-av--photo" aria-label="Ver perfil de Thiago Reis"
+              style="background-image:url('/assets/equipa/thiago.jpg')">
+        <span class="team-av-initials">TR</span>
+        <span class="team-av-hint" data-i18n="team.avHint">ver perfil</span>
+      </button>
       <div class="team-body">
         <h3 class="team-name">Thiago Reis</h3>
         <p class="team-role" data-i18n="team.4role">Texturizados e visagismo</p>
@@ -743,6 +758,116 @@
 
   </ul>
 </section>
+
+<!-- ══ SHEET DE PERFIL (equipa) ══ -->
+<div class="profile-overlay" id="profile-overlay" role="dialog" aria-modal="true" aria-label="Perfil do barbeiro">
+  <div class="profile-sheet" id="profile-sheet">
+
+    <div class="sheet-handle"><div class="sheet-handle-bar"></div></div>
+    <button class="sheet-close" id="sheet-close" aria-label="Fechar perfil">×</button>
+
+    <div class="sheet-scroll" id="sheet-scroll">
+
+      <!-- HERO -->
+      <div class="profile-hero">
+        <div class="profile-avatar-ph" id="profile-avatar-ph"></div>
+        <p class="profile-name" id="profile-name"></p>
+        <div class="profile-rating-row">
+          <div class="profile-stars" id="profile-stars"></div>
+          <span class="profile-rating-num" id="profile-rating-num"></span>
+          <span class="profile-rating-count" id="profile-rating-count"></span>
+        </div>
+        <p class="profile-role-tag" id="profile-role-tag"></p>
+      </div>
+
+      <!-- STATS -->
+      <div class="profile-stats-row">
+        <div class="profile-stat-item">
+          <span class="profile-stat-num" id="ps-cortes">—</span>
+          <span class="profile-stat-label" data-i18n="team.statCuts">Agendamentos<br>concluídos</span>
+        </div>
+        <div class="profile-stat-item">
+          <span class="profile-stat-num" id="ps-clientes">—</span>
+          <span class="profile-stat-label" data-i18n="team.statClients">Clientes<br>atendidos</span>
+        </div>
+        <div class="profile-stat-item">
+          <span class="profile-stat-num" id="ps-anos">—</span>
+          <span class="profile-stat-label" data-i18n="team.statYears">Anos de<br>experiência</span>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="profile-tabs" role="tablist">
+        <button class="tab-btn tab-btn--active" role="tab" aria-selected="true" data-tab="perfil">Perfil</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="portfolio">Portfólio</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="avaliacoes">Avaliações</button>
+        <span class="tab-indicator" id="tab-indicator"></span>
+      </div>
+
+      <!-- TAB PANELS -->
+      <div class="tab-panels">
+
+        <!-- TAB: Perfil -->
+        <div class="tab-panel" id="tab-perfil" role="tabpanel">
+          <div class="profile-section">
+            <p class="profile-section-title">Sobre</p>
+            <p class="profile-bio" id="profile-bio"></p>
+          </div>
+          <div class="profile-section">
+            <p class="profile-section-title">Idiomas</p>
+            <div class="lang-pills" id="profile-langs"></div>
+          </div>
+          <div class="profile-section">
+            <p class="profile-section-title profile-section-title--link">
+              Portfólio
+              <button class="section-link-btn" id="goto-portfolio" aria-label="Ver portfólio completo">Ver todos</button>
+            </p>
+            <div class="portfolio-grid portfolio-grid--inline" id="portfolio-inline"></div>
+          </div>
+          <div class="profile-section">
+            <p class="profile-section-title profile-section-title--link">
+              Avaliações
+              <button class="section-link-btn" id="goto-avaliacoes" aria-label="Ver todas as avaliações">Ver todas</button>
+            </p>
+            <ul class="review-list" id="profile-reviews-inline"></ul>
+          </div>
+        </div>
+
+        <!-- TAB: Portfólio -->
+        <div class="tab-panel tab-panel--hidden" id="tab-portfolio" role="tabpanel">
+          <div class="portfolio-grid" id="portfolio-grid"></div>
+        </div>
+
+        <!-- TAB: Avaliações -->
+        <div class="tab-panel tab-panel--hidden" id="tab-avaliacoes" role="tabpanel">
+          <div class="rating-summary" id="rating-summary"></div>
+          <ul class="review-list review-list--padded" id="profile-reviews"></ul>
+        </div>
+
+      </div>
+
+      <div class="sheet-cta-spacer"></div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="portfolio-lightbox" id="portfolio-lightbox" aria-hidden="true">
+      <button class="lightbox-close" id="lightbox-close" aria-label="Fechar imagem">×</button>
+      <div class="lightbox-img-wrap">
+        <div class="lightbox-placeholder" id="lightbox-img"></div>
+      </div>
+      <p class="lightbox-caption" id="lightbox-caption"></p>
+    </div>
+
+    <!-- CTA -->
+    <div class="profile-cta-wrap">
+      <a class="profile-select-btn" id="profile-book-btn" href="#">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1v14M1 8h14"/></svg>
+        <span data-i18n="team.cta">Agendar com</span> <span id="profile-book-name"></span>
+      </a>
+    </div>
+
+  </div>
+</div>
 
 <!-- ═══════════════════════════════ GALERIA ═══════════════════════════════ -->
 <section class="gallery" id="galeria" aria-labelledby="gal-h">
@@ -1346,6 +1471,289 @@
 <script src="/js/i18n.js"></script>
 <script src="/js/app.js" defer></script>
 <script src="/js/auth-confirm.js" defer></script>
+<script>
+/* ═══ Team Profile Sheet (desktop only) ═══ */
+(function(){
+  'use strict';
+
+  var BARBERS = {
+    'rafael-nunes': {
+      initials:'RN', name:'Rafael Nunes', role:'Degradê e navalha',
+      rating:4.9, ratingCount:38, cortes:520, clientes:280, anos:9,
+      bio:'Mestre do fade e especialista em cortes texturizados. Nove anos de experiência em barbearias premium, com foco em atendimento personalizado e técnicas contemporâneas.',
+      langs:['Português','Inglês'],
+      portfolio:[
+        {label:'Fade alto'},{label:'Texturizado'},{label:'Corte + Barba'},
+        {label:'Drop fade'},{label:'Risco duplo'},{label:'Barba desenhada'}
+      ],
+      ratingDist:{5:32,4:5,3:1,2:0,1:0},
+      reviews:[
+        {init:'A',name:'André M',date:'sex., 26 jun. 2026',stars:5,text:'Rafael tem mãos de artista. Fade perfeito, sem marcas, acabamento impecável. Já é o meu barbeiro fixo.'},
+        {init:'L',name:'Luís B',date:'ter., 23 jun. 2026',stars:5,text:''},
+        {init:'J',name:'João F',date:'dom., 21 jun. 2026',stars:5,text:'Excelente serviço, atendimento top e resultado incrível!'},
+        {init:'T',name:'Tomás N',date:'qui., 18 jun. 2026',stars:4,text:'Muito bom, mas o espaço estava cheio nesse dia.'}
+      ]
+    },
+    'diego-matos': {
+      initials:'DM', name:'Diego Matos', role:'Clássicos e tesoura',
+      rating:4.8, ratingCount:51, cortes:390, clientes:194, anos:6,
+      bio:'Especialista em cortes clássicos e modernos. Formado pela Academia Nacional de Barbeiros, com passagem por barbearias em Lisboa e Porto. Atenção total ao detalhe e ao que o cliente quer.',
+      langs:['Inglês','Espanhol','Francês','Português'],
+      portfolio:[
+        {label:'Degradê fechado'},{label:'Corte + Barba'},{label:'Corte Social'},
+        {label:'Fade com risco'},{label:'Hot Towel Shave'},{label:'Barba clássica'}
+      ],
+      ratingDist:{5:44,4:5,3:2,2:0,1:0},
+      reviews:[
+        {init:'C',name:'Carlos F',date:'qui., 25 jun. 2026',stars:5,text:''},
+        {init:'S',name:'Stéphane L',date:'qua., 24 jun. 2026',stars:5,text:'Fui cortado pelo Diego e fiquei muito satisfeito. Desde o primeiro momento, o acolhimento foi excelente: simpático, atento e com muito bom ouvido para o que eu queria.'},
+        {init:'R',name:'Rui I',date:'sáb., 20 jun. 2026',stars:5,text:''},
+        {init:'P',name:'Paulo C',date:'sex., 19 jun. 2026',stars:5,text:'Casa muito acolhedora e com profissionais a trabalhar lindamente, recomendo vivamente a experiência.'},
+        {init:'M',name:'Miguel A',date:'ter., 17 jun. 2026',stars:4,text:'Muito bom serviço, só demorou um bocado mais que o esperado.'}
+      ]
+    },
+    'bruno-alencar': {
+      initials:'BA', name:'Bruno Alencar', role:'Barba e ritual quente',
+      rating:5.0, ratingCount:22, cortes:310, clientes:165, anos:4,
+      bio:'Dedicado à arte da barba e dos rituais quentes. Quatro anos transformando cada atendimento numa experiência de relaxamento completo com toalha quente e navalha reta.',
+      langs:['Português','Espanhol'],
+      portfolio:[
+        {label:'Barba clássica'},{label:'Hot Towel Shave'},{label:'Pigmentação'},
+        {label:'Sobrancelha'},{label:'Barba desenhada'},{label:'Navalha reta'}
+      ],
+      ratingDist:{5:20,4:2,3:0,2:0,1:0},
+      reviews:[
+        {init:'T',name:'Tiago R',date:'qui., 25 jun. 2026',stars:5,text:'Muito profissional e cuidadoso com os detalhes. Saí muito satisfeito.'},
+        {init:'G',name:'Gabriel S',date:'seg., 22 jun. 2026',stars:5,text:''},
+        {init:'N',name:'Nuno P',date:'sáb., 14 jun. 2026',stars:4,text:'Bom trabalho, ainda a ganhar experiência mas nota-se dedicação.'}
+      ]
+    },
+    'thiago-reis': {
+      initials:'TR', name:'Thiago Reis', role:'Texturizados e visagismo',
+      rating:4.9, ratingCount:30, cortes:210, clientes:130, anos:3,
+      bio:'Especialista em texturizados e visagismo. Três anos criando cortes que valorizam o formato do rosto de cada cliente, com técnicas modernas e resultados personalizados.',
+      langs:['Português','Inglês'],
+      portfolio:[
+        {label:'Corte texturizado'},{label:'Visagismo'},{label:'Progressiva'},
+        {label:'Corte Social'},{label:'Navalha reta'},{label:'Pigmentação'}
+      ],
+      ratingDist:{5:25,4:4,3:1,2:0,1:0},
+      reviews:[
+        {init:'D',name:'Diogo L',date:'sex., 26 jun. 2026',stars:5,text:'O Thiago percebe muito de visagismo. Sugeriu-me um corte que ficou perfeito para o formato do meu rosto.'},
+        {init:'F',name:'Filipe M',date:'qua., 24 jun. 2026',stars:5,text:''},
+        {init:'B',name:'Bruno R',date:'dom., 21 jun. 2026',stars:5,text:'Excelente profissional, muito atencioso e detalhista.'},
+        {init:'H',name:'Hugo S',date:'qui., 18 jun. 2026',stars:4,text:'Bom trabalho no texturizado. Voltarei com certeza.'}
+      ]
+    }
+  };
+
+  var TABS = ['perfil','portfolio','avaliacoes'];
+  var activeTab = 'perfil';
+  var openBarber = null;
+
+  /* ── Helpers ── */
+  function starsHTML(n) {
+    var s = '';
+    for (var i = 0; i < n; i++) s += '<svg viewBox="0 0 12 12"><path d="M6 1l1.3 2.7L10 4.1 7.8 6.3l.5 3.1L6 8l-2.3 1.4.5-3.1L2 4.1l2.7-.4z" fill="var(--gold)"/></svg>';
+    return s;
+  }
+  function fmtRating(n) { return n !== null ? n.toFixed(1).replace('.',',') : ''; }
+
+  function reviewHTML(r) {
+    return '<li class="review-item">' +
+      '<div class="review-header">' +
+        '<div class="review-avatar">' + r.init + '</div>' +
+        '<div class="review-meta"><p class="review-author">' + r.name + '</p><p class="review-date">' + r.date + '</p></div>' +
+      '</div>' +
+      '<div class="review-stars">' + starsHTML(r.stars) + '</div>' +
+      (r.text ? '<p class="review-text">' + r.text + '</p>' : '') +
+    '</li>';
+  }
+
+  function portfolioItemHTML(item, i) {
+    return '<div class="portfolio-item" data-idx="' + i + '" role="button" tabindex="0" aria-label="Ver: ' + item.label + '">' +
+      '<div class="portfolio-placeholder">' + item.label + '</div>' +
+      '<span class="portfolio-item-label">' + item.label + '</span>' +
+    '</div>';
+  }
+
+  /* ── Tabs ── */
+  function switchTab(tab, skipScroll) {
+    activeTab = tab;
+    var idx = TABS.indexOf(tab);
+    var btns = document.querySelectorAll('#profile-sheet .tab-btn');
+    var ind = document.getElementById('tab-indicator');
+    btns.forEach(function(b, i) {
+      b.classList.toggle('tab-btn--active', i === idx);
+      b.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+    });
+    var activeBtn = btns[idx];
+    if (ind && activeBtn) {
+      var pRect = activeBtn.closest('.profile-tabs').getBoundingClientRect();
+      var bRect = activeBtn.getBoundingClientRect();
+      ind.style.left = (bRect.left - pRect.left) + 'px';
+      ind.style.width = bRect.width + 'px';
+    }
+    TABS.forEach(function(t) {
+      var panel = document.getElementById('tab-' + t);
+      if (panel) panel.classList.toggle('tab-panel--hidden', t !== tab);
+    });
+    if (!skipScroll) {
+      var scroll = document.getElementById('sheet-scroll');
+      var tabs = document.querySelector('#profile-sheet .profile-tabs');
+      if (scroll && tabs) scroll.scrollTo({top: tabs.offsetTop - 60, behavior: 'smooth'});
+    }
+  }
+
+  function initIndicator() {
+    var ind = document.getElementById('tab-indicator');
+    if (ind) ind.style.transition = 'none';
+    switchTab('perfil', true);
+    requestAnimationFrame(function() { requestAnimationFrame(function() {
+      if (ind) ind.style.transition = '';
+    }); });
+  }
+
+  /* ── Portfolio lightbox ── */
+  function bindPortfolioItems(container, b) {
+    container.querySelectorAll('.portfolio-item').forEach(function(el) {
+      var handler = function() { openLightbox(b, parseInt(el.dataset.idx)); };
+      el.addEventListener('click', handler);
+      el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
+      });
+    });
+  }
+  function openLightbox(b, idx) {
+    var item = b.portfolio[idx]; if (!item) return;
+    document.getElementById('lightbox-img').textContent = item.label;
+    document.getElementById('lightbox-caption').textContent = item.label + ' — ' + b.name;
+    var lb = document.getElementById('portfolio-lightbox');
+    lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false');
+  }
+  function closeLightbox() {
+    var lb = document.getElementById('portfolio-lightbox');
+    if (lb) { lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); }
+  }
+
+  /* ── Rating summary ── */
+  function buildRatingSummary(b) {
+    var el = document.getElementById('rating-summary');
+    if (!b.ratingCount) { el.innerHTML = ''; return; }
+    var total = Object.values(b.ratingDist).reduce(function(a,v){return a+v;}, 0);
+    var bars = [5,4,3,2,1].map(function(star) {
+      var cnt = b.ratingDist[star] || 0;
+      var pct = total ? Math.round((cnt / total) * 100) : 0;
+      return '<div class="rating-bar-row"><span class="rating-bar-label">'+star+'</span><div class="rating-bar-track"><div class="rating-bar-fill" style="width:'+pct+'%"></div></div><span class="rating-bar-pct">'+pct+'%</span></div>';
+    }).join('');
+    el.innerHTML = '<div class="rating-big"><span class="rating-big-num">'+fmtRating(b.rating)+'</span><div class="rating-big-stars">'+starsHTML(Math.round(b.rating))+'</div><span class="rating-big-count">'+b.ratingCount+' avaliações</span></div><div class="rating-bars">'+bars+'</div>';
+  }
+
+  /* ── Open / Close ── */
+  function openProfile(id) {
+    var b = BARBERS[id]; if (!b) return;
+    openBarber = id;
+
+    /* Hero */
+    var avatarEl = document.getElementById('profile-avatar-ph');
+    /* Reset to div in case it was replaced by img previously */
+    if (avatarEl.tagName === 'IMG') {
+      var div = document.createElement('div');
+      div.className = 'profile-avatar-ph'; div.id = 'profile-avatar-ph';
+      avatarEl.parentNode.replaceChild(div, avatarEl);
+      avatarEl = div;
+    }
+    avatarEl.textContent = b.initials;
+
+    document.getElementById('profile-name').textContent = b.name;
+    document.getElementById('profile-role-tag').textContent = b.role;
+    document.getElementById('profile-stars').innerHTML = b.rating ? starsHTML(Math.round(b.rating)) : '';
+    document.getElementById('profile-rating-num').textContent = fmtRating(b.rating);
+    document.getElementById('profile-rating-count').textContent = b.ratingCount ? '(' + b.ratingCount + ' avaliações)' : '';
+
+    /* Stats */
+    document.getElementById('ps-cortes').textContent = b.cortes !== null ? b.cortes : '—';
+    document.getElementById('ps-clientes').textContent = b.clientes !== null ? b.clientes : '—';
+    document.getElementById('ps-anos').textContent = b.anos !== null ? b.anos + 'a' : '—';
+
+    /* Tab Perfil */
+    document.getElementById('profile-bio').textContent = b.bio;
+    document.getElementById('profile-langs').innerHTML = b.langs.map(function(l){return '<span class="lang-pill">'+l+'</span>';}).join('');
+
+    /* Portfolio inline (3 first) */
+    var inlineGrid = document.getElementById('portfolio-inline');
+    inlineGrid.innerHTML = b.portfolio.slice(0,3).map(portfolioItemHTML).join('');
+    bindPortfolioItems(inlineGrid, b);
+
+    /* Reviews inline (2 with text) */
+    var inlineRevs = b.reviews.filter(function(r){return r.text;}).slice(0,2);
+    document.getElementById('profile-reviews-inline').innerHTML =
+      (inlineRevs.length ? inlineRevs : b.reviews.slice(0,2)).map(reviewHTML).join('');
+
+    /* Tab Portfolio */
+    var grid = document.getElementById('portfolio-grid');
+    grid.innerHTML = b.portfolio.map(portfolioItemHTML).join('');
+    bindPortfolioItems(grid, b);
+
+    /* Tab Avaliacoes */
+    buildRatingSummary(b);
+    document.getElementById('profile-reviews').innerHTML = b.reviews.map(reviewHTML).join('');
+
+    /* CTA */
+    var bookBtn = document.getElementById('profile-book-btn');
+    bookBtn.href = 'servicos.html?barbeiro=' + id;
+    document.getElementById('profile-book-name').textContent = b.name.split(' ')[0];
+
+    initIndicator();
+
+    document.getElementById('profile-overlay').classList.add('open');
+    document.getElementById('sheet-scroll').scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeProfile() {
+    document.getElementById('profile-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+    openBarber = null;
+    closeLightbox();
+  }
+
+  /* ── Init ── */
+  /* Bind clickable avatar photos (desktop only — sheet hidden on mobile via CSS) */
+  document.querySelectorAll('.team-av--photo').forEach(function(av) {
+    av.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var card = av.closest('.team-card');
+      if (card) openProfile(card.dataset.barber);
+    });
+  });
+
+  /* Tabs */
+  document.querySelectorAll('#profile-sheet .tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
+  });
+
+  /* "Ver todos" links */
+  document.getElementById('goto-portfolio').addEventListener('click', function() { switchTab('portfolio'); });
+  document.getElementById('goto-avaliacoes').addEventListener('click', function() { switchTab('avaliacoes'); });
+
+  /* Close */
+  document.getElementById('sheet-close').addEventListener('click', closeProfile);
+  document.getElementById('profile-overlay').addEventListener('click', function(e) {
+    if (e.target === document.getElementById('profile-overlay')) closeProfile();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      var lb = document.getElementById('portfolio-lightbox');
+      if (lb && lb.classList.contains('open')) { closeLightbox(); return; }
+      if (document.getElementById('profile-overlay').classList.contains('open')) closeProfile();
+    }
+  });
+
+  /* Lightbox close */
+  document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+})();
+</script>
 
 </body>
 </html>

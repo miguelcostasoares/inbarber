@@ -1345,61 +1345,335 @@ textarea {
     color: var(--gold-lt);
 }
 
-/* ─── Barber photo labels ───────────────────────────────── */
-.barber-photo-labels {
-    display: flex;
-    justify-content: space-around;
-    padding: 0 12px;
-    margin-bottom: 6px;
+/* ─── 13. METAS & COMISSÕES ─────────────────────────────── */
+
+/* Grid de KPIs de metas: 3 colunas, segundo card maior */
+.metas-kpi-grid {
+    grid-template-columns: 1fr 1.4fr 1fr;
 }
 
-.barber-photo-item {
+@media (max-width: 1100px) {
+    .metas-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .metas-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* KPI card dourado (reutiliza token --gold) */
+.kpi-card--gold::before {
+    background: linear-gradient(90deg, var(--gold), var(--gold-lt));
+}
+
+.kpi-card--gold {
+    border-color: rgba(0, 71, 255, 0.18);
+}
+
+/* Barra de progresso dentro do KPI de meta total */
+.meta-kpi-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.meta-kpi-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: var(--r-full);
+    overflow: hidden;
+}
+
+.meta-kpi-progress-fill {
+    height: 100%;
+    border-radius: var(--r-full);
+    transition: width 600ms var(--ease-out);
+}
+
+.meta-kpi-progress-fill--blue {
+    background: linear-gradient(90deg, var(--gold), var(--gold-lt));
+}
+
+.meta-kpi-pct {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold-lt);
+    flex-shrink: 0;
+    min-width: 38px;
+    text-align: right;
+}
+
+/* Card de barbeiros com barras de progresso */
+.metas-kpi-barbers {
+    padding-bottom: 16px;
+}
+
+.barber-progress-list {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    flex: 1;
+    gap: 10px;
+    margin-top: 4px;
 }
 
-.barber-photo-avatar {
-    width: 36px;
-    height: 36px;
+.barber-progress-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.barber-progress-avatar {
+    width: 28px;
+    height: 28px;
     border-radius: var(--r-full);
-    border: 2px solid transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--white);
     flex-shrink: 0;
 }
 
-.barber-photo-avatar--marcos {
-    background: linear-gradient(135deg, #0047ff, #00f0ff);
-    border-color: rgba(0, 240, 255, 0.3);
-}
-
-.barber-photo-avatar--joao {
-    background: linear-gradient(135deg, #4da6ff, #0047ff);
-    border-color: rgba(77, 166, 255, 0.3);
-}
-
-.barber-photo-avatar--andre {
-    background: linear-gradient(135deg, #00d68f, #0047ff);
-    border-color: rgba(0, 214, 143, 0.3);
-}
-
-.barber-photo-avatar--carlos {
-    background: linear-gradient(135deg, #8b5cf6, #ff4d6a);
-    border-color: rgba(139, 92, 246, 0.3);
-}
-
-.barber-photo-name {
-    font-size: 10px;
+.barber-progress-name {
+    font-size: 12px;
     font-weight: 600;
+    color: var(--cream-2);
+    width: 52px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.barber-progress-bar-wrap {
+    flex: 1;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: var(--r-full);
+    overflow: hidden;
+}
+
+.barber-progress-bar-fill {
+    height: 100%;
+    border-radius: var(--r-full);
+    transition: width 600ms var(--ease-out);
+}
+
+.barber-progress-pct {
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    min-width: 36px;
+    text-align: right;
+}
+
+/* Seção card (metas + comissões) */
+.metas-section-card {
+    background: var(--bg-2);
+    border: 1px solid var(--divider);
+    border-radius: var(--r-lg);
+    padding: 22px;
+    margin-bottom: 16px;
+}
+
+.metas-section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.metas-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--cream);
+}
+
+.metas-section-sub {
+    font-size: 11.5px;
     color: var(--muted);
-    text-align: center;
+    margin-top: 2px;
+}
+
+.metas-periodo-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gold-lt);
+    background: var(--gold-bg);
+    border: 1px solid rgba(0, 71, 255, 0.28);
+    padding: 4px 12px;
+    border-radius: var(--r-full);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Wrapper com scroll horizontal em telas pequenas */
+.metas-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Tabela */
+.metas-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.metas-table thead th {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0 14px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--divider);
+}
+
+.metas-table thead th:first-child {
+    padding-left: 0;
+}
+
+.metas-table tbody tr {
+    border-bottom: 1px solid var(--divider);
+    transition: background var(--dur);
+}
+
+.metas-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.metas-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.metas-table tbody td {
+    padding: 13px 14px;
+    color: var(--cream-2);
+    vertical-align: middle;
+}
+
+.metas-table tbody td:first-child {
+    padding-left: 0;
+}
+
+/* Célula de barbeiro com avatar */
+.metas-barber-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.metas-barber-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--r-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--white);
+    flex-shrink: 0;
+}
+
+.metas-barber-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cream);
+}
+
+/* Campo editável inline */
+.metas-editable {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg-3);
+    border: 1px solid var(--divider);
+    border-radius: var(--r-sm);
+    padding: 5px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cream);
+    cursor: text;
+    transition: border-color var(--dur), background var(--dur);
+    min-width: 80px;
+}
+
+.metas-editable:focus-within {
+    border-color: rgba(0, 71, 255, 0.5);
+    background: rgba(0, 71, 255, 0.06);
+    outline: none;
+}
+
+.metas-editable input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cream);
+    width: 60px;
+    padding: 0;
+    text-align: right;
+}
+
+.metas-editable__prefix,
+.metas-editable__suffix {
+    font-size: 11px;
+    color: var(--muted);
+    flex-shrink: 0;
+}
+
+/* Badge de status */
+.metas-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: var(--r-full);
+}
+
+.metas-status-badge--hit {
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid var(--green-border);
+}
+
+.metas-status-badge--miss {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid var(--red-border);
+}
+
+.metas-status-badge--close {
+    background: var(--orange-bg);
+    color: var(--orange);
+    border: 1px solid var(--orange-border);
+}
+
+/* Valor de faturamento na tabela de comissões */
+.metas-fat-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--white);
+}
+
+/* Valor de comissão calculado */
+.metas-comissao-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold-lt);
 }
 
 /* ─── 13. SCROLLBAR ─────────────────────────────────────── */

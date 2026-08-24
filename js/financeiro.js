@@ -72,6 +72,16 @@ const PAYMENT_METHODS = [
 
 const SAIDAS_TOTAL = 2_340;
 
+// Mock data para Metas & Comissões
+const METAS_DATA = [
+    { id: 'marcos', meta: 120, comissaoPct: 30 },
+    { id: 'joao',   meta: 100, comissaoPct: 28 },
+    { id: 'andre',  meta:  90, comissaoPct: 25 },
+    { id: 'carlos', meta:  60, comissaoPct: 22 },
+];
+
+const META_BARBEARIA_TOTAL = 28_000;
+
 // Dados para o gráfico de linha por período
 const LINE_DATA = {
     dia: {
@@ -495,14 +505,169 @@ function renderBarChart() {
     // Oculta tooltip ao sair do canvas (padrão dashboard)
     document.getElementById('barChart').addEventListener('mouseleave', hideTooltip);
 
-    // Barber photo labels
-    const wrap = document.getElementById('barberPhotoLabels');
-    wrap.innerHTML = FIN_BARBERS.map(b => `
-        <div class="barber-photo-item">
-          <div class="barber-photo-avatar barber-photo-avatar--${b.cssClass}">${b.initials}</div>
-          <span class="barber-photo-name">${b.name.split(' ')[0]}</span>
-        </div>
-      `).join('');
+}
+
+/* ─── 8. METAS & COMISSÕES ──────────────────────────────── */
+
+// Cores reutilizadas dos avatares
+const BARBER_AVATAR_STYLES = {
+    marcos: 'linear-gradient(135deg, #0047ff, #00f0ff)',
+    joao:   'linear-gradient(135deg, #4da6ff, #0047ff)',
+    andre:  'linear-gradient(135deg, #00d68f, #0047ff)',
+    carlos: 'linear-gradient(135deg, #8b5cf6, #ff4d6a)',
+};
+
+const BARBER_PROGRESS_COLORS = {
+    marcos: '#00f0ff',
+    joao:   '#4da6ff',
+    andre:  '#00d68f',
+    carlos: '#8b5cf6',
+};
+
+function calcMetasState() {
+    return FIN_BARBERS.map(b => {
+        const m = METAS_DATA.find(x => x.id === b.id);
+        const pct = Math.round((b.cortes / m.meta) * 100);
+        const comissaoVal = Math.round(b.faturamento * (m.comissaoPct / 100));
+        return { ...b, meta: m.meta, comissaoPct: m.comissaoPct, pct, comissaoVal };
+    });
+}
+
+function renderMetasKPIs(state) {
+    // KPI meta total barbearia
+    const totalFat = FIN_BARBERS.reduce((a, b) => a + b.faturamento, 0);
+    const pctMeta = ((totalFat / META_BARBEARIA_TOTAL) * 100).toFixed(1);
+    document.getElementById('metaTotalValor').textContent = fmt(META_BARBEARIA_TOTAL);
+    document.getElementById('metaTotalRealizado').textContent = fmt(totalFat) + ' realizados';
+    document.getElementById('metaTotalBarFill').style.width = Math.min(parseFloat(pctMeta), 100) + '%';
+    document.getElementById('metaTotalPct').textContent = pctMeta.replace('.', ',') + '%';
+
+    // KPI barras por barbeiro
+    const list = document.getElementById('barberProgressList');
+    list.innerHTML = state.map(b => {
+        const color = BARBER_PROGRESS_COLORS[b.id];
+        const pct = Math.min(b.pct, 100);
+        return `
+            <div class="barber-progress-item">
+                <div class="barber-progress-avatar" style="background: ${BARBER_AVATAR_STYLES[b.id]}">${b.initials}</div>
+                <span class="barber-progress-name">${b.name.split(' ')[0]}</span>
+                <div class="barber-progress-bar-wrap">
+                    <div class="barber-progress-bar-fill" style="width: ${pct}%; background: ${color};"></div>
+                </div>
+                <span class="barber-progress-pct" style="color: ${color};">${b.pct}%</span>
+            </div>
+        `;
+    }).join('');
+
+    // KPI comissão total
+    const totalComissao = state.reduce((a, b) => a + b.comissaoVal, 0);
+    document.getElementById('comissaoTotalValor').textContent = fmt(totalComissao);
+}
+
+function renderMetasTable(state) {
+    const tbody = document.getElementById('metasTableBody');
+    tbody.innerHTML = state.map(b => {
+        let statusHtml;
+        if (b.pct >= 100) {
+            statusHtml = `<span class="metas-status-badge metas-status-badge--hit">✓ Bateu</span>`;
+        } else if (b.pct >= 80) {
+            statusHtml = `<span class="metas-status-badge metas-status-badge--close">~ Quase</span>`;
+        } else {
+            statusHtml = `<span class="metas-status-badge metas-status-badge--miss">✗ Não bateu</span>`;
+        }
+
+        const pctColor = b.pct >= 100 ? 'var(--green)' : b.pct >= 80 ? 'var(--orange)' : 'var(--red)';
+
+        return `
+            <tr data-barber-id="${b.id}">
+                <td>
+                    <div class="metas-barber-cell">
+                        <div class="metas-barber-avatar" style="background: ${BARBER_AVATAR_STYLES[b.id]}">${b.initials}</div>
+                        <span class="metas-barber-name">${b.name}</span>
+                    </div>
+                </td>
+                <td style="font-weight: 600; color: var(--white);">${b.cortes}</td>
+                <td>
+                    <label class="metas-editable" title="Clique para editar a meta">
+                        <span class="metas-editable__prefix">meta:</span>
+                        <input
+                            type="number"
+                            min="1"
+                            value="${b.meta}"
+                            data-field="meta"
+                            data-id="${b.id}"
+                            aria-label="Meta individual de ${b.name.split(' ')[0]}"
+                        />
+                        <span class="metas-editable__suffix">cortes</span>
+                    </label>
+                </td>
+                <td style="font-weight: 700; color: ${pctColor};">${b.pct}%</td>
+                <td>${statusHtml}</td>
+            </tr>
+        `;
+    }).join('');
+
+    // Listener de edição de meta
+    tbody.querySelectorAll('input[data-field="meta"]').forEach(input => {
+        input.addEventListener('change', () => {
+            const id = input.dataset.id;
+            const val = parseInt(input.value, 10);
+            if (!val || val < 1) return;
+            const m = METAS_DATA.find(x => x.id === id);
+            if (m) m.meta = val;
+            refreshMetas();
+        });
+    });
+}
+
+function renderComissoesTable(state) {
+    const tbody = document.getElementById('comissoesTableBody');
+    tbody.innerHTML = state.map(b => `
+        <tr data-barber-id="${b.id}">
+            <td>
+                <div class="metas-barber-cell">
+                    <div class="metas-barber-avatar" style="background: ${BARBER_AVATAR_STYLES[b.id]}">${b.initials}</div>
+                    <span class="metas-barber-name">${b.name}</span>
+                </div>
+            </td>
+            <td><span class="metas-fat-val">${fmt(b.faturamento)}</span></td>
+            <td>
+                <label class="metas-editable" title="Clique para editar a comissão">
+                    <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value="${b.comissaoPct}"
+                        data-field="comissao"
+                        data-id="${b.id}"
+                        aria-label="Porcentagem de comissão de ${b.name.split(' ')[0]}"
+                    />
+                    <span class="metas-editable__suffix">%</span>
+                </label>
+            </td>
+            <td><span class="metas-comissao-val">${fmt(b.comissaoVal)}</span></td>
+        </tr>
+    `).join('');
+
+    // Listener de edição de comissão
+    tbody.querySelectorAll('input[data-field="comissao"]').forEach(input => {
+        input.addEventListener('change', () => {
+            const id = input.dataset.id;
+            const val = parseFloat(input.value);
+            if (isNaN(val) || val < 0 || val > 100) return;
+            const m = METAS_DATA.find(x => x.id === id);
+            if (m) m.comissaoPct = val;
+            refreshMetas();
+        });
+    });
+}
+
+function refreshMetas() {
+    const state = calcMetasState();
+    renderMetasKPIs(state);
+    renderMetasTable(state);
+    renderComissoesTable(state);
 }
 
 /* ─── 8. PERIOD FILTER ──────────────────────────────────── */
@@ -609,4 +774,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initFinTabs();
     initSidebar();
     initTooltipHide();
+    refreshMetas();
 });

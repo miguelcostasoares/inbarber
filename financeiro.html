@@ -324,21 +324,135 @@
         </section>
 
         <!-- ════════════════════════════════════════════
-         PANEL: METAS & COMISSÕES (placeholder)
+         PANEL: METAS & COMISSÕES
     ════════════════════════════════════════════ -->
         <section class="fin-panel fin-panel--hidden" id="fin-metas" role="tabpanel" aria-labelledby="tab-metas">
-            <div style="padding: 60px 0; text-align: center; color: var(--muted);">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="margin: 0 auto 12px; opacity: 0.3;"
-                    aria-hidden="true">
-                    <circle cx="20" cy="20" r="14" stroke="currentColor" stroke-width="2" />
-                    <circle cx="20" cy="20" r="6" stroke="currentColor" stroke-width="2" />
-                    <path d="M20 6v4M20 30v4M6 20h4M30 20h4" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" />
-                </svg>
-                <p style="font-size: 15px; font-weight: 600; color: var(--cream-2); margin-bottom: 6px;">Metas &
-                    Comissões</p>
-                <p style="font-size: 13px;">Em breve — próxima sub-aba</p>
+
+            <!-- ── KPIs de Metas ── -->
+            <div class="kpi-grid metas-kpi-grid">
+
+                <!-- Meta Total da Barbearia -->
+                <div class="kpi-card kpi-card--blue">
+                    <div class="kpi-card__header">
+                        <span class="kpi-card__label">Meta Total da Barbearia</span>
+                        <div class="kpi-card__icon">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
+                                <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                                <path d="M8 2v2M8 12v2M2 8h2M12 8h2" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="kpi-card__value" id="metaTotalValor">R$ 28.000</div>
+                    <div class="kpi-card__meta">
+                        <span class="kpi-card__trend kpi-card__trend--up" id="metaTotalRealizado">R$ 24.000 realizados</span>
+                    </div>
+                    <div class="meta-kpi-progress-wrap">
+                        <div class="meta-kpi-progress-bar">
+                            <div class="meta-kpi-progress-fill meta-kpi-progress-fill--blue" id="metaTotalBarFill"
+                                style="width: 85.7%"></div>
+                        </div>
+                        <span class="meta-kpi-pct" id="metaTotalPct">85,7%</span>
+                    </div>
+                </div>
+
+                <!-- Status por Barbeiro -->
+                <div class="kpi-card kpi-card--gold metas-kpi-barbers">
+                    <div class="kpi-card__header">
+                        <span class="kpi-card__label">Status por Barbeiro</span>
+                        <div class="kpi-card__icon">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                <circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                                <path d="M2 14c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                                <circle cx="12" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                                <path d="M12 9c1.1 0 2.1.4 2.9 1" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="barber-progress-list" id="barberProgressList">
+                        <!-- Gerado via JS -->
+                    </div>
+                </div>
+
+                <!-- Comissão Total a Pagar -->
+                <div class="kpi-card kpi-card--green">
+                    <div class="kpi-card__header">
+                        <span class="kpi-card__label">Comissão Total a Pagar</span>
+                        <div class="kpi-card__icon">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor"
+                                    stroke-width="1.5" />
+                                <path d="M8 6v4M6 8h4" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="kpi-card__value" id="comissaoTotalValor">R$ 0</div>
+                    <div class="kpi-card__meta">
+                        <span style="color: var(--muted);">referente ao mês atual</span>
+                    </div>
+                </div>
+
             </div>
+
+            <!-- ── Seção de Metas ── -->
+            <div class="metas-section-card">
+                <div class="metas-section-header">
+                    <div>
+                        <div class="metas-section-title">Metas Individuais</div>
+                        <div class="metas-section-sub">Clique na meta para editar diretamente</div>
+                    </div>
+                    <span class="metas-periodo-badge">Agosto 2025</span>
+                </div>
+
+                <div class="metas-table-wrap">
+                    <table class="metas-table" id="metasTable">
+                        <thead>
+                            <tr>
+                                <th>Barbeiro</th>
+                                <th>Cortes Realizados</th>
+                                <th>Meta Individual</th>
+                                <th>% Atingido</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="metasTableBody">
+                            <!-- Gerado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ── Seção de Comissões ── -->
+            <div class="metas-section-card">
+                <div class="metas-section-header">
+                    <div>
+                        <div class="metas-section-title">Comissões</div>
+                        <div class="metas-section-sub">Clique na % de comissão para editar diretamente</div>
+                    </div>
+                    <span class="metas-periodo-badge">Agosto 2025</span>
+                </div>
+
+                <div class="metas-table-wrap">
+                    <table class="metas-table" id="comissoesTable">
+                        <thead>
+                            <tr>
+                                <th>Barbeiro</th>
+                                <th>Faturamento Gerado</th>
+                                <th>% de Comissão</th>
+                                <th>Valor da Comissão</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comissoesTableBody">
+                            <!-- Gerado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </section>
 
         <!-- ════════════════════════════════════════════

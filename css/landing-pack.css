@@ -2397,3 +2397,930 @@
 @media print {
   .cta-bg-word, .cta-aside, .footer-social, .footer-book { display: none !important; }
 }
+
+/* ═════════════════════════════════════════════════════════════════
+   16. ECRÃS INTERMÉDIOS — 641 a 1023px
+
+   Acrescentar ao FIM de css/landing-pack.css e somar a linha ao
+   índice do topo do ficheiro:
+
+       16. Ecrãs intermédios — tablet e notebook pequeno
+
+   O style.css continua por tocar.
+
+   ── Porquê esta secção ──────────────────────────────────────────
+
+   A página tem duas composições: a do telemóvel (style.css) e a do
+   desktop (secções 11 a 15 deste ficheiro, todas a partir de
+   1024px). Entre uma e outra não há nada: dos 641 aos 1023px o
+   iPad em retrato (768 / 810 / 834), o Surface, o Nest Hub e
+   qualquer janela de notebook a meio ecrã recebem o desenho do
+   telemóvel esticado até mil píxeis.
+
+   O que isso produz, medido:
+
+   a) **Goteira de 20px a 1000px de largura.** O telemóvel usa
+      1.25rem, o desktop 4rem, e no meio não há degrau nenhum. O
+      texto encosta à aresta do ecrã.
+
+   b) **Faixa morta nas avaliações.** A correcção (b) da secção 11
+      — `margin-bottom: 6rem` no cabeçalho — só existe a partir de
+      1024px. Dos 768 aos 1023 o vão de ~130px entre o painel de
+      estatísticas e os cartões continua lá, e o cabeçalho continua
+      em linha com o painel a espremer o título contra a goteira.
+
+   c) **Cartões de largura fixa numa track centrada.** `flex: 0 0
+      min(300px, 82vw)` com `justify-content: center` dá, a 900px,
+      duas colunas de 300px centradas num contentor de 860 — 130px
+      de vazio repartido pelas arestas, com o cabeçalho alinhado a
+      uma margem diferente. É a alínea (a) da secção 11, na banda
+      onde não foi corrigida.
+
+   d) **A palavra BOOK cortada à direita.** `right: -1rem` com o
+      `overflow: hidden` da secção. É a alínea (b) da secção 14, e
+      nesta banda ainda acontece.
+
+   e) **Um terço cheio, dois terços vazios no CTA.** A coluna de
+      prova (`.cta-aside`) está no HTML e escondida abaixo de
+      1024px.
+
+   f) **Bento de três colunas com o destaque a ocupar a linha
+      inteira**, e cartões de 300×200 deitados que não são nem a
+      grelha do telemóvel nem a do desktop.
+
+   g) **Contacto e modos de chegada em coluna única** a 1000px de
+      largura, quando três cabem à vontade.
+
+   ── Limites da banda ────────────────────────────────────────────
+
+   `min-width: 641px` espelha o `max-width: 640px` do style.css:
+   nenhuma regra daqui toca num píxel que o style.css considera
+   telemóvel. `max-width: 1023.98px` espelha o `min-width: 1024px`
+   das secções 11 a 15, com a mesma fracção que a secção 14 já usa
+   em `1279.98px` — evita o buraco do zoom fraccionário.
+
+   Consequência: **mobile e desktop ficam byte a byte iguais.**
+   Todas as regras vivem dentro de uma das duas janelas.
+
+   ── Dois degraus, não um ────────────────────────────────────────
+
+   641–767  telemóvel deitado e tablet pequeno. A nav já mostra os
+            links e o sticky CTA já saiu (style.css, ≥640), mas a
+            composição ainda é a de uma coluna. Aqui só se corrige
+            a goteira e o que estava mal medido.
+
+   768–1023 tablet em retrato e janela de notebook. É aqui que a
+            página ganha composição própria: duas colunas nas
+            avaliações, prova no CTA, bento em bento, rodapé em
+            duas colunas.
+════════════════════════════════════════════════════════════════ */
+
+
+/* ─────────────────────────────────────────
+   16.1 GOTEIRA
+
+   Um valor, um sítio. O `--gutter-mid` fica declarado no :root
+   para que uma regra que o use fora da banda não caia em vazio,
+   mas só é lido lá dentro.
+
+   2rem aos 641 não é escolha nova: é a goteira que a secção 6 já
+   dá à equipa a partir dos 640. 2.5rem aos 768 é o degrau que
+   faltava entre os 1.25rem do telemóvel e os 4rem do desktop.
+
+   Tudo aqui usa `padding-inline` / `margin-inline` em vez do
+   atalho: só o eixo horizontal muda, e os valores verticais de
+   cada secção — que são diferentes uns dos outros — ficam por
+   onde estão.
+───────────────────────────────────────── */
+:root { --gutter-mid: 2rem; }
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  :root { --gutter-mid: 2.5rem; }
+}
+
+@media (min-width: 641px) and (max-width: 1023.98px) {
+  .nav            { padding-inline: var(--gutter-mid); }
+  .hero-content   { padding-inline: var(--gutter-mid); }
+  .hero-scroll    { right: var(--gutter-mid); }
+  .about          { padding-inline: var(--gutter-mid); }
+  .services-top   { padding-inline: var(--gutter-mid); }
+  .svc-list       { padding-inline: var(--gutter-mid); }
+  .team           { padding-inline: var(--gutter-mid); }
+  .gallery        { padding-inline: var(--gutter-mid); }
+  .reviews-hd     { padding-inline: var(--gutter-mid); }
+  .reviews-track  { padding-inline: var(--gutter-mid); }
+  .location       { padding-inline: var(--gutter-mid); }
+  .cta-final      { padding-inline: var(--gutter-mid); }
+  .footer         { padding-inline: var(--gutter-mid); }
+
+  /* As duas barras flutuantes do carrinho já tinham degraus
+     próprios (1.5rem aos 640, 2rem aos 768). Passam a ler a mesma
+     goteira das secções, senão a barra fica desalinhada da lista
+     de serviços que a alimenta. */
+  .booking-bar-inner,
+  .booking-dropdown { margin-inline: var(--gutter-mid); }
+}
+
+
+/* ─────────────────────────────────────────
+   16.2 HERO — medida
+
+   O h1 e a descrição trazem <br> do HTML, por isso a medida de
+   linha está travada e não é problema. O que estava mal é que o
+   bloco de texto se estica com o ecrã: a 1000px o par
+   eyebrow/botões espalhava-se por toda a largura enquanto o h1
+   ocupava 400px, e nada alinhava com nada.
+
+   Uma largura máxima resolve os dois: o bloco fica coeso e
+   encostado à esquerda, como no desktop, e o vídeo respira à
+   direita.
+───────────────────────────────────────── */
+@media (min-width: 641px) and (max-width: 1023.98px) {
+  .hero-content {
+    max-width: 38rem;
+    margin-right: auto;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .hero-h1   { font-size: clamp(3.6rem, 7vw, 4.6rem); }
+  .hero-desc { font-size: 14px; line-height: 1.75; }
+
+  /* A faixa de números atravessa o ecrã todo: com três estatísticas
+     a 1000px cada uma tinha 330px para um número de 1.65rem. Sobe o
+     número, sobe o espaçamento, e a faixa deixa de parecer vazia. */
+  .hero-stats       { padding-inline: var(--gutter-mid); }
+  .hero-stat        { padding: 1.25rem 1.25rem; }
+  .hero-stat strong { font-size: 1.9rem; }
+}
+
+
+/* ─────────────────────────────────────────
+   16.3 SERVIÇOS
+
+   Duas colunas já existiam a partir dos 768 (style.css). O que
+   falta é o acabamento que só chega aos 1024: raio maior, cartão
+   com mais respiração e o levantar no hover.
+
+   O hover fica atrás de `hover: hover` e `pointer: fine`. Um iPad
+   a 810px de largura entra nesta banda e não deve receber estados
+   de rato — num ecrã táctil o :hover cola-se depois do toque e o
+   cartão fica levantado até se tocar noutro sítio.
+───────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .svc-list { gap: 12px; }
+  .svc-card {
+    flex: calc(50% - 6px);
+    border-radius: var(--r-lg);
+  }
+  .svc-card-inner { padding: 1.45rem 1.35rem; gap: 1.1rem; }
+  .svc-name       { font-size: 1.1rem; }
+  .svc-desc       { font-size: 12px; line-height: 1.6; }
+  .svc-price      { font-size: 1.05rem; }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px)
+   and (hover: hover) and (pointer: fine) {
+  .svc-card {
+    transition:
+      background 180ms ease-out,
+      border-color 180ms ease-out,
+      transform 200ms var(--ease-out),
+      box-shadow 200ms ease-out;
+  }
+  .svc-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+}
+
+
+/* ─────────────────────────────────────────
+   16.4 GALERIA — bento a sério
+
+   Base: três colunas de 200px de altura, com o destaque a ocupar
+   as três (`grid-column: span 3`). Resultado a 900px: uma faixa
+   larguíssima em cima e uma fita de rectângulos deitados por
+   baixo. Não é uma grelha bento, é um banner com legendas.
+
+   Aqui o destaque passa a duas colunas e todas as outras células
+   passam a ocupar duas linhas, exactamente como no desktop. Com
+   `grid-auto-rows: 150px` a célula normal fica 1×2 (retrato) e o
+   destaque 2×2 (quadrado) — as duas proporções que uma barbearia
+   fotografa.
+
+   O que NÃO muda: `.b-info` continua a ser uma barra fixa por
+   baixo da imagem, e não o overlay que aparece no hover. Esta
+   banda é maioritariamente táctil, e um overlay que só existe no
+   hover é informação que num tablet nunca aparece.
+───────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .bento-grid {
+    grid-auto-rows: 150px;
+    gap: 12px;
+  }
+
+  .b-cell-feat { grid-column: span 2; grid-row: span 2; }
+  .b-cell:not(.b-cell-feat) { grid-row: span 2; }
+
+  .gallery-filters { justify-content: flex-start; gap: 8px; }
+  .gf-pill         { font-size: 11.5px; padding: 0.6rem 1.25rem; }
+}
+
+
+/* ─────────────────────────────────────────
+   16.5 AVALIAÇÕES
+
+   A secção com mais defeitos por corrigir nesta banda, porque a
+   secção 11 assumiu que abaixo dos 1024 vivia o carrossel do
+   telemóvel — e vive, mas só até aos 640.
+
+   a) **Cabeçalho.** Dos 768 aos 1023 volta a ser uma linha (o
+      `max-width: 767px` do style.css deixa de o segurar) e traz o
+      `margin-bottom: 6rem` original. Passa a coluna com 3rem: o
+      painel precisa de 480px para os três números não se tocarem,
+      e o `.reviews-sub` precisa de 42ch — 820px que não existem a
+      768. Empilhar não é recuo, é a única leitura possível.
+
+   b) **Track.** Deixa de ser flex centrado com cartões de 300px e
+      passa a grelha de duas colunas que enche a goteira, como no
+      desktop. Duas e não três: o desktop também só abre para
+      quatro aos 1280, e passar de três colunas a 1023 para duas a
+      1024 seria um salto ao contrário.
+
+   c) **Selo.** Ficou por fazer na secção 12 ("Em aberto"). Em
+      caixa alta e pílula cheia, "AVALIAÇÃO VERIFICADA PELA
+      INBARBER" parte em duas linhas dentro do cartão e pesa mais
+      do que a avaliação. Passa à caixa normal e à versão fantasma
+      da secção 11.
+
+   d) **Aspa.** Ícone de 22px encavalitado no topo do cartão.
+      Passa a marca de água, como no desktop.
+
+   e) **`overflow`.** `.reviews` tem `overflow: hidden` para o
+      carrossel horizontal, que nesta banda deixa de existir. Fica
+      `visible` para a entrada por scroll não sair degenerada — a
+      mesma nota de manutenção da secção 11 aplica-se aqui: se
+      voltar o `hidden`, a animação morre.
+───────────────────────────────────────── */
+@media (min-width: 641px) and (max-width: 1023.98px) {
+
+  /* ── Track: grelha ── */
+  .reviews-track {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    justify-content: initial;
+  }
+
+  /* ── Cartão ── */
+  .rv-card {
+    position: relative;
+    overflow: hidden;
+    padding: 1.85rem 1.6rem 1.4rem;
+    gap: 1.2rem;
+    border-radius: 18px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0) 42%),
+      var(--bg-3);
+  }
+
+  .rv-card > .rv-quote {
+    position: absolute;
+    top: -6px;
+    right: 4px;
+    width: 68px;
+    height: 68px;
+    opacity: 0.07;
+    fill: var(--gold-lt);
+    pointer-events: none;
+  }
+
+  .rv-txt {
+    position: relative;
+    font-size: 0.97rem;
+    line-height: 1.7;
+    color: var(--cream);
+  }
+
+  /* Selo: caixa normal, uma linha, fantasma. */
+  .rv-verified {
+    max-width: 100%;
+    white-space: nowrap;
+    gap: 6px;
+    padding: 5px 11px 5px 8px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    text-transform: none;
+    color: var(--cream-2);
+    background: transparent;
+    border-color: var(--divider);
+  }
+  .rv-verified svg { width: 11px; height: 11px; opacity: 0.9; }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .reviews {
+    padding-block: 6rem;
+    overflow: visible;   /* ver alínea (e) acima */
+  }
+
+  /* ── Cabeçalho empilhado ── */
+  .reviews-hd {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .reviews-intro,
+  .reviews-panel {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+  }
+
+  .reviews-sub { max-width: 56ch; font-size: 13.5px; }
+
+  /* Painel largo: os três números encostavam-se à esquerda e
+     deixavam metade da caixa vazia. Espalham-se. */
+  .reviews-panel  { padding: 1.7rem 1.8rem; }
+  .rp-stats-row   { justify-content: space-between; gap: 1.5rem; }
+  .rp-score       { font-size: 2.8rem; }
+  .rp-stat-val    { font-size: 1.75rem; }
+  .rp-divider     { height: 42px; }
+
+  .reviews-more { padding-top: 2.25rem; }
+}
+
+/* ── Entrada escalonada ────────────────────
+   A mesma da secção 11, na mesma janela em que a track é grelha.
+   `is-revealed` tem de vir junto: sem ela, os cartões que o botão
+   "Ver mais" revela a meio do ecrã já passaram o intervalo da
+   `view()` e ficavam parados a zero de opacidade.
+
+   As redes de segurança da secção 11 (`@media print` e
+   `prefers-reduced-motion`) usam selectores sem largura, por isso
+   já cobrem esta banda — não é preciso repeti-las.
+──────────────────────────────────────────── */
+@supports (animation-timeline: view()) {
+  @media (min-width: 768px) and (max-width: 1023.98px) {
+    .reviews-track .rv-card {
+      animation: rvEnter 1s linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 26%;
+    }
+    .reviews-track .rv-card:nth-child(2) { animation-range: entry 10% cover 30%; }
+    .reviews-track .rv-card:nth-child(3) { animation-range: entry 10% cover 34%; }
+    .reviews-track .rv-card:nth-child(4) { animation-range: entry 10% cover 38%; }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .reviews-track .rv-card.is-revealed {
+    animation-name: rvEnter;
+    animation-timeline: auto;
+    animation-range: normal;
+    animation-duration: 520ms;
+    animation-timing-function: var(--ease-out);
+    animation-fill-mode: both;
+  }
+}
+
+
+/* ─────────────────────────────────────────
+   16.6 LOCALIZAÇÃO
+
+   A composição continua empilhada — a `.location-container` da
+   secção 13 ganha, por ordem de cascata, à regra de duas colunas
+   que o style.css tinha aos 768, e ainda bem: as áreas de grelha
+   da secção 13 foram desenhadas para 1024 e a 800px o mapa em
+   4/5 ao lado da morada não cabe.
+
+   O que estava mal é mais simples: `.loc-contact` e
+   `.loc-modes-list` só abrem para três colunas aos 1024. Nesta
+   banda ficam três cartões empilhados num contentor de 900px.
+───────────────────────────────────────── */
+@media (min-width: 641px) and (max-width: 767.98px) {
+  .loc-contact,
+  .loc-modes-list { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .loc-contact,
+  .loc-modes-list { grid-template-columns: repeat(3, 1fr); }
+
+  /* O mapa quadrado do telemóvel fica alto de mais quando ganha a
+     largura toda de um tablet. 16/10 é a proporção de um mapa. */
+  .map-box { aspect-ratio: 16 / 10; }
+
+  .loc-card         { padding: 1.5rem 1.4rem; }
+  .loc-address-line { font-size: 1.35rem; }
+}
+
+
+/* ─────────────────────────────────────────
+   16.7 EQUIPA
+
+   Duas colunas já vêm da secção 6 (≥640) e mantêm-se: o cartão
+   desta banda é horizontal (foto à esquerda, corpo à direita) e a
+   três colunas a 768px sobram 164px para o nome, a função, a nota
+   e as etiquetas. As quatro colunas só fazem sentido com o cartão
+   vertical do desktop.
+
+   O que muda é só a escala: com 460px de cartão, uma foto de 56px
+   é um selo.
+───────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .team-list { gap: 14px; }
+  .team-card { padding: 1.4rem 1.3rem; gap: 1.15rem; }
+  .team-av   { width: 68px; height: 68px; }
+  .team-av-initials { font-size: 1.3rem; }
+}
+
+
+/* ─────────────────────────────────────────
+   16.8 CTA FINAL
+
+   Três correcções da secção 14 que nunca chegaram cá abaixo, mais
+   a coluna de prova.
+
+   a) **BOOK inteira.** Deixa de estar ancorada a `right: -1rem` —
+      onde o `overflow: hidden` da secção lhe come o K — e passa a
+      assentar em baixo, alinhada com a goteira, cortada por
+      baixo. Cortar por baixo lê-se como decisão.
+
+   b) **Título em duas linhas.** Os <br> vêm da string de i18n
+      (`cta.h`, igual nos três idiomas) e produzem três degraus
+      curtos com uma rasga branca à direita. Escondidos, o espaço
+      que cada <br> tem antes de si — no HTML e nas três traduções
+      — é o que separa "visual" de "começa". Abaixo dos 768 ficam,
+      porque aí a coluna é estreita e três linhas é o desenho.
+
+   c) **Subtítulo e botões.** 13px por baixo de um título de 70px
+      lê-se como legenda; os dois botões tinham raios diferentes.
+
+   d) **A prova sai do `display: none`.** A `.cta-aside` já está no
+      HTML em todos os tamanhos. Aqui não cabe ao lado do título —
+      a 768px a coluna da esquerda ficaria com 370px — mas cabe
+      por baixo dos botões, em faixa: nota à esquerda, factos à
+      direita. Não é argumento novo nenhum: a nota vem das
+      avaliações, "sem taxa de sinal" e "cartão e Pix" vêm da
+      localização.
+
+      Como a `.cta-grid` é `display: contents` abaixo de 1024, a
+      `.cta-aside` já é filha directa da `.cta-final` — basta
+      deixá-la aparecer, e cai naturalmente a seguir ao
+      `.cta-inner`. Não é preciso grelha nenhuma.
+───────────────────────────────────────── */
+@media (min-width: 641px) and (max-width: 1023.98px) {
+  .cta-final { padding-block: 6rem 7.5rem; }
+
+  .cta-sub {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.72);
+    max-width: 46ch;
+  }
+
+  .cta-btns .btn-fill-dark,
+  .cta-btns .btn-wa-dark {
+    height: 52px;
+    padding: 0 1.9rem;
+    border-radius: var(--r-full);
+    font-size: 11.5px;
+    letter-spacing: 1.5px;
+  }
+  .cta-btns .btn-wa-dark {
+    border-color: rgba(255,255,255,0.45);
+    color: var(--white);
+  }
+
+  /* Marca de água — alínea (a) */
+  .cta-bg-word {
+    right: auto;
+    left: var(--gutter-mid);
+    top: auto;
+    bottom: -3.5rem;
+    transform: none;
+    font-size: 9rem;
+    letter-spacing: 0.02em;
+    -webkit-text-stroke-width: 1.5px;
+    -webkit-text-stroke-color: rgba(255,255,255,0.12);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .cta-h {
+    font-size: clamp(3rem, 5.6vw, 4.4rem);
+    line-height: 1;
+    letter-spacing: -1.5px;
+    max-width: 14ch;
+  }
+  .cta-h br { display: none; }   /* alínea (b) */
+
+  /* ── Faixa de prova — alínea (d) ──
+     Rótulo em cima a toda a largura, nota e factos lado a lado por
+     baixo. `position: relative` só para ficar por cima do traço da
+     palavra BOOK, que passa exactamente por aqui. */
+  .cta-aside {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem 2.25rem;
+    margin-top: 2.75rem;
+    padding: 1.5rem 1.7rem;
+    border: 1px solid rgba(255,255,255,0.24);
+    border-radius: var(--r-md);
+    background: rgba(255,255,255,0.09);
+  }
+
+  .cta-aside-h {
+    grid-column: 1 / -1;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .cta-score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-right: 2.25rem;
+    border-right: 1px solid rgba(255,255,255,0.18);
+  }
+  .cta-score-num {
+    font-family: var(--ff-d);
+    font-size: 2.9rem;
+    line-height: 0.9;
+    color: var(--white);
+  }
+  .cta-score-side {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .cta-stars       { font-size: 12px; letter-spacing: 2px; color: var(--gold-lt); }
+  .cta-score-total { font-size: 11.5px; color: rgba(255,255,255,0.78); }
+
+  /* Em faixa os factos correm em linha e quebram para a segunda
+     quando a frase mais longa não couber — a 768px cabem dois,
+     a 1000px cabem os três. */
+  .cta-facts {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 0.7rem 1.75rem;
+  }
+  .cta-facts li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--white);
+  }
+  /* Visto desenhado com duas arestas: sem ficheiro e sem fonte de
+     ícones. Igual ao da secção 14. */
+  .cta-facts li::before {
+    content: '';
+    flex-shrink: 0;
+    width: 10px;
+    height: 5.5px;
+    margin-top: 5px;
+    border-left: 1.8px solid var(--gold-lt);
+    border-bottom: 1.8px solid var(--gold-lt);
+    transform: rotate(-45deg);
+  }
+}
+
+
+/* ─────────────────────────────────────────
+   16.9 RODAPÉ
+
+   A pilha do telemóvel a 1000px de largura é a descrição atirada
+   para a direita e uma fita de seis links de 11px. Passa a duas
+   colunas: marca + contacto à esquerda, navegação à direita.
+
+   Duas e não quatro. As colunas de visita e horários (`.footer-col`)
+   continuam escondidas, pelo mesmo motivo por que estão escondidas
+   em telemóvel: a morada e o horário estão na secção de localização
+   imediatamente acima, e nesta banda ela ainda está a um dedo de
+   scroll. Repeti-las era encher o rodapé para não o deixar vazio.
+
+   O `.footer-social` é a excepção: telefone e WhatsApp não estão em
+   lado nenhum a não ser dentro dos botões, e uma coluna de contacto
+   é o que torna as duas colunas honestas.
+───────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .footer { padding-block: 3.5rem 2rem; }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 2.5rem 3rem;
+    align-items: start;
+    margin-bottom: 2rem;
+    padding-bottom: 2.25rem;
+    border-bottom: 1px solid var(--divider);
+  }
+
+  /* As arestas da pilha desaparecem: a única linha do rodapé passa
+     a ser a da grelha. */
+  .footer-top,
+  .footer-links {
+    padding-bottom: 0;
+    border-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .footer-top {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .footer-desc { font-size: 12.5px; line-height: 1.8; max-width: 38ch; }
+
+  /* Coluna de contacto */
+  .footer-social {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 0.25rem;
+  }
+  .footer-social a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--cream-2);
+    transition: color 180ms ease-out;
+  }
+  .footer-social svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    color: var(--muted);
+    transition: color 180ms ease-out;
+  }
+  .footer-social a:hover,
+  .footer-social a:hover svg { color: var(--gold-lt); }
+
+  /* Navegação em coluna, não em fita */
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+  .footer-links a { font-size: 12.5px; color: var(--cream-2); width: fit-content; }
+
+  .footer-bottom {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+  .footer-bottom p { font-size: 11.5px; }
+
+  .footer-social a:focus-visible,
+  .footer-links a:focus-visible {
+    outline: 2px solid var(--gold-lt);
+    outline-offset: 4px;
+    border-radius: var(--r-sm);
+  }
+}
+
+
+/* ─────────────────────────────────────────
+   16.10 MOVIMENTO
+
+   O único estado de rato que esta secção acrescenta é o do cartão
+   de serviço, e ele já está atrás de `hover: hover`. Desligá-lo
+   aqui fecha o ciclo — as restantes redes (`prefers-reduced-motion`
+   e `@media print` das secções 11 a 15) usam selectores sem
+   largura e já cobrem esta banda.
+───────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023.98px)
+   and (prefers-reduced-motion: reduce) {
+  .svc-card:hover { transform: none; box-shadow: none; }
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   17. HERO — ECRÃS BAIXOS (notebooks)
+
+   Acrescentar ao FIM de css/landing-pack.css, DEPOIS da secção 16,
+   e somar a linha ao índice do topo do ficheiro:
+
+       17. Hero — ecrãs baixos (notebooks)
+
+   ── PRÉ-REQUISITO ──────────────────────────────────────────────
+   A secção 17.2 esconde os <br> do h1. Como em `cta.h`, cada <br>
+   precisa de um espaço antes de si, senão sai "Onde cadadetalhe".
+   Três linhas em js/i18n.js:
+
+     pt: 'hero.h1' : 'Onde cada <br>detalhe <br><em>importa.</em>'
+     en: 'hero.h1' : 'Where every <br>detail <br><em>counts.</em>'
+     es: 'hero.h1' : 'Donde cada <br>detalle <br><em>importa.</em>'
+
+   O index.html já está certo por acidente: tem uma quebra de linha
+   a seguir a cada <br>, e o HTML colapsa-a num espaço. Não precisa
+   de ser tocado — mas se alguém um dia puser o h1 numa linha só,
+   volta a colar as palavras.
+
+   ── O PROBLEMA ─────────────────────────────────────────────────
+
+   Isto não é largura. A composição de desktop está certa a 1536px;
+   o que falha é a altura.
+
+   O `.hero-content` é `position: absolute` entre `top: 0` e
+   `bottom: 0`, com `justify-content: center`. Não pode crescer:
+   ou o que está lá dentro cabe na altura da viewport, ou
+   transborda pelas duas pontas.
+
+   Contabilidade num notebook a 1536 × 750 CSS px:
+
+     padding-top    calc(--offset + 3rem)          140
+     eyebrow + margem                                48
+     h1 3 linhas a 5.5rem (regra dos ≥1440)         251
+     margem do h1                                    24
+     descrição 2 linhas + margem                      94
+     chips de horários + margem                     138
+     botões                                          48
+     padding-bottom 6rem                             96
+                                                   ────
+                                                    839
+
+   839 numa caixa de 750. Transborda ~90px, e como está centrado
+   sai metade por cima (a eyebrow encosta ao ticker) e metade por
+   baixo. A faixa `.hero-stats` vem depois no DOM, com o mesmo
+   z-index, fundo a 60% e `backdrop-filter` — os botões ficam
+   atrás dela. O CTA principal da página desaparece.
+
+   A causa é acumulada: o hero foi desenhado antes de a secção 4
+   lhe acrescentar os horários livres (~138px). Em 1080p a ecrã
+   inteiro ainda cabia; com a barra do browser, não.
+
+   ── PORQUE SÃO ESTAS AS ALAVANCAS ──────────────────────────────
+
+   **Enquanto houver transbordo, mexer no `padding` não vale nada.**
+   Se o conteúdo é maior do que a caixa, o padding já foi comido.
+   Só contam reduções de altura do conteúdo — e a maior de longe é
+   o h1: três linhas a 5.5rem são 251px, quase um terço do total.
+
+   Passar de três linhas para duas poupa ~110px de uma vez, sem
+   encolher o título. Custa largura à coluna, e largura é
+   exactamente o que sobra num ecrã 16:9 baixo. É essa a troca:
+   quando falta altura, gasta-se largura.
+
+   Só a partir dos 1024px. Abaixo disso o hero não é absoluto — é
+   uma pilha que cresce — e já tem as suas próprias regras de
+   altura (secção 4: os chips saem abaixo de 620px de altura).
+
+   Nota de cascata: estas regras vêm depois do `@media
+   (min-width: 1440px) { .hero-h1 { font-size: 5.5rem } }` do
+   style.css, mesma especificidade — ganham por ordem, sem
+   !important. Se alguma vez forem movidas para cima no ficheiro,
+   deixam de fazer efeito.
+════════════════════════════════════════════════════════════════ */
+
+
+/* ─────────────────────────────────────────
+   17.1 ATÉ 900px DE ALTURA — aperto de ritmo
+
+   É aqui que a conta começa a não fechar (839 de conteúdo contra
+   uma caixa de 900 menos as duas goteiras verticais). Ainda não
+   se mexe no desenho: só nas margens, que são o espaço entre as
+   coisas e não as coisas.
+
+   `safe center` é a única linha estrutural: quando o conteúdo
+   transborda, a centragem "segura" cai para `start` em vez de
+   sair pelas duas pontas. Não impede o transbordo por baixo, mas
+   impede que a eyebrow vá parar debaixo do ticker. Onde não é
+   suportado, a declaração é ignorada e fica o `center` do
+   style.css.
+───────────────────────────────────────── */
+@media (min-width: 1024px) and (max-height: 900px) {
+  .hero-content {
+    justify-content: safe center;
+    padding-top: calc(var(--offset) + 2rem);
+    padding-bottom: 5.5rem;
+  }
+
+  .hero-eyebrow { margin-bottom: 1.1rem; }
+
+  .hero-h1 {
+    font-size: clamp(3.2rem, 4.4vw, 5.2rem);
+    margin-bottom: 1.1rem;
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero-slots { gap: 0.5rem; margin-bottom: 1.25rem; }
+
+  /* A faixa de números é a parede contra a qual os botões batem:
+     cada píxel que ela perde é um píxel de folga para o CTA. */
+  .hero-stat        { padding: 1.15rem 1.5rem; }
+  .hero-stat strong { font-size: 1.8rem; }
+}
+
+
+/* ─────────────────────────────────────────
+   17.2 ATÉ 820px DE ALTURA — título em duas linhas
+
+   A alavanca grande. Três linhas a 5.2rem são ~237px; duas a
+   4.6rem são ~140. Poupa ~97px sem que o título fique pequeno —
+   e um h1 em duas linhas largas lê-se melhor do que três degraus
+   curtos, que era a mesma correcção que a secção 14 fez ao CTA.
+
+   Para caber em duas linhas a coluna tem de crescer: "Onde cada
+   detalhe" a 4.6rem pede ~590px, e a coluna dos ≥1440 dá 536
+   (680 de max-width menos 6rem à direita e 3rem à esquerda).
+   Passa a 56% / 52rem com a goteira de 4rem — ~720px úteis.
+
+   Sem `max-width` em `ch` no h1: numa fonte de display o `ch` é
+   estreito e qualquer valor plausível forçava de volta a quebra
+   que estamos a tentar evitar. Quem trava a linha é a coluna.
+───────────────────────────────────────── */
+@media (min-width: 1024px) and (max-height: 820px) {
+  .hero-content {
+    width: 56%;
+    max-width: 52rem;
+    padding-right: 4rem;
+  }
+
+  .hero-h1 {
+    font-size: clamp(3rem, 4.2vw, 4.6rem);
+    line-height: 0.98;
+    margin-bottom: 1rem;
+  }
+  .hero-h1 br { display: none; }   /* ver PRÉ-REQUISITO no topo */
+
+  .hero-desc { margin-bottom: 1.5rem; max-width: 44ch; }
+
+  .hero-slots { margin-bottom: 1.1rem; }
+  .hero-slots-label { margin-bottom: 1px; }
+}
+
+
+/* ─────────────────────────────────────────
+   17.3 ATÉ 700px DE ALTURA
+
+   Notebook de 1366×768 com barra de favoritos, ou janela
+   arrastada para meio ecrã. Aqui já não chega apertar: encolhe
+   tudo o que tem altura própria.
+
+   Os chips continuam — são a alavanca de conversão da página, e
+   a secção 4 só os retira abaixo dos 620px, onde o hero deixa de
+   ter altura para uma linha de conteúdo a mais.
+───────────────────────────────────────── */
+@media (min-width: 1024px) and (max-height: 700px) {
+  .hero-content {
+    padding-top: calc(var(--offset) + 1.25rem);
+    padding-bottom: 4.75rem;
+  }
+
+  .hero-eyebrow { margin-bottom: 0.85rem; }
+
+  .hero-h1 {
+    font-size: clamp(2.8rem, 3.6vw, 3.9rem);
+    margin-bottom: 0.85rem;
+  }
+
+  .hero-desc { font-size: 14px; margin-bottom: 1.25rem; }
+
+  .hero-slot      { padding: 0.42rem 0.75rem; min-width: 76px; }
+  .hero-slot-time { font-size: 1rem; }
+  .hero-slots-all { font-size: 10.5px; }
+
+  .hero-stat        { padding: 0.9rem 1.5rem; }
+  .hero-stat strong { font-size: 1.55rem; }
+  .hero-stat span   { font-size: 9px; letter-spacing: 2px; }
+}
+
+
+/* ─────────────────────────────────────────
+   17.4 A PALAVRA CORVO
+
+   `.hero-big-word` é `clamp(6rem, 10vw, 14rem)` e vive no canto
+   superior esquerdo, com o mesmo `padding-top` do conteúdo. Num
+   ecrã baixo ocupa um quinto da altura útil e passa por trás do
+   h1. Acompanha a redução — continua a ser a marca de água que
+   era, com menos peso.
+───────────────────────────────────────── */
+@media (min-width: 1024px) and (max-height: 820px) {
+  .hero-big-word { font-size: clamp(5rem, 8vw, 10rem); }
+}
+
+@media (min-width: 1024px) and (max-height: 700px) {
+  .hero-big-word { font-size: clamp(4rem, 6.5vw, 7.5rem); opacity: 0.5; }
+}

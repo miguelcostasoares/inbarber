@@ -1,236 +1,324 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Configurações — InBarber</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
-      rel="stylesheet"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configurações — InBarber</title>
 
-    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="css/configuracoes.css" />
-  </head>
-  <body>
-    <!--═══════════════════════════════════════════
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+    rel="stylesheet" />
+
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/configuracoes.css" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════
        SIDEBAR NAV
-  ═══════════════════════════════════════════-->
-    <aside
-      class="sidebar is-collapsed"
-      id="sidebar"
-      role="navigation"
-      aria-label="Menu principal"
-    >
-      <div class="sidebar__brand">
-        <div class="sidebar__logo">
-          <img
-            src="assets/logo_inbarber.png"
-            alt="logo-inbarber"
-            class="sidebar__img-logo"
-          />
+  ═══════════════════════════════════════════ -->
+  <aside class="sidebar is-collapsed" id="sidebar" role="navigation" aria-label="Menu principal">
+
+    <div class="sidebar__brand">
+      <div class="sidebar__logo">
+        <img src="assets/logo_inbarber.png" alt="logo-inbarber" class="sidebar__img-logo">
+      </div>
+      <span class="sidebar__name">InBarber</span>
+    </div>
+
+    <button class="sidebar__toggle" id="sidebarToggleBtn" aria-label="Expandir menu" aria-expanded="false"
+      aria-controls="sidebar">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+
+    <nav class="sidebar__nav">
+      <ul class="nav-list" role="list">
+        <li>
+          <a href="/dashboard.html" class="nav-item" data-label="Dashboard">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+              <rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+              <rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+              <rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="/agenda-crm.html" class="nav-item" data-label="Agenda">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.5" />
+              <path d="M2 8h16" stroke="currentColor" stroke-width="1.5" />
+              <path d="M7 1v4M13 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <span>Agenda</span>
+          </a>
+        </li>
+        <li>
+          <a href="/clientes.html" class="nav-item" data-label="Clientes">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.5" />
+              <path d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" />
+            </svg>
+            <span>Clientes</span>
+          </a>
+        </li>
+        <li>
+          <a href="/financeiro.html" class="nav-item" data-label="Financeiro">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5" />
+              <path d="M6 10h8M6 6h4M6 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <span>Financeiro</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item nav-item--active" data-label="Configurações">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5" />
+              <path
+                d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <span>Configurações</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar__bottom">
+      <div class="sidebar__user">
+        <div class="sidebar__avatar">RC</div>
+        <div class="sidebar__user-info">
+          <span class="sidebar__user-name">Rafael Costa</span>
+          <span class="sidebar__user-role">Proprietário</span>
         </div>
-        <span class="sidebar__name">InBarber</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Overlay mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════ -->
+  <main class="main" id="main">
+
+    <!-- ── TOPBAR (mobile) ── -->
+    <div class="topbar">
+      <button class="topbar__burger" id="burgerBtn" aria-label="Abrir menu" aria-expanded="false"
+        aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar__logo">
+        <svg width="22" height="22" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect width="28" height="28" rx="7" fill="var(--gold)" />
+          <path d="M9 7L19 21M19 7L9 21" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        InBarber
+      </div>
+      <!-- Espaço reservado para manter alinhamento -->
+      <div style="width:36px;"></div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+         CONFIGURAÇÕES HEADER
+    ════════════════════════════════════════════ -->
+    <header class="config-header">
+      <div class="config-header__top">
+        <div>
+          <h1 class="config-header__title">Configurações</h1>
+          <p class="config-header__date" id="configDate"></p>
+        </div>
       </div>
 
-      <button
-        class="sidebar__toggle"
-        id="sidebarToggleBtn"
-        aria-label="Expandir menu"
-        aria-expanded="false"
-        aria-controls="sidebar"
-      >
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M4 2l4 4-4 4"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-
-      <nav class="sidebar__nav">
-        <ul class="nav-list" role="list">
-          <li>
-            <a href="/dashboard.html" class="nav-item" data-label="Dashboard">
-              <svg
-                class="nav-icon"
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-              >
-                <rect
-                  x="2"
-                  y="2"
-                  width="7"
-                  height="7"
-                  rx="1.5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                />
-                <rect
-                  x="11"
-                  y="2"
-                  width="7"
-                  height="7"
-                  rx="1.5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                />
-                <rect
-                  x="2"
-                  y="11"
-                  width="7"
-                  height="7"
-                  rx="1.5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                />
-                <rect
-                  x="11"
-                  y="11"
-                  width="7"
-                  height="7"
-                  rx="1.5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                />
-              </svg>
-              <span>Dashboard</span>
-            </a>
-          </li>
-          <li>
-            <a href="/agenda-crm.html" class="nav-item" data-label="Agenda">
-              <svg
-                class="nav-icon"
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-              >
-                <rect
-                  x="2"
-                  y="3"
-                  width="16"
-                  height="15"
-                  rx="2"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                />
-                <path d="M2 8h16" stroke="currentColor" stroke-width="1.5" />
-                <path
-                  d="M7 1v4M13 1v4"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <span>Agenda</span>
-            </a>
-          </li>
-          <li>
-            <a href="/clientes.html" class="nav-item" data-label="Clientes">
-              <svg
-                class="nav-icon"
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-              >
-                <circle
-                  cx="10"
-                  cy="7"
-                  r="4"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                />
-                <path
-                  d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <span>Clientes</span>
-            </a>
-          </li>
-          <li>
-            <a href="/financeiro.html" class="nav-item" data-label="Financeiro">
-              <svg
-                class="nav-icon"
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-              >
-                <rect
-                  x="2"
-                  y="2"
-                  width="16"
-                  height="16"
-                  rx="2"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                />
-                <path
-                  d="M6 10h8M6 6h4M6 14h6"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <span>Financeiro</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              class="nav-item nav-item--active"
-              data-label="Configurações Gerais"
-            >
-              <svg
-                class="nav-icon"
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-              >
-                <circle
-                  cx="10"
-                  cy="10"
-                  r="3"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                />
-                <path
-                  d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <span>Configurações Gerais</span>
-            </a>
-          </li>
-        </ul>
+      <!-- ── Tabs de navegação ── -->
+      <nav class="config-tabs" role="tablist" aria-label="Seções de configuração">
+        <button class="config-tab config-tab--active" role="tab" aria-selected="true"
+          aria-controls="tab-barbearia" id="btn-tab-barbearia" data-tab="barbearia">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M7.5 1L2 4v7l5.5 3L13 11V4L7.5 1z" stroke="currentColor" stroke-width="1.4"
+              stroke-linejoin="round" />
+            <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.4" />
+          </svg>
+          Dados da Barbearia
+        </button>
+        <button class="config-tab" role="tab" aria-selected="false"
+          aria-controls="tab-equipe" id="btn-tab-equipe" data-tab="equipe" disabled>
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <circle cx="5.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.4" />
+            <circle cx="10.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.4" />
+            <path d="M1 13c0-2.485 2.015-4.5 4.5-4.5" stroke="currentColor" stroke-width="1.4"
+              stroke-linecap="round" />
+            <path d="M8 13c0-2.485 2.015-4.5 4.5-4.5M14 13c0-2.485-2.015-4.5-4.5-4.5"
+              stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+          Equipe
+          <span class="config-tab__badge">Em breve</span>
+        </button>
+        <button class="config-tab" role="tab" aria-selected="false"
+          aria-controls="tab-servicos" id="btn-tab-servicos" data-tab="servicos" disabled>
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M3 3l3 3-1.5 3.5L8 11l3.5-1.5 3-3L11 3 8 6 6 5 3 3z" stroke="currentColor"
+              stroke-width="1.4" stroke-linejoin="round" />
+          </svg>
+          Serviços
+          <span class="config-tab__badge">Em breve</span>
+        </button>
+        <button class="config-tab" role="tab" aria-selected="false"
+          aria-controls="tab-preferencias" id="btn-tab-preferencias" data-tab="preferencias" disabled>
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M2 4h11M2 7.5h7M2 11h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            <circle cx="12" cy="7.5" r="1.5" stroke="currentColor" stroke-width="1.4" />
+          </svg>
+          Preferências
+          <span class="config-tab__badge">Em breve</span>
+        </button>
       </nav>
+    </header>
 
-      <div class="sidebar__bottom">
-        <div class="sidebar__user">
-          <div class="sidebar__avatar">RC</div>
-          <div class="sidebar__user-info">
-            <span class="sidebar__user-name">Rafael Costa</span>
-            <span class="sidebar__user-role">Proprietário</span>
+    <!-- ════════════════════════════════════════════
+         TAB: DADOS DA BARBEARIA
+    ════════════════════════════════════════════ -->
+    <section class="config-section" id="tab-barbearia" role="tabpanel"
+      aria-labelledby="btn-tab-barbearia">
+
+      <!-- ── Card de perfil da barbearia ── -->
+      <div class="profile-card">
+
+        <!-- Cabeçalho do card -->
+        <div class="profile-card__head">
+          <div class="profile-card__head-text">
+            <h2 class="profile-card__title">Perfil da Barbearia</h2>
+            <p class="profile-card__subtitle">Informações exibidas para seus clientes e usadas nos relatórios.</p>
+          </div>
+          <!-- Indicador de status salvo -->
+          <div class="profile-saved-badge" id="profileSavedBadge" aria-live="polite" hidden>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M2 6.5l3 3 6-6" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Salvo
           </div>
         </div>
-      </div>
-    </aside>
-  </body>
+
+        <!-- ── Área de logo (reservada para futura implementação) ── -->
+        <div class="profile-logo-area">
+          <div class="profile-logo-placeholder" aria-label="Logo da barbearia (não configurada)">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+              <rect width="28" height="28" rx="7" fill="var(--gold)" />
+              <path d="M9 7L19 21M19 7L9 21" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="profile-logo-meta">
+            <span class="profile-logo-meta__name" id="previewNome">InBarber</span>
+            <span class="profile-logo-meta__hint">Upload de logo — em breve</span>
+          </div>
+        </div>
+
+        <div class="profile-card__divider"></div>
+
+        <!-- ── Formulário ── -->
+        <div class="profile-form" id="profileForm">
+
+          <!-- Nome da barbearia -->
+          <div class="profile-form__group profile-form__group--full">
+            <label class="form-label" for="barbNome">
+              Nome da Barbearia <span class="form-required">*</span>
+            </label>
+            <div class="form-input-wrap">
+              <div class="form-input-icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path d="M7.5 1L2 4v7l5.5 3L13 11V4L7.5 1z" stroke="currentColor" stroke-width="1.4"
+                    stroke-linejoin="round" />
+                  <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.4" />
+                </svg>
+              </div>
+              <input class="form-input form-input--icon" id="barbNome" type="text"
+                placeholder="Ex: Barbearia do Rei" autocomplete="organization" maxlength="80" />
+            </div>
+            <p class="form-hint">Nome que aparece na agenda, relatórios e notificações.</p>
+          </div>
+
+          <!-- Telefone / WhatsApp -->
+          <div class="profile-form__group">
+            <label class="form-label" for="barbTelefone">
+              Telefone / WhatsApp <span class="form-required">*</span>
+            </label>
+            <div class="form-input-wrap">
+              <div class="form-input-icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path
+                    d="M7.5 1C4.46 1 2 3.46 2 6.5c0 1.02.27 1.97.74 2.79L2 13l3.77-.73A5.47 5.47 0 0 0 7.5 12C10.54 12 13 9.54 13 6.5S10.54 1 7.5 1z"
+                    stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+                  <path d="M5 5s.26 1.3 1.3 2.2C7.2 8.1 8.5 8.5 8.5 8.5"
+                    stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+                </svg>
+              </div>
+              <input class="form-input form-input--icon" id="barbTelefone" type="tel"
+                placeholder="(84) 99999-0000" autocomplete="tel" maxlength="20" />
+            </div>
+            <p class="form-hint">Número de contato principal da barbearia.</p>
+          </div>
+
+          <!-- Endereço -->
+          <div class="profile-form__group">
+            <label class="form-label" for="barbEndereco">
+              Endereço <span class="form-label__optional">(opcional)</span>
+            </label>
+            <div class="form-input-wrap">
+              <div class="form-input-icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path d="M7.5 1C5.01 1 3 3.01 3 5.5c0 3.75 4.5 8.5 4.5 8.5S12 9.25 12 5.5C12 3.01 9.99 1 7.5 1z"
+                    stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+                  <circle cx="7.5" cy="5.5" r="1.5" stroke="currentColor" stroke-width="1.4" />
+                </svg>
+              </div>
+              <input class="form-input form-input--icon" id="barbEndereco" type="text"
+                placeholder="Ex: Rua das Flores, 42 — Natal/RN" autocomplete="street-address"
+                maxlength="120" />
+            </div>
+            <p class="form-hint">Endereço físico exibido em confirmações de agendamento.</p>
+          </div>
+
+        </div><!-- /profile-form -->
+
+        <div class="profile-card__divider"></div>
+
+        <!-- ── Rodapé do card: ações ── -->
+        <div class="profile-card__footer">
+          <button class="btn-ghost" id="btnCancelar" type="button">Descartar</button>
+          <button class="btn-primary" id="btnSalvar" type="button">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Salvar Alterações
+          </button>
+        </div>
+
+      </div><!-- /profile-card -->
+
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       TOAST NOTIFICATIONS
+  ═══════════════════════════════════════════ -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="js/configuracoes.js"></script>
+</body>
+
 </html>

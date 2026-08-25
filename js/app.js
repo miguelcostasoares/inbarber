@@ -1163,128 +1163,424 @@
      MAPA DE LOCALIZAÇÃO — Leaflet + CartoDB
      (gratuito, sem API key)
   ════════════════════════════════════════ */
-  (function initMap() {
-    // TROQUE pelas coordenadas reais do seu endereço.
-    // Como pegar: abra o local no Google Maps, clique com o botão direito
-    // no pin exato e copie os números que aparecem (lat, lng).
+  (function initLocation() {
+ 
+    /* TROQUE pelos dados reais.
+       As coordenadas tiram-se do Google Maps: botão direito no pino
+       exato › copiar os números (lat, lng).
+       O placeId vem do Google Business Profile e é o que faz o pino
+       do Google cair na porta em vez de cair no número aproximado. */
     const LOCATION = {
       lat: -23.5530,
       lng: -46.6620,
-      name: "Corvo Barbearia",
-      address: "Rua Augusta, 1200 — Consolação, São Paulo / SP",
-      mapsUrl: "https://www.google.com/maps/dir/?api=1&destination=Rua+Augusta+1200+São+Paulo",
+      name: 'Corvo Barbearia',
+      address: 'Rua Augusta, 1200 — Consolação, São Paulo / SP',
+      query: 'Rua Augusta 1200, Consolação, São Paulo',
+      placeId: ''
     };
-
-    const mapEl = document.getElementById("loc-map");
-    const expandBtn = document.getElementById("loc-map-expand");
+ 
+    /* Referência mostrada ao lado da casa. Um ponto sozinho num mapa
+       escuro diz "é ali"; com a estação ao lado diz "é ali, ao pé
+       disto que tu conheces". TROQUE pela referência real da zona. */
+    const LANDMARK = { lat: -23.5578, lng: -46.6601, key: 'loc.mapMetro', fallback: 'Metrô Consolação' };
+ 
+    /* Substitui {vars} quando o i18n.js não carregou e t() devolveu
+       o texto de recurso em cru. Com i18n presente é inofensivo: já
+       não há chavetas para trocar. */
+    function fill(str, vars) {
+      if (!vars) return str;
+      Object.keys(vars).forEach(function (k) {
+        str = String(str).split('{' + k + '}').join(vars[k]);
+      });
+      return str;
+    }
+    const tv = (key, vars, fallback) => fill(t(key, vars, fallback), vars);
+ 
+    /* ── A. ROTAS ─────────────────────────
+       Um destino, quatro apps. O botão principal aponta para o app
+       nativo do sistema: no iPhone, um link do Google Maps abre o
+       browser e obriga a mais dois toques. */
+    const coords = LOCATION.lat + ',' + LOCATION.lng;
+    const dest = encodeURIComponent(LOCATION.query) +
+      (LOCATION.placeId ? '&destination_place_id=' + encodeURIComponent(LOCATION.placeId) : '');
+ 
+    const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.userAgent.indexOf('Mac') > -1 && 'ontouchend' in document);
+ 
+    function googleUrl(mode) {
+      return 'https://www.google.com/maps/dir/?api=1&destination=' + dest +
+        (mode ? '&travelmode=' + mode : '');
+    }
+    function appleUrl(mode) {
+      const flag = { transit: 'r', driving: 'd', walking: 'w' }[mode] || 'd';
+      return 'https://maps.apple.com/?daddr=' + coords +
+        '&q=' + encodeURIComponent(LOCATION.name) + '&dirflg=' + flag;
+    }
+    const routeUrl = (mode) => (isApple ? appleUrl(mode) : googleUrl(mode));
+ 
+    const primaryBtn = $('#loc-route-primary');
+    if (primaryBtn) primaryBtn.href = routeUrl();
+ 
+    /* Cada cartão de "chegar de" leva o meio de transporte já
+       escolhido: o modo deixa de ser uma segunda decisão dentro
+       do app. */
+    $$('.loc-mode[data-mode]').forEach(function (a) {
+      a.href = routeUrl(a.dataset.mode);
+    });
+ 
+    /* No iPhone o Apple Maps aparece e passa para a frente da fila. */
+    const appleChip = $('.loc-chip[data-app="apple"]');
+    if (isApple && appleChip && appleChip.parentNode) {
+      appleChip.hidden = false;
+      appleChip.parentNode.prepend(appleChip);
+    }
+ 
+    /* ── B. COPIAR O ENDEREÇO ─────────────
+       Selecionar três linhas de texto com o dedo é a parte mais
+       irritante de qualquer página de contactos. */
+    const addrEl = $('#loc-address');
+    const copyBtn = $('#loc-copy');
+    const copyMsg = $('#loc-copy-msg');
+ 
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      return new Promise(function (resolve, reject) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (_) {}
+        ta.remove();
+        ok ? resolve() : reject(new Error('copy'));
+      });
+    }
+ 
+    if (copyBtn && addrEl && (navigator.clipboard || document.execCommand)) {
+      let timer;
+      copyBtn.hidden = false;
+ 
+      copyBtn.addEventListener('click', function () {
+        const text = addrEl.dataset.copy ||
+          addrEl.textContent.replace(/\s+/g, ' ').trim();
+ 
+        copyText(text).then(function () {
+          copyBtn.classList.add('is-done');
+          if (copyMsg) copyMsg.textContent = t('loc.copied', null, 'Endereço copiado.');
+        }).catch(function () {
+          if (copyMsg) copyMsg.textContent = t('loc.copyFail', null, 'Não deu para copiar — o endereço está aqui em cima.');
+        }).then(function () {
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            copyBtn.classList.remove('is-done');
+            if (copyMsg) copyMsg.textContent = '';
+          }, 3200);
+        });
+      });
+    }
+ 
+    /* ── C. ESTADO E HORÁRIO ──────────────
+       Fonte única: BUSINESS_HOURS, o mesmo objeto que alimenta os
+       horários livres do hero. O horário do HTML é só a versão para
+       quem chega sem JS; a partir daqui é calculado. */
+    const statusEl = $('#loc-status');
+    const statusTxt = statusEl && statusEl.querySelector('.loc-status-txt');
+    const badgeDot = $('#loc-badge-dot');
+    const hoursBox = $('#loc-hours');
+    const hoursHead = $('#loc-hours-toggle');
+    const hoursList = $('#loc-hours-list');
+    const hoursToday = $('#loc-hours-today');
+ 
+    const WEEK = [1, 2, 3, 4, 5, 6, 0];   /* começa à segunda */
+ 
+    /* Recurso para o caso de o i18n.js não ter carregado: aí a página
+       fica em português, e "abre  às 9h" com o dia em branco seria pior
+       do que qualquer tradução em falta. */
+    const DAY_PT = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+    const dayName = (d) => t('day.' + d, null, DAY_PT[d]);
+ 
+    function hourLabel(h) {
+      const lang = currentLang();
+      if (lang === 'en') return (h % 12 || 12) + ' ' + (h >= 12 ? 'PM' : 'AM');
+      if (lang === 'es') return (h < 10 ? '0' + h : h) + ':00';
+      return h + 'h';
+    }
+ 
+    function rangeLabel(day) {
+      return day
+        ? hourLabel(day.open) + ' – ' + hourLabel(day.close)
+        : t('loc.closedDay', null, 'Fechado');
+    }
+ 
+    function readStatus(now) {
+      const dow = now.getDay();
+      const mins = now.getHours() * 60 + now.getMinutes();
+      const today = BUSINESS_HOURS[dow];
+ 
+      if (today) {
+        const opens = today.open * 60;
+        const closes = today.close * 60;
+ 
+        if (mins >= opens && mins < closes) {
+          const soon = (closes - mins) <= 60;
+          return {
+            state: soon ? 'soon' : 'open',
+            text: tv(soon ? 'loc.closingSoon' : 'loc.openNow',
+                     { time: hourLabel(today.close) },
+                     soon ? 'Aberto · última hora, fecha às {time}' : 'Aberto agora · fecha às {time}')
+          };
+        }
+        if (mins < opens) {
+          return {
+            state: 'closed',
+            text: tv('loc.opensToday', { time: hourLabel(today.open) }, 'Fechado · abre hoje às {time}')
+          };
+        }
+      }
+ 
+      for (let i = 1; i <= 7; i++) {
+        const d = (dow + i) % 7;
+        const next = BUSINESS_HOURS[d];
+        if (!next) continue;
+        return {
+          state: 'closed',
+          text: i === 1
+            ? tv('loc.opensTomorrow', { time: hourLabel(next.open) }, 'Fechado · abre amanhã às {time}')
+            : tv('loc.opensDay', { day: dayName(d), time: hourLabel(next.open) }, 'Fechado · abre {day} às {time}')
+        };
+      }
+      return { state: 'closed', text: t('loc.closedNow', null, 'Fechado') };
+    }
+ 
+    function renderHours(now) {
+      if (!hoursList) return;
+      const dow = now.getDay();
+      const frag = document.createDocumentFragment();
+ 
+      WEEK.forEach(function (d) {
+        const row = document.createElement('li');
+        row.className = 'loc-hours-row';
+        if (d === dow) row.setAttribute('aria-current', 'true');
+        if (!BUSINESS_HOURS[d]) row.setAttribute('data-closed', '');
+ 
+        const name = document.createElement('span');
+        name.textContent = dayName(d);
+        const value = document.createElement('span');
+        value.textContent = rangeLabel(BUSINESS_HOURS[d]);
+ 
+        row.appendChild(name);
+        row.appendChild(value);
+        frag.appendChild(row);
+      });
+ 
+      hoursList.textContent = '';
+      hoursList.appendChild(frag);
+      if (hoursToday) hoursToday.textContent = rangeLabel(BUSINESS_HOURS[dow]);
+    }
+ 
+    /* O cabeçalho "Hoje" só existe com JS: sem ele a semana inteira
+       fica aberta, e nunca um botão que não abre nada. */
+    if (hoursBox && hoursHead && hoursList) {
+      hoursBox.classList.add('is-collapsible');
+      hoursHead.hidden = false;
+      hoursList.hidden = true;
+ 
+      hoursHead.addEventListener('click', function () {
+        const open = hoursHead.getAttribute('aria-expanded') === 'true';
+        hoursHead.setAttribute('aria-expanded', String(!open));
+        hoursList.hidden = open;
+      });
+    }
+ 
+    function updateStatus() {
+      const now = new Date();
+      const s = readStatus(now);
+ 
+      if (statusEl && statusTxt) {
+        statusEl.hidden = false;
+        statusEl.dataset.state = s.state;
+        statusTxt.textContent = s.text;
+      }
+      if (badgeDot) badgeDot.dataset.state = s.state;
+      renderHours(now);
+    }
+ 
+    updateStatus();
+ 
+    /* De minuto a minuto, e só com o separador à vista: às 19h59 a
+       frase "fecha às 20h" tem de deixar de aparecer sozinha. */
+    setInterval(function () {
+      if (document.visibilityState === 'visible') updateStatus();
+    }, 60000);
+ 
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') updateStatus();
+    });
+    document.addEventListener('i18n:change', updateStatus);
+ 
+    /* ── D. MAPA ──────────────────────────
+       Leaflet + CartoDB (gratuito, sem chave). Só é pedido quando o
+       mapa se aproxima do ecrã: quem sai antes nunca o paga.
+       Se falhar, o endereço por baixo do mapa fica à vista — não é
+       preciso classe de erro nenhuma. */
+    const mapEl = $('#loc-map');
+    const expandBtn = $('#loc-map-expand');
+    const fallbackEl = $('#loc-map-fallback');
     if (!mapEl) return;
-
-    /* O Leaflet (CSS + JS) só é pedido quando o mapa se aproxima do
-       viewport. Quem sai antes da secção Localização nunca o paga. */
-    LazyLib.whenNear(mapEl, '400px', () => {
+ 
+    LazyLib.whenNear(mapEl, '400px', function () {
       Promise.all([
         LazyLib.style(CDN.leafletCss),
         LazyLib.script(CDN.leafletJs)
       ])
         .then(buildMap)
-        .catch(err => {
-          console.warn('[corvo] mapa:', err.message);
-          mapEl.classList.add('map-failed');
-        });
+        .catch(function (err) { console.warn('[corvo] mapa:', err.message); });
     });
-
+ 
     function buildMap() {
-    if (typeof L === "undefined") return;
-
-    const map = L.map(mapEl, {
-      center: [LOCATION.lat, LOCATION.lng],
-      zoom: 15,
-      zoomControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      touchZoom: false,
-      attributionControl: false,
-    });
-
-    // Tile escuro gratuito (CartoDB Dark Matter) — combina com a paleta do site
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
+      if (typeof L === 'undefined') return;
+ 
+      const map = L.map(mapEl, {
+        zoomControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        touchZoom: false,
+        keyboard: false,
+        attributionControl: false   /* a atribuição está no HTML, por baixo do mapa */
+      });
+ 
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19
+      }).addTo(map);
+ 
+      const shopIcon = L.divIcon({
+        className: 'loc-pin-wrap',
+        html: '<span class="loc-pin"></span>',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -12]
+      });
+ 
+      const nearIcon = L.divIcon({
+        className: 'loc-pin-wrap',
+        html: '<span class="loc-pin loc-pin--muted"></span>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+      });
+ 
+      const shop = L.marker([LOCATION.lat, LOCATION.lng], { icon: shopIcon, title: LOCATION.name }).addTo(map);
+      shop.bindTooltip(t('loc.mapPin', null, 'Corvo'), {
+        permanent: true, direction: 'right', offset: [12, 0], className: 'loc-tip'
+      });
+ 
+      let near = null;
+      if (LANDMARK) {
+        near = L.marker([LANDMARK.lat, LANDMARK.lng], { icon: nearIcon, interactive: false }).addTo(map);
+        near.bindTooltip(t(LANDMARK.key, null, LANDMARK.fallback), {
+          permanent: true, direction: 'right', offset: [10, 0], className: 'loc-tip loc-tip--muted'
+        });
       }
-    ).addTo(map);
-
-    // Pin customizado (sem ping, sem pulse)
-    const goldIcon = L.divIcon({
-      className: "loc-pin-icon",
-      html: `
-        <div style="
-          width: 14px; height: 14px;
-          border-radius: 50%;
-          background: var(--gold, #bfa06a);
-          border: 2px solid #0a0a0a;
-          box-shadow: 0 0 0 1px rgba(191,160,106,0.4);
-        "></div>
-      `,
-      iconSize: [14, 14],
-      iconAnchor: [7, 7],
-      popupAnchor: [0, -10],
-    });
-
-    const marker = L.marker([LOCATION.lat, LOCATION.lng], { icon: goldIcon }).addTo(map);
-
-    marker.bindPopup(`
-      <div class="map-popup">
-        <div class="map-popup-title">${LOCATION.name}</div>
-        <div class="map-popup-address">${LOCATION.address}</div>
-        <a class="map-popup-link" href="${LOCATION.mapsUrl}" target="_blank" rel="noopener">${t('loc.route', null, 'Traçar rota →')}</a>
-      </div>
-    `);
-
-    // Liga/desliga a interação ao clicar em "Interagir"
-    if (expandBtn) {
-      let interactive = false;
-
-      expandBtn.addEventListener("click", function () {
-        interactive = !interactive;
-        mapEl.classList.toggle("is-static", !interactive);
-
-        if (interactive) {
-          map.dragging.enable();
-          map.scrollWheelZoom.enable();
-          map.doubleClickZoom.enable();
-          map.touchZoom.enable();
-          map.zoomControl.addTo(map);
-          expandBtn.innerHTML = `
-            <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l8 8M13 5l-8 8"/></svg>
-            ${t('loc.close', null, 'Fechar')}
-          `;
-        } else {
-          map.dragging.disable();
-          map.scrollWheelZoom.disable();
-          map.doubleClickZoom.disable();
-          map.touchZoom.disable();
-          map.zoomControl.remove();
-          expandBtn.innerHTML = `
-            <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h5v5M7 16H2v-5M16 2l-6 6M2 16l6-6"/></svg>
-            ${t('loc.interact', null, 'Interagir')}
-          `;
-        }
+ 
+      function popupHtml() {
+        return '<div class="map-popup">' +
+          '<div class="map-popup-title">' + LOCATION.name + '</div>' +
+          '<div class="map-popup-address">' + LOCATION.address + '</div>' +
+          '<a class="map-popup-link" href="' + routeUrl() + '" target="_blank" rel="noopener">' +
+          t('loc.route', null, 'Como chegar') + ' →</a>' +
+          '</div>';
+      }
+      shop.bindPopup(popupHtml());
+ 
+      /* Enquadra a casa e a referência ao mesmo tempo: a pessoa
+         situa-se sem ter de ler o endereço. */
+      const bounds = LANDMARK
+        ? L.latLngBounds([[LOCATION.lat, LOCATION.lng], [LANDMARK.lat, LANDMARK.lng]]).pad(0.3)
+        : null;
+ 
+      function frame() {
+        if (bounds) map.fitBounds(bounds, { padding: [44, 44], maxZoom: 16, animate: false });
+        else map.setView([LOCATION.lat, LOCATION.lng], 16, { animate: false });
+      }
+      frame();
+ 
+      if (fallbackEl) fallbackEl.hidden = true;
+ 
+      /* ── Mexer no mapa ──
+         Um mapa que arrasta sozinho durante o scroll é uma armadilha
+         em telemóvel. Fica fixo até alguém pedir o contrário. */
+      const zoom = L.control.zoom({ position: 'topright' });
+ 
+      if (expandBtn) {
+        const label = expandBtn.querySelector('span');
+        const path = expandBtn.querySelector('path');
+        let live = false;
+ 
+        expandBtn.hidden = false;
+ 
+        expandBtn.addEventListener('click', function () {
+          live = !live;
+          const action = live ? 'enable' : 'disable';
+ 
+          ['dragging', 'scrollWheelZoom', 'doubleClickZoom', 'touchZoom', 'keyboard']
+            .forEach(function (h) { if (map[h]) map[h][action](); });
+ 
+          mapEl.classList.toggle('is-static', !live);
+          expandBtn.setAttribute('aria-pressed', String(live));
+ 
+          if (live) {
+            zoom.addTo(map);
+            mapEl.setAttribute('role', 'application');
+            mapEl.setAttribute('tabindex', '0');
+          } else {
+            zoom.remove();
+            mapEl.setAttribute('role', 'img');
+            mapEl.removeAttribute('tabindex');
+            frame();
+          }
+ 
+          /* Trocar também a chave de tradução mantém o rótulo certo
+             se a pessoa mudar de idioma com o mapa ligado. */
+          if (label) {
+            label.dataset.i18n = live ? 'loc.mapDone' : 'loc.interact';
+            label.textContent = t(label.dataset.i18n, null, live ? 'Fixar mapa' : 'Mexer no mapa');
+          }
+          if (path) {
+            path.setAttribute('d', live
+              ? 'M5 5l8 8M13 5l-8 8'
+              : 'M11 2h5v5M7 16H2v-5M16 2l-6 6M2 16l6-6');
+          }
+        });
+      }
+ 
+      /* O mapa muda de largura com a grelha, não só com a janela. */
+      const box = mapEl.closest('.map-box');
+      if (window.ResizeObserver && box) {
+        let raf;
+        new ResizeObserver(function () {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(function () { map.invalidateSize(); });
+        }).observe(box);
+      } else {
+        window.addEventListener('resize', function () { map.invalidateSize(); });
+      }
+      /* Reenquadra depois de as fontes e o layout assentarem — mas só
+         se ninguém tiver destravado o mapa entretanto. */
+      setTimeout(function () {
+        map.invalidateSize();
+        if (mapEl.classList.contains('is-static')) frame();
+      }, 400);
+ 
+      document.addEventListener('i18n:change', function () {
+        shop.setTooltipContent(t('loc.mapPin', null, 'Corvo'));
+        shop.setPopupContent(popupHtml());
+        if (near) near.setTooltipContent(t(LANDMARK.key, null, LANDMARK.fallback));
       });
     }
-
-    // Garante que o mapa renderize certo dentro do grid responsivo
-    window.addEventListener("resize", function () {
-      map.invalidateSize();
-    });
-
-    // Reabre o tamanho correto após fontes/layout assentarem
-    setTimeout(function () {
-      map.invalidateSize();
-    }, 300);
-    } /* /buildMap */
   })();
 
   /* ════════════════════════════════════════

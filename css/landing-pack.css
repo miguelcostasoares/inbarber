@@ -1381,3 +1381,566 @@
   .rv-more-ico { transition: none; }
   .reviews-track .rv-card.is-revealed { animation: none !important; }
 }
+
+/* ═════════════════════════════════════════════════════════════════
+   13. LOCALIZAÇÃO — como chegar
+   Acrescentar ao FIM de css/landing-pack.css e somar a linha ao
+   índice do topo do ficheiro:
+
+       13. Localização — como chegar
+
+   O style.css continua por tocar. As regras antigas de .loc-grid,
+   .loc-item, .map-actions e .map-cta-* ficam sem HTML que as use —
+   passam a ser código morto e podem sair numa limpeza futura, mas
+   não estorvam.
+
+   Duas regras aqui existem só por causa de [hidden]: vários controlos
+   nascem escondidos no HTML e é o JS que os revela, para que sem JS
+   não fique um botão morto na página. Como .map-expand e .loc-btn
+   são display:flex, ganham ao display:none que o browser aplica a
+   [hidden] — daí a declaração explícita.
+════════════════════════════════════════════════════════════════ */
+
+.location {
+  --loc-open:   #00d68f;
+  --loc-soon:   #ff9c40;
+  --loc-closed: #ff4d6a;
+}
+
+/* Controlos revelados por JS */
+.map-expand[hidden],
+.map-fallback[hidden],
+.loc-btn[hidden],
+.loc-chip[hidden],
+.loc-status[hidden],
+.loc-hours-head[hidden],
+.loc-hours-list[hidden] { display: none; }
+
+/* ── Composição ───────────────────────────
+   Quatro blocos, uma ordem em telemóvel e outra em desktop. Em
+   telemóvel a ordem é a das perguntas: onde é › como se chega › que
+   horas abre › como é a porta. */
+.location-container { gap: 2rem; }
+
+.location-hd  { order: 0; margin-bottom: 0; }
+.loc-info-col { order: 1; display: flex; flex-direction: column; gap: 14px; justify-content: flex-start; }
+.loc-map-col  { order: 2; display: flex; flex-direction: column; gap: 14px; }
+.loc-modes    { order: 3; }
+
+.loc-subtitle { max-width: 46ch; }
+
+/* ── Cartões ── */
+.loc-card {
+  background: var(--bg-2);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-lg);
+  padding: 1.4rem 1.35rem;
+}
+
+.loc-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────
+   ESTADO — aberto agora
+
+   A pergunta que decide se a pessoa sai de casa. Fica antes do
+   endereço porque é a primeira a ser feita. O texto nunca é só a
+   cor: "Aberto" e "Fechado" vêm escritos, para quem não distingue
+   verde de laranja.
+───────────────────────────────────────── */
+.loc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  align-self: flex-start;
+  padding: 7px 13px 7px 11px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--divider);
+  background: var(--bg-2);
+  font-size: 12.5px;
+  color: var(--cream);
+}
+
+.loc-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.loc-status[data-state="open"]   { border-color: rgba(0,214,143,0.30); }
+.loc-status[data-state="open"]   .loc-status-dot { background: var(--loc-open);   box-shadow: 0 0 0 3px rgba(0,214,143,0.14); }
+.loc-status[data-state="soon"]   { border-color: rgba(255,156,64,0.30); }
+.loc-status[data-state="soon"]   .loc-status-dot { background: var(--loc-soon);   box-shadow: 0 0 0 3px rgba(255,156,64,0.14); }
+.loc-status[data-state="closed"] .loc-status-dot { background: var(--loc-closed); box-shadow: 0 0 0 3px rgba(255,77,106,0.12); }
+
+/* O mesmo estado no selo do mapa, para quem só olha para lá */
+.map-badge .dot[data-state="open"]   { background: var(--loc-open); }
+.map-badge .dot[data-state="soon"]   { background: var(--loc-soon); }
+.map-badge .dot[data-state="closed"] { background: var(--loc-closed); }
+
+/* ─────────────────────────────────────────
+   ENDEREÇO
+
+   O endereço passa a ser o elemento maior da coluna: era o dado
+   que a secção existe para dar e estava do tamanho do resto.
+───────────────────────────────────────── */
+.loc-address-line {
+  margin: 10px 0 0;
+  font-size: clamp(1.15rem, 4.4vw, 1.4rem);
+  line-height: 1.4;
+  color: var(--cream);
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}
+
+.loc-zip {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0.4px;
+}
+
+/* A referência visual. Fica em itálico do serif do site: é a única
+   frase da secção que descreve em vez de indicar. */
+.loc-landmark {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--divider);
+  font-family: var(--ff-d);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--cream-2);
+}
+
+.loc-address-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 1.2rem;
+}
+
+/* ── Botões ── */
+.loc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 48px;
+  padding: 0 1.35rem;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--cream);
+  background: transparent;
+  cursor: pointer;
+  transition: background 160ms ease-out, border-color 160ms ease-out,
+              color 160ms ease-out, transform 100ms ease-out;
+}
+.loc-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.loc-btn:active { transform: scale(0.985); }
+.loc-btn:focus-visible { outline: 2px solid var(--gold-lt); outline-offset: 3px; }
+
+.loc-btn--primary {
+  flex: 1 1 200px;
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--white);
+}
+.loc-btn--primary:hover { background: #0038cc; border-color: #0038cc; }
+
+.loc-btn--ghost {
+  flex: 0 1 auto;
+  border-color: var(--divider);
+  background: var(--bg-3);
+}
+.loc-btn--ghost:hover { border-color: rgba(255,255,255,0.18); }
+.loc-btn--ghost.is-done { border-color: rgba(0,214,143,0.45); color: var(--loc-open); }
+
+.loc-btn--book {
+  width: 100%;
+  border-color: rgba(0,71,255,0.35);
+  background: var(--gold-bg);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.loc-btn--book:hover { background: var(--gold); border-color: var(--gold); color: var(--white); }
+
+.loc-copy-msg {
+  display: block;
+  min-height: 16px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--loc-open);
+}
+
+/* ─────────────────────────────────────────
+   HORÁRIO
+
+   Sem JS a semana inteira está aberta. Com JS o cabeçalho mostra o
+   dia de hoje e a semana passa a estar a um clique — ninguém lê sete
+   linhas para saber se pode ir agora.
+───────────────────────────────────────── */
+.loc-hours { padding-block: 0.9rem 1.1rem; }
+
+.loc-hours-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 0.5rem 0;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.loc-hours-head:focus-visible { outline: 2px solid var(--gold-lt); outline-offset: 4px; border-radius: var(--r-sm); }
+
+.loc-hours-head-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.loc-hours-today { font-size: 15px; color: var(--cream); font-weight: 500; }
+
+.loc-hours-ico {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 200ms var(--ease-out), color 160ms ease-out;
+}
+.loc-hours-head[aria-expanded="true"] .loc-hours-ico { transform: rotate(180deg); color: var(--cream-2); }
+.loc-hours-head:hover .loc-hours-ico { color: var(--cream); }
+
+.loc-hours-label { margin-bottom: 0.75rem; }
+.loc-hours.is-collapsible .loc-hours-label { display: none; }
+.loc-hours.is-collapsible .loc-hours-list { margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--divider); }
+
+.loc-hours-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13.5px;
+  color: var(--cream-2);
+}
+.loc-hours-row span:first-child { text-transform: capitalize; }
+.loc-hours-row[aria-current="true"] {
+  color: var(--cream);
+  font-weight: 600;
+}
+.loc-hours-row[data-closed] span:last-child { color: var(--muted); }
+
+/* ─────────────────────────────────────────
+   MAPA
+
+   Passa a ter dois pinos: a barbearia e a estação. Um ponto sozinho
+   num mapa escuro não diz onde fica — diz que fica ali. Com a estação
+   ao lado, quem conhece a cidade situa-se sem ler o endereço.
+───────────────────────────────────────── */
+.map-box { aspect-ratio: 4 / 3; }
+
+.map-badge { padding: 8px 13px; }
+
+/* Endereço por trás do mapa: é o que se vê sem JS ou se o Leaflet
+   falhar. Assim que o mapa pinta, fica tapado — e o JS esconde-o. */
+.map-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--cream-2);
+}
+
+.map-canvas { z-index: 2; }
+
+.map-expand {
+  bottom: 12px;
+  right: 12px;
+  border-radius: var(--r-full);
+  padding: 8px 14px;
+}
+.map-expand[aria-pressed="true"] { border-color: rgba(0,71,255,0.45); color: var(--white); }
+.map-expand:focus-visible { outline: 2px solid var(--gold-lt); outline-offset: 3px; }
+
+/* Pinos. O da casa tem um halo para se separar do tile escuro; o da
+   referência é um ponto neutro — não compete com o destino. */
+.loc-pin-wrap { background: none; border: none; }
+
+.loc-pin {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid #0a0a0a;
+  box-shadow: 0 0 0 4px rgba(0,71,255,0.22), 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.loc-pin--muted {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+  border: 2px solid rgba(240,235,225,0.65);
+  box-shadow: 0 0 0 3px rgba(10,10,10,0.55);
+}
+
+/* Etiqueta permanente ao lado dos pinos */
+.loc-tip.leaflet-tooltip {
+  background: rgba(10,10,10,0.92);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-sm);
+  box-shadow: none;
+  color: var(--cream);
+  font-family: var(--ff-b);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+.loc-tip.leaflet-tooltip::before { display: none; }
+.loc-tip--muted.leaflet-tooltip {
+  color: var(--cream-2);
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: none;
+  font-size: 11px;
+}
+
+.map-credit {
+  margin: 0;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+}
+.map-credit a { text-decoration: underline; text-underline-offset: 2px; }
+.map-credit a:hover { color: var(--cream-2); }
+
+/* ── Outros apps de rota ── */
+.loc-apps { margin-top: 0.35rem; }
+.loc-apps-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0.6rem;
+}
+
+.loc-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 13px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--divider);
+  background: var(--bg-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cream-2);
+  transition: border-color 160ms ease-out, color 160ms ease-out;
+}
+.loc-chip:hover { border-color: rgba(255,255,255,0.18); color: var(--cream); }
+.loc-chip:focus-visible { outline: 2px solid var(--gold-lt); outline-offset: 2px; }
+
+/* ── Contacto ── */
+.loc-contact {
+  display: grid;
+  gap: 8px;
+  margin-top: 0.35rem;
+}
+
+.loc-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--divider);
+  background: var(--bg-2);
+  transition: border-color 160ms ease-out, background 160ms ease-out;
+}
+.loc-contact-item svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--gold-lt); }
+.loc-contact-item > span { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.loc-contact-item strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cream);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.loc-contact-label { font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted); }
+.loc-contact-item:hover { border-color: rgba(255,255,255,0.16); background: var(--bg-3); }
+.loc-contact-item:focus-visible { outline: 2px solid var(--gold-lt); outline-offset: 2px; }
+
+/* ─────────────────────────────────────────
+   MODOS DE CHEGADA
+
+   Cada cartão é a rota já com o meio de transporte escolhido. Ler
+   "de metrô" e clicar abre o trajeto de metrô — o modo deixa de ser
+   uma segunda decisão dentro do app.
+───────────────────────────────────────── */
+.loc-modes-label { margin-bottom: 0.85rem; }
+
+.loc-modes-list {
+  display: grid;
+  gap: 10px;
+}
+
+.loc-mode {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+  padding: 1.15rem 1.2rem;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--divider);
+  background: var(--bg-2);
+  transition: border-color 200ms ease-out, background 200ms ease-out,
+              transform 200ms var(--ease-out);
+}
+
+.loc-mode-ico {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-md);
+  background: var(--gold-bg);
+  border: 1px solid rgba(0,71,255,0.22);
+  color: var(--gold-lt);
+  flex-shrink: 0;
+}
+.loc-mode-ico svg { width: 19px; height: 19px; }
+
+.loc-mode-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.loc-mode-body strong { font-size: 14px; font-weight: 600; color: var(--cream); }
+.loc-mode-body span   { font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+
+.loc-mode-go {
+  font-size: 15px;
+  color: var(--muted);
+  transition: transform 200ms var(--ease-out), color 160ms ease-out;
+}
+
+.loc-mode:hover {
+  border-color: rgba(0,71,255,0.38);
+  background: var(--bg-3);
+}
+.loc-mode:hover .loc-mode-go { color: var(--gold-lt); transform: translateX(3px); }
+.loc-mode:focus-visible { outline: 2px solid var(--gold-lt); outline-offset: 3px; }
+
+/* ── Factos ── */
+.loc-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 1rem;
+}
+.loc-facts li {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--cream-2);
+  background: var(--bg-3);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-full);
+  padding: 5px 11px;
+}
+
+/* ─────────────────────────────────────────
+   TABLET — o mapa deita-se, o resto continua em coluna
+───────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .location-container {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 2.25rem;
+  }
+  .map-box { aspect-ratio: 16 / 9; }
+  .loc-contact { grid-template-columns: repeat(3, 1fr); }
+  .loc-modes-list { grid-template-columns: repeat(3, 1fr); }
+  .loc-mode { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; align-items: start; }
+  .loc-mode-go { display: none; }
+  .loc-mode-body { grid-column: 1 / -1; }
+}
+
+/* ─────────────────────────────────────────
+   DESKTOP — cabeçalho e informação à esquerda, mapa a toda a altura
+
+       hd     map
+       info   map
+       modes  modes
+
+   O mapa deixa de ser uma imagem ao lado de uma lista e passa a
+   ancorar a coluna direita, com as ações de rota logo por baixo.
+───────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .location-container {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr);
+    grid-template-areas:
+      "hd    map"
+      "info  map"
+      "modes modes";
+    align-items: start;
+    gap: 2.5rem 4rem;
+  }
+
+  .location-hd  { grid-area: hd;    align-self: end; }
+  .loc-info-col { grid-area: info;  gap: 16px; }
+  .loc-map-col  { grid-area: map;   gap: 14px; }
+  .loc-modes    { grid-area: modes; margin-top: 1rem; }
+
+  .map-box { aspect-ratio: 4 / 5; }
+
+  .loc-card { padding: 1.6rem 1.5rem; }
+  .loc-address-line { font-size: 1.45rem; }
+  .loc-contact { grid-template-columns: repeat(3, 1fr); }
+  .loc-modes-list { grid-template-columns: repeat(3, 1fr); }
+
+  .loc-mode:hover { transform: translateY(-3px); }
+}
+
+@media (min-width: 1280px) {
+  .location-container { gap: 2.75rem 5rem; }
+  .loc-address-line   { font-size: 1.55rem; }
+  .loc-mode           { padding: 1.3rem 1.35rem; }
+}
+
+/* ─────────────────────────────────────────
+   MOVIMENTO E IMPRESSÃO
+───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .loc-mode:hover { transform: none; }
+  .loc-mode:hover .loc-mode-go { transform: none; }
+  .loc-hours-ico { transition: none; }
+}
+
+@media print {
+  .map-box, .loc-apps, .loc-btn--book, .map-credit { display: none !important; }
+  .loc-hours-list { display: block !important; }
+  .loc-hours-head { display: none !important; }
+  .loc-card, .loc-mode { border-color: #999; }
+}

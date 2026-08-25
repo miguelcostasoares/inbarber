@@ -1336,90 +1336,254 @@
 </section>
 
 <!-- ═══════════════════════════════ LOCALIZAÇÃO ═══════════════════════════════ -->
+<!-- ═══════════════════════════════ LOCALIZAÇÃO ═══════════════════════════════
+     Substitui o bloco <section class="location" id="localizacao"> … </section>
+     inteiro do index.html.
+
+     A secção deixa de ser "um mapa com o endereço ao lado" e passa a
+     responder, por ordem, às três perguntas de quem quer aparecer:
+
+       1. Está aberto agora?      → .loc-status (lê BUSINESS_HOURS)
+       2. Onde é, e como chego?   → endereço copiável + rota no app certo
+       3. Como sei que cheguei?   → referência visual da fachada
+
+     Convenções mantidas: data-book persiste a seleção antes de navegar,
+     data-wa traduz a mensagem do WhatsApp, data-i18n* cobre PT/EN/ES.
+     Nada aqui depende de JS para ser legível — o JS só melhora.
+═══════════════════════════════════════════════════════════════════════════ -->
 <section class="location" id="localizacao" aria-labelledby="loc-h">
   <div class="location-container">
 
-    <!-- INFORMAÇÕES -->
-    <div class="loc-info-col">
-      <div class="location-hd">
-        <p class="label-tag" data-i18n="loc.tag">Onde estamos</p>
-        <h2 class="section-h" id="loc-h" data-i18n-html="loc.h">Venha nos<br><em>visitar.</em></h2>
-        <p class="loc-subtitle" data-i18n="loc.sub">Na Rua Augusta, a dois minutos do metro Consolação. Uma experiência premium começa pelo ambiente.</p>
-      </div>
-
-      <dl class="loc-grid">
-        <div class="loc-item">
-          <dt aria-hidden="true">
-            <svg viewBox="0 0 18 18" fill="none"><path d="M9 1C6.24 1 4 3.24 4 6c0 3.75 5 11 5 11s5-7.25 5-11c0-2.76-2.24-5-5-5z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="6" r="1.8" stroke-width="1.2"/></svg>
-          </dt>
-          <div class="loc-body">
-            <span class="loc-label" data-i18n="loc.addr">Endereço</span>
-            <!-- TROQUE: endereço real -->
-            <dd>Rua Augusta, 1200<br>Consolação — São Paulo / SP</dd>
-          </div>
-        </div>
-
-        <div class="loc-item">
-          <dt aria-hidden="true">
-            <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke-width="1.2"/><path d="M9 5v4l3 2" stroke-width="1.2" stroke-linecap="round"/></svg>
-          </dt>
-          <div class="loc-body">
-            <span class="loc-label" data-i18n="loc.hours">Horários</span>
-            <!-- Fonte única de verdade do horário: js/app.js › BUSINESS_HOURS.
-                 Os chips do hero e este bloco leem daqui. -->
-            <dd data-i18n-html="loc.hoursVal">Seg–Sex: 9h–20h<br>Sáb: 8h–18h<br>Dom: encerrado</dd>
-          </div>
-        </div>
-
-        <div class="loc-item">
-          <dt aria-hidden="true">
-            <svg viewBox="0 0 18 18" fill="none"><path d="M16 12.9v2.1a1.4 1.4 0 01-1.5 1.4 13.8 13.8 0 01-6-2.1A13.6 13.6 0 012.8 8.4 13.8 13.8 0 01.7 2.5 1.4 1.4 0 012.1 1h2.1c.7 0 1.3.5 1.4 1.2.1.7.3 1.4.6 2-.2.4-.1.8.2 1l1.3 1.3c.9 1.6 2.2 3 3.8 3.8l1.3 1.3c.3.2.7.3 1.1.2.6-.3 1.3-.5 2-.6.7-.1 1.2.7 1.2 1.4z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </dt>
-          <div class="loc-body">
-            <span class="loc-label" data-i18n="loc.contact">Contato</span>
-            <!-- TROQUE: número real -->
-            <dd><a href="tel:+5511999999999">(11) 99999-9999</a><br><span data-i18n="loc.wa">WhatsApp disponível</span></dd>
-          </div>
-        </div>
-      </dl>
+    <!-- ─────────── CABEÇALHO ─────────── -->
+    <div class="location-hd">
+      <p class="label-tag" data-i18n="loc.tag">Onde estamos</p>
+      <h2 class="section-h" id="loc-h" data-i18n-html="loc.h">Como<br><em>chegar.</em></h2>
+      <p class="loc-subtitle" data-i18n="loc.sub">A 4 minutos a pé da estação Consolação. Copie o endereço ou abra a rota direto no seu aplicativo de mapas.</p>
     </div>
 
-    <!-- MAPA + AÇÕES -->
+    <!-- ─────────── ENDEREÇO E HORÁRIO ─────────── -->
+    <div class="loc-info-col">
+
+      <!-- Estado agora. Fica hidden até o app.js o calcular a partir de
+           BUSINESS_HOURS: um "Aberto agora" errado é pior do que nenhum. -->
+      <p class="loc-status" id="loc-status" hidden>
+        <span class="loc-status-dot" aria-hidden="true"></span>
+        <span class="loc-status-txt"></span>
+      </p>
+
+      <!-- Cartão do endereço: o endereço e as duas ações que se fazem
+           com ele ficam juntos. -->
+      <div class="loc-card loc-address">
+        <p class="loc-label" data-i18n="loc.addr">Endereço</p>
+
+        <!-- TROQUE: endereço real. O texto copiado sai daqui, por
+             data-copy, para não depender de <br> nem de espaços do HTML. -->
+        <p class="loc-address-line" id="loc-address"
+           data-copy="Corvo Barbearia, Rua Augusta 1200 — Consolação, São Paulo / SP, 01304-001">
+          Rua Augusta, 1200<br>
+          Consolação — São Paulo / SP<br>
+          <span class="loc-zip">01304-001</span>
+        </p>
+
+        <!-- Como se reconhece a porta. É isto que evita o telefonema
+             "estou aqui em frente e não vejo". TROQUE pelas referências reais. -->
+        <p class="loc-landmark" data-i18n="loc.landmark">Fachada preta com letreiro CORVO em azul, entre a padaria e a banca. Térreo, sem degraus.</p>
+
+        <div class="loc-address-actions">
+          <!-- O href real vai sempre no HTML: sem JS, o botão continua a
+               abrir a rota. O app.js só troca para o app nativo certo. -->
+          <a class="loc-btn loc-btn--primary" id="loc-route-primary"
+             href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Augusta%201200%2C%20Consola%C3%A7%C3%A3o%2C%20S%C3%A3o%20Paulo"
+             target="_blank" rel="noopener">
+            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 2 11 16l-2.2-5.8L3 8z"/></svg>
+            <span data-i18n="loc.route">Como chegar</span>
+          </a>
+
+          <!-- hidden: sem clipboard não há nada para este botão fazer.
+               O app.js revela-o depois de confirmar o suporte. -->
+          <button type="button" class="loc-btn loc-btn--ghost" id="loc-copy"
+                  data-i18n="loc.copy" data-i18n-aria="loc.copyAria"
+                  aria-label="Copiar endereço da Corvo Barbearia" hidden>Copiar endereço</button>
+        </div>
+
+        <span class="loc-copy-msg" id="loc-copy-msg" role="status" aria-live="polite"></span>
+      </div>
+
+      <!-- Horário. Sem JS mostra a semana toda; com JS mostra o dia de
+           hoje e a semana abre por baixo. Fonte: app.js › BUSINESS_HOURS. -->
+      <div class="loc-card loc-hours" id="loc-hours">
+        <button type="button" class="loc-hours-head" id="loc-hours-toggle"
+                aria-expanded="false" aria-controls="loc-hours-list" hidden>
+          <span class="loc-hours-head-txt">
+            <span class="loc-label" data-i18n="loc.hoursToday">Hoje</span>
+            <span class="loc-hours-today" id="loc-hours-today"></span>
+          </span>
+          <svg class="loc-hours-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6.25 8 10.25l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <p class="loc-label loc-hours-label" data-i18n="loc.hours">Horários</p>
+
+        <!-- Estas linhas são substituídas pelo app.js. Ficam aqui para
+             quem chega sem JS: o horário é informação, não enfeite. -->
+        <ul class="loc-hours-list" id="loc-hours-list">
+          <li class="loc-hours-row"><span data-i18n="day.1">segunda</span><span>9h – 20h</span></li>
+          <li class="loc-hours-row"><span data-i18n="day.2">terça</span><span>9h – 20h</span></li>
+          <li class="loc-hours-row"><span data-i18n="day.3">quarta</span><span>9h – 20h</span></li>
+          <li class="loc-hours-row"><span data-i18n="day.4">quinta</span><span>9h – 20h</span></li>
+          <li class="loc-hours-row"><span data-i18n="day.5">sexta</span><span>9h – 20h</span></li>
+          <li class="loc-hours-row"><span data-i18n="day.6">sábado</span><span>8h – 18h</span></li>
+          <li class="loc-hours-row"><span data-i18n="day.0">domingo</span><span data-i18n="loc.closedDay">Fechado</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ─────────── MAPA E CONTACTO ─────────── -->
     <div class="loc-map-col">
       <div class="map-box">
         <div class="map-badge">
-          <span class="dot" aria-hidden="true"></span>
+          <span class="dot" id="loc-badge-dot" aria-hidden="true"></span>
           Corvo
         </div>
 
-        <div id="loc-map" class="map-canvas is-static" role="img" aria-label="Mapa mostrando a localização da Corvo Barbearia em São Paulo" data-i18n-aria="loc.mapAlt"></div>
+        <!-- Endereço por baixo do mapa: é o que fica à vista se o
+             Leaflet não carregar, ou se o JS estiver desligado. -->
+        <p class="map-fallback" id="loc-map-fallback">
+          Rua Augusta, 1200 — Consolação<br>São Paulo / SP
+        </p>
 
-        <button type="button" class="map-expand" id="loc-map-expand">
-          <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2h5v5M7 16H2v-5M16 2l-6 6M2 16l6-6"/></svg>
-          <span data-i18n="loc.interact">Interagir</span>
+        <div id="loc-map" class="map-canvas is-static" role="img"
+             aria-label="Mapa com a Corvo Barbearia e a estação de metrô Consolação"
+             data-i18n-aria="loc.mapAlt"></div>
+
+        <button type="button" class="map-expand" id="loc-map-expand" aria-pressed="false" hidden>
+          <svg viewBox="0 0 18 18" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2h5v5M7 16H2v-5M16 2l-6 6M2 16l6-6"/></svg>
+          <span data-i18n="loc.interact">Mexer no mapa</span>
         </button>
       </div>
 
-      <div class="map-actions">
-        <a href="servicos.html" class="map-cta-primary" data-book>
-          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="14" height="13" rx="2"/><path d="M2 7h14M6 1v4M12 1v4"/></svg>
-          <span data-i18n="loc.book">Agendar horário</span>
-        </a>
+      <!-- Atribuição do OpenStreetMap / CARTO. A licença dos tiles
+           obriga a mostrá-la; fora do mapa não estorva o desenho. -->
+      <p class="map-credit">
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a> ·
+        <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>
+      </p>
 
-        <div class="map-cta-row">
-          <!-- TROQUE: número real. O ?text= já vai pré-preenchido: menos
-               atrito do que abrir o WhatsApp num ecrã em branco. -->
-          <a href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20queria%20marcar%20um%20hor%C3%A1rio%20na%20Corvo" target="_blank" rel="noopener" class="map-cta-secondary map-cta-whatsapp" data-wa>
-            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 8.7a6.7 6.7 0 10-3 5.7l3.1.8-.8-3a6.7 6.7 0 00.7-3.5z"/></svg>
-            WhatsApp
-          </a>
-          <!-- TROQUE: @ real -->
-          <a href="https://instagram.com/corvobarbearia" target="_blank" rel="noopener" class="map-cta-secondary map-cta-instagram">
-            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="14" height="14" rx="4"/><circle cx="9" cy="9" r="3.3"/><circle cx="13" cy="5" r="0.6" fill="currentColor"/></svg>
-            Instagram
-          </a>
+      <!-- Outros apps de rota. O app.js reordena conforme o sistema:
+           no iPhone o Apple Maps sobe para primeiro. -->
+      <div class="loc-apps" role="group" aria-labelledby="loc-apps-h">
+        <p class="loc-label" id="loc-apps-h" data-i18n="loc.appsH">Abrir noutro app</p>
+        <div class="loc-apps-row" id="loc-apps-row">
+          <a class="loc-chip" data-app="apple" href="https://maps.apple.com/?daddr=-23.5530,-46.6620&amp;q=Corvo%20Barbearia&amp;dirflg=d" target="_blank" rel="noopener" hidden>Apple Maps</a>
+          <a class="loc-chip" data-app="google" href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Augusta%201200%2C%20Consola%C3%A7%C3%A3o%2C%20S%C3%A3o%20Paulo" target="_blank" rel="noopener">Google Maps</a>
+          <a class="loc-chip" data-app="waze" href="https://waze.com/ul?ll=-23.5530,-46.6620&amp;navigate=yes" target="_blank" rel="noopener">Waze</a>
+          <a class="loc-chip" data-app="uber" href="https://m.uber.com/ul/?action=setPickup&amp;pickup=my_location&amp;dropoff%5Blatitude%5D=-23.5530&amp;dropoff%5Blongitude%5D=-46.6620&amp;dropoff%5Bnickname%5D=Corvo%20Barbearia" target="_blank" rel="noopener">Uber</a>
         </div>
       </div>
+
+      <div class="loc-contact">
+        <!-- TROQUE: número real -->
+        <a class="loc-contact-item" href="tel:+5511999999999">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 12.9v2.1a1.4 1.4 0 0 1-1.5 1.4 13.8 13.8 0 0 1-6-2.1A13.6 13.6 0 0 1 2.8 8.4 13.8 13.8 0 0 1 .7 2.5 1.4 1.4 0 0 1 2.1 1h2.1c.7 0 1.3.5 1.4 1.2.1.7.3 1.4.6 2-.2.4-.1.8.2 1l1.3 1.3c.9 1.6 2.2 3 3.8 3.8l1.3 1.3c.3.2.7.3 1.1.2.6-.3 1.3-.5 2-.6.7-.1 1.2.7 1.2 1.4z"/></svg>
+          <span>
+            <span class="loc-contact-label" data-i18n="loc.callUs">Ligar</span>
+            <strong>(11) 99999-9999</strong>
+          </span>
+        </a>
+
+        <!-- TROQUE: número real. O ?text= vai pré-preenchido e segue o idioma. -->
+        <a class="loc-contact-item" data-wa target="_blank" rel="noopener"
+           href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20queria%20marcar%20um%20hor%C3%A1rio%20na%20Corvo">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 8.7a6.7 6.7 0 1 0-3 5.7l3.1.8-.8-3a6.7 6.7 0 0 0 .7-3.5z"/></svg>
+          <span>
+            <span class="loc-contact-label">WhatsApp</span>
+            <strong data-i18n="loc.waNow">Tirar uma dúvida</strong>
+          </span>
+        </a>
+
+        <!-- TROQUE: @ real -->
+        <a class="loc-contact-item" href="https://instagram.com/corvobarbearia" target="_blank" rel="noopener">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="14" height="14" rx="4"/><circle cx="9" cy="9" r="3.3"/><circle cx="13" cy="5" r=".6" fill="currentColor"/></svg>
+          <span>
+            <span class="loc-contact-label">Instagram</span>
+            <strong>@corvobarbearia</strong>
+          </span>
+        </a>
+      </div>
+
+      <!-- Continua a existir um caminho de agendamento dentro de
+           #localizacao: o app.js usa esta secção como zona morta do
+           botão flutuante justamente porque ele está aqui. -->
+      <a href="servicos.html" class="loc-btn loc-btn--book" data-book>
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="14" height="13" rx="2"/><path d="M2 7h14M6 1v4M12 1v4"/></svg>
+        <span data-i18n="loc.book">Agendar horário</span>
+      </a>
+    </div>
+
+    <!-- ─────────── MODOS DE CHEGADA ───────────
+         Cada cartão é um link para a rota nesse meio de transporte.
+         Quem lê "de metrô" e clica já sai com o trajeto de metrô aberto,
+         em vez de escolher o modo dentro do app. -->
+    <div class="loc-modes">
+      <p class="loc-label loc-modes-label" data-i18n="loc.modesH">Chegar de</p>
+
+      <ul class="loc-modes-list">
+        <li>
+          <a class="loc-mode" data-mode="transit"
+             href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Augusta%201200%2C%20Consola%C3%A7%C3%A3o%2C%20S%C3%A3o%20Paulo&amp;travelmode=transit"
+             target="_blank" rel="noopener">
+            <span class="loc-mode-ico" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="12" height="11" rx="3"/><path d="M4 9h12M6.5 16.5 5 13.5M13.5 16.5 15 13.5"/><circle cx="7.2" cy="11.2" r=".7" fill="currentColor"/><circle cx="12.8" cy="11.2" r=".7" fill="currentColor"/></svg>
+            </span>
+            <span class="loc-mode-body">
+              <strong data-i18n="loc.metroH">Metrô · 4 min a pé</strong>
+              <!-- TROQUE: linha e saída reais -->
+              <span data-i18n="loc.metroTxt">Estação Consolação (Linha 2-Verde), saída Rua Augusta. Suba pelo lado ímpar, 350 m.</span>
+            </span>
+            <span class="loc-mode-go" aria-hidden="true">→</span>
+          </a>
+        </li>
+
+        <li>
+          <a class="loc-mode" data-mode="driving"
+             href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Augusta%201200%2C%20Consola%C3%A7%C3%A3o%2C%20S%C3%A3o%20Paulo&amp;travelmode=driving"
+             target="_blank" rel="noopener">
+            <span class="loc-mode-ico" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12.5h14v3H3zM4.5 12.5 6 7.5h8l1.5 5"/><circle cx="6.3" cy="15.5" r="1.2"/><circle cx="13.7" cy="15.5" r="1.2"/></svg>
+            </span>
+            <span class="loc-mode-body">
+              <!-- TROQUE: estacionamento e valor reais -->
+              <strong data-i18n="loc.carH">Carro · estacionamento ao lado</strong>
+              <span data-i18n="loc.carTxt">Convênio no nº 1188. R$ 15 nas duas primeiras horas com o carimbo da recepção.</span>
+            </span>
+            <span class="loc-mode-go" aria-hidden="true">→</span>
+          </a>
+        </li>
+
+        <li>
+          <a class="loc-mode" data-mode="walking"
+             href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Augusta%201200%2C%20Consola%C3%A7%C3%A3o%2C%20S%C3%A3o%20Paulo&amp;travelmode=walking"
+             target="_blank" rel="noopener">
+            <span class="loc-mode-ico" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="3.6" r="1.6"/><path d="M10.6 7 8 9.2l.6 3.3M10.6 7l2.6 1.6.9 2.4M10.6 7l-.4 5.5 2 4.9M8.6 12.5 6.6 17.4"/></svg>
+            </span>
+            <span class="loc-mode-body">
+              <!-- TROQUE: referências reais do quarteirão -->
+              <strong data-i18n="loc.walkH">A pé · pela Augusta</strong>
+              <span data-i18n="loc.walkTxt">Entre a Praça Roosevelt e a Rua Luís Coutinho Cavalcanti, no mesmo quarteirão da livraria.</span>
+            </span>
+            <span class="loc-mode-go" aria-hidden="true">→</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Perguntas que chegam por WhatsApp todas as semanas. Respondê-las
+           aqui poupa a mensagem — e a dúvida na porta. TROQUE conforme a casa. -->
+      <ul class="loc-facts">
+        <li data-i18n="loc.fact1">Entrada sem degraus</li>
+        <li data-i18n="loc.fact2">Aceita cartão e Pix</li>
+        <li data-i18n="loc.fact3">Wi-Fi liberado</li>
+        <li data-i18n="loc.fact4">Sem taxa de sinal</li>
+      </ul>
     </div>
 
   </div>

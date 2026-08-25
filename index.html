@@ -1107,6 +1107,7 @@
     <div class="reviews-intro">
       <p class="label-tag" data-i18n="rev.tag">O que dizem</p>
       <h2 class="section-h" id="rev-h" data-i18n-html="rev.h">Clientes que<br><em>voltam sempre.</em></h2>
+      <p class="reviews-sub" data-i18n="rev.sub">O convite para avaliar só sai depois de o profissional dar o serviço como concluído. Quem não veio, não avalia.</p>
     </div>
 
     <div class="reviews-panel" aria-label="Estatísticas de avaliação">
@@ -1147,21 +1148,30 @@
   </div>
 
   <!--
-    TROQUE: as quatro avaliações abaixo são conteúdo de demonstração.
-    O selo "Avaliação verificada no Google" só é honesto quando aponta
-    para a review real. Ligar ao Places API (place_id) e substituir o
-    href de cada .rv-verified pelo link da avaliação de origem.
+    TROQUE: as oito avaliações abaixo são conteúdo de demonstração.
+
+    Origem real: backend do próprio site. Só um cliente com conta e com
+    um serviço marcado como concluído pelo profissional recebe o email
+    de convite para avaliar — é isso, e só isso, que o selo "verificada
+    pela InBarber" afirma. Não há aqui nada do Google.
+
+    Ao ligar à API: renderizar os cartões a partir de GET /avaliacoes
+    (ordenar por data desc), manter os quatro primeiros visíveis e os
+    restantes com o atributo `hidden` + classe .rv-card--extra, que é o
+    que o botão "Ver mais avaliações" alterna. Se o backend paginar,
+    trocar o toggle de app.js › initReviewsMore() por um fetch da
+    página seguinte — a estrutura do cartão não muda.
   -->
-  <div class="reviews-track" role="list">
+  <div class="reviews-track" id="reviews-track" role="list">
     <article class="rv-card" role="listitem">
       <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
 
       <p class="rv-txt" data-i18n="rev.q1">Melhor barbearia que já fui. Atenção incrível aos detalhes — o barbeiro entendeu exatamente o que eu queria.</p>
 
-      <a class="rv-verified" href="https://www.google.com/maps/place/?q=place_id:PLACE_ID_AQUI" target="_blank" rel="noopener nofollow">
+      <p class="rv-verified">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
-        <span data-i18n="rev.verified">Avaliação verificada no Google</span>
-      </a>
+        <span data-i18n="rev.verified">Avaliação verificada pela InBarber</span>
+      </p>
 
       <footer class="rv-foot">
         <img class="rv-av" src="https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
@@ -1178,10 +1188,10 @@
 
       <p class="rv-txt" data-i18n="rev.q2">Ambiente super aconchegante, atendimento impecável. Já é minha barbearia fixa. Recomendo demais!</p>
 
-      <a class="rv-verified" href="https://www.google.com/maps/place/?q=place_id:PLACE_ID_AQUI" target="_blank" rel="noopener nofollow">
+      <p class="rv-verified">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
-        <span data-i18n="rev.verified">Avaliação verificada no Google</span>
-      </a>
+        <span data-i18n="rev.verified">Avaliação verificada pela InBarber</span>
+      </p>
 
       <footer class="rv-foot">
         <img class="rv-av" src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
@@ -1198,10 +1208,10 @@
 
       <p class="rv-txt" data-i18n="rev.q3">Fiz corte + barba e saí completamente diferente. Profissionalismo do início ao fim, sem pressa.</p>
 
-      <a class="rv-verified" href="https://www.google.com/maps/place/?q=place_id:PLACE_ID_AQUI" target="_blank" rel="noopener nofollow">
+      <p class="rv-verified">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
-        <span data-i18n="rev.verified">Avaliação verificada no Google</span>
-      </a>
+        <span data-i18n="rev.verified">Avaliação verificada pela InBarber</span>
+      </p>
 
       <footer class="rv-foot">
         <img class="rv-av" src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
@@ -1218,10 +1228,10 @@
 
       <p class="rv-txt" data-i18n="rev.q4">O agendamento online é prático demais. Fácil de usar e sempre tem horário disponível. 10/10.</p>
 
-      <a class="rv-verified" href="https://www.google.com/maps/place/?q=place_id:PLACE_ID_AQUI" target="_blank" rel="noopener nofollow">
+      <p class="rv-verified">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
-        <span data-i18n="rev.verified">Avaliação verificada no Google</span>
-      </a>
+        <span data-i18n="rev.verified">Avaliação verificada pela InBarber</span>
+      </p>
 
       <footer class="rv-foot">
         <img class="rv-av" src="https://images.pexels.com/photos/15946547/pexels-photo-15946547.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
@@ -1232,6 +1242,96 @@
         <span class="rv-stars" aria-label="5 estrelas" data-i18n-aria="rev.stars">★★★★★</span>
       </footer>
     </article>
+
+    <article class="rv-card rv-card--extra" role="listitem" hidden>
+      <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
+
+      <p class="rv-txt" data-i18n="rev.q5">Marquei pelo site num domingo à noite e a confirmação chegou na hora. No sábado estava lá, sem precisar ligar para ninguém.</p>
+
+      <p class="rv-verified">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
+        <span data-i18n="rev.verified">Avaliação verificada pela InBarber</span>
+      </p>
+
+      <footer class="rv-foot">
+        <img class="rv-av" src="https://images.pexels.com/photos/1300402/pexels-photo-1300402.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
+        <div class="rv-id">
+          <strong class="rv-name">Eduardo Freitas</strong>
+          <span class="rv-date" data-i18n="rev.d5">há 1 mês</span>
+        </div>
+        <span class="rv-stars" aria-label="5 estrelas" data-i18n-aria="rev.stars">★★★★★</span>
+      </footer>
+    </article>
+
+    <article class="rv-card rv-card--extra" role="listitem" hidden>
+      <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
+
+      <p class="rv-txt" data-i18n="rev.q6">Levo meu filho de 7 anos e têm paciência de verdade com ele. Saiu de lá orgulhoso do corte.</p>
+
+      <p class="rv-verified">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
+        <span data-i18n="rev.verified">Avaliação verificada pela InBarber</span>
+      </p>
+
+      <footer class="rv-foot">
+        <img class="rv-av" src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
+        <div class="rv-id">
+          <strong class="rv-name">Gustavo Ramos</strong>
+          <span class="rv-date" data-i18n="rev.d6">há 2 meses</span>
+        </div>
+        <span class="rv-stars" aria-label="5 estrelas" data-i18n-aria="rev.stars">★★★★★</span>
+      </footer>
+    </article>
+
+    <article class="rv-card rv-card--extra" role="listitem" hidden>
+      <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
+
+      <p class="rv-txt" data-i18n="rev.q7">Corte impecável. Só achei a espera longa no sábado de manhã — mas avisaram assim que atrasou e ainda ofereceram café.</p>
+
+      <p class="rv-verified">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
+        <span data-i18n="rev.verified">Avaliação verificada pela InBarber</span>
+      </p>
+
+      <footer class="rv-foot">
+        <img class="rv-av" src="https://images.pexels.com/photos/846741/pexels-photo-846741.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
+        <div class="rv-id">
+          <strong class="rv-name">Henrique Dias</strong>
+          <span class="rv-date" data-i18n="rev.d7">há 2 meses</span>
+        </div>
+        <span class="rv-stars" aria-label="4 estrelas" data-i18n-aria="rev.stars4">★★★★☆</span>
+      </footer>
+    </article>
+
+    <article class="rv-card rv-card--extra" role="listitem" hidden>
+      <svg class="rv-quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.17 6C5.21 7.39 4 9.5 4 12.17c0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15C8.6 8.5 9.86 7.13 12 6l-1-1.5C9.5 5.1 8.2 5.4 7.17 6zm9 0c-1.96 1.39-3.17 3.5-3.17 6.17 0 2.91 1.97 4.83 4.5 4.83 2.21 0 3.83-1.62 3.83-3.67 0-1.84-1.34-3.17-3-3.17-.33 0-.65.05-.95.15.22-1.98 1.48-3.35 3.62-4.48l-1-1.5c-1.5.6-2.8.9-3.83 1.67z"/></svg>
+
+      <p class="rv-txt" data-i18n="rev.q8">Quinta vez que volto. Pigmentação bem feita, sem exagero, e o preço na saída é o mesmo que apareceu no agendamento.</p>
+
+      <p class="rv-verified">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3zm-1.2 13.4-3.4-3.4 1.4-1.4 2 2 4.6-4.6 1.4 1.4-6 6z"/></svg>
+        <span data-i18n="rev.verified">Avaliação verificada pela InBarber</span>
+      </p>
+
+      <footer class="rv-foot">
+        <img class="rv-av" src="https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=2" alt="" width="40" height="40" loading="lazy" decoding="async">
+        <div class="rv-id">
+          <strong class="rv-name">Paulo Vieira</strong>
+          <span class="rv-date" data-i18n="rev.d8">há 3 meses</span>
+        </div>
+        <span class="rv-stars" aria-label="5 estrelas" data-i18n-aria="rev.stars">★★★★★</span>
+      </footer>
+    </article>
+  </div>
+
+  <div class="reviews-more">
+    <!-- Sem JS não há botão: os quatro cartões extra ficam `hidden` e a
+         secção lê-se na mesma. O app.js é que revela o controlo. -->
+    <button type="button" class="rv-more-btn" id="rv-more" aria-expanded="false" aria-controls="reviews-track" hidden>
+      <span class="rv-more-on"  data-i18n="rev.more">Ver mais avaliações</span>
+      <span class="rv-more-off" data-i18n="rev.less">Ver menos</span>
+      <svg class="rv-more-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6.25 8 10.25l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
   </div>
 </section>
 

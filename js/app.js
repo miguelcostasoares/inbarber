@@ -404,6 +404,57 @@
   })();
 
   /* ════════════════════════════════════════
+     AVALIAÇÕES — "Ver mais"
+
+     As avaliações vêm do backend do próprio site: só recebe o convite
+     por email quem tem conta e cujo serviço foi dado como concluído
+     pelo profissional. Aqui a lista já vem toda no HTML — os cartões
+     além dos quatro primeiros trazem `hidden` e a classe
+     .rv-card--extra, e este bloco só os alterna.
+
+     Se um dia a lista crescer ao ponto de não valer a pena servi-la
+     inteira, é aqui que entra o fetch da página seguinte: o botão já
+     tem o estado (aria-expanded) e o alvo (aria-controls) certos.
+
+     Sem JS o botão nunca aparece — está `hidden` no HTML e é este
+     código que o revela. Não fica um controlo morto na página.
+  ════════════════════════════════════════ */
+  (function initReviewsMore() {
+    const track = $('#reviews-track');
+    const btn   = $('#rv-more');
+    if (!track || !btn) return;
+
+    const extras = $$('.rv-card--extra', track);
+    if (!extras.length) return;
+
+    btn.hidden = false;
+
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') === 'true';
+
+      extras.forEach((card, i) => {
+        card.hidden = open;
+        /* Revelados a meio do ecrã, os cartões não podem depender da
+           animação de scroll: ficariam parados a zero de opacidade.
+           Esta classe troca a timeline de view() para tempo real. */
+        card.classList.toggle('is-revealed', !open);
+        card.style.animationDelay = open ? '' : (i * 70) + 'ms';
+      });
+
+      btn.setAttribute('aria-expanded', String(!open));
+
+      /* Ao abrir, o foco vai para o primeiro cartão novo: quem navega
+         por teclado não fica no fim de uma lista que acabou de crescer
+         por cima... nem por baixo dele. */
+      if (!open) {
+        const first = extras[0];
+        first.setAttribute('tabindex', '-1');
+        first.focus({ preventScroll: true });
+      }
+    });
+  })();
+
+  /* ════════════════════════════════════════
      CAROUSEL BANNER (Galeria)
   ════════════════════════════════════════ */
   (function initCarousel() {

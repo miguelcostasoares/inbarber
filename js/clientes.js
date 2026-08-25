@@ -132,6 +132,7 @@ function renderStats() {
   const inativos = total - ativos;
 
   const el = document.getElementById('clientesStats');
+  // data-count guarda o valor final; count-up é aplicado em animateClientesStats()
   el.innerHTML = `
     <div class="stat-pill stat-pill--gold">
       <div class="stat-pill__icon">
@@ -140,7 +141,7 @@ function renderStats() {
           <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </div>
-      <div class="stat-pill__value">${total}</div>
+      <div class="stat-pill__value" data-count="${total}">0</div>
       <div class="stat-pill__label">Total de clientes</div>
     </div>
 
@@ -152,7 +153,7 @@ function renderStats() {
           <path d="M11 3.5l1.5 1.5-2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="stat-pill__value">${ativos}</div>
+      <div class="stat-pill__value" data-count="${ativos}">0</div>
       <div class="stat-pill__label">Ativos (últimos 60 dias)</div>
     </div>
 
@@ -164,7 +165,7 @@ function renderStats() {
           <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </div>
-      <div class="stat-pill__value">${novos}</div>
+      <div class="stat-pill__value" data-count="${novos}">0</div>
       <div class="stat-pill__label">Novos este mês</div>
     </div>
 
@@ -176,7 +177,7 @@ function renderStats() {
           <path d="M11 5h2M12 4v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
         </svg>
       </div>
-      <div class="stat-pill__value">${inativos}</div>
+      <div class="stat-pill__value" data-count="${inativos}">0</div>
       <div class="stat-pill__label">Inativos</div>
     </div>
   `;
@@ -623,6 +624,91 @@ function renderDate() {
 }
 
 
+/* ═══════════════════════════════════════════════════════════
+   ANIMAÇÕES DE ENTRADA — Clientes
+   Replicando o padrão do Dashboard:
+     • animateCounter       → contagem de 0 até o valor (ease-out cubic)
+     • animateClientesStats → dispara count-up nos stat-pills
+     • initScrollReveal     → fade-in + translateY nos cards/pills/tabela
+═══════════════════════════════════════════════════════════ */
+
+/**
+ * Anima um contador de `from` até `to` em `duration`ms
+ * Idêntico ao dashboard.js — ease-out cubic
+ * @param {HTMLElement} el
+ * @param {number} from
+ * @param {number} to
+ * @param {number} duration
+ * @param {Function} [formatter]
+ */
+function animateCounter(el, from, to, duration, formatter) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = formatter ? formatter(to) : to;
+    return;
+  }
+  const start = performance.now();
+  function tick(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(from + (to - from) * ease);
+    el.textContent = formatter ? formatter(current) : current;
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/**
+ * Lê o data-count de cada stat-pill__value e dispara o count-up.
+ * Delay escalonado para coincidir com o stagger do scroll-reveal.
+ */
+function animateClientesStats() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const pills = document.querySelectorAll('#clientesStats .stat-pill__value[data-count]');
+  pills.forEach((el, i) => {
+    const target = parseInt(el.dataset.count, 10);
+    if (isNaN(target)) return;
+    el.textContent = '0';
+    setTimeout(() => animateCounter(el, 0, target, 900), 150 + i * 60);
+  });
+}
+
+/**
+ * Scroll-reveal para stat-pills e bloco da tabela —
+ * fade-in + translateY, com stagger de 40ms (máx 300ms).
+ */
+function initScrollReveal() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const targets = document.querySelectorAll(
+    '#clientesStats .stat-pill, .clientes-table-wrap, .clientes-pagination'
+  );
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const delay = parseInt(el.dataset.revealDelay || 0);
+        setTimeout(() => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, delay);
+        observer.unobserve(el);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  targets.forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(18px)';
+    el.style.transition = 'opacity 480ms var(--ease-out), transform 480ms var(--ease-out)';
+    el.dataset.revealDelay = Math.min(i * 40, 300);
+    observer.observe(el);
+  });
+}
+
+
 /* ─── 18. BOOT ──────────────────────────────────────────── */
 function boot() {
   renderDate();
@@ -636,6 +722,11 @@ function boot() {
   initDeleteModal();
   initModalOverlayClose();
   initSidebar();
+
+  // ── Animações de entrada ──────────────────────────────────
+  animateClientesStats();
+  initScrollReveal();
+  // ─────────────────────────────────────────────────────────
 
   console.log('[InBarber Clientes] Inicializado com sucesso.');
 }

@@ -1497,13 +1497,71 @@ function initModal() {
 }
 
 
+/* ─── 11. SIDEBAR ───────────────────────────────────────── */
+function initSidebar() {
+  const sidebar   = document.getElementById('sidebar');
+  const overlay   = document.getElementById('sidebarOverlay');
+  const burger    = document.getElementById('burgerBtn');
+  const toggleBtn = document.getElementById('sidebarToggleBtn');
+
+  // ── Mobile: abrir / fechar ────────────────────────────────
+  const openSidebar = () => {
+    sidebar.classList.add('is-open');
+    overlay.classList.add('is-visible');
+    overlay.removeAttribute('aria-hidden');
+    burger?.classList.add('is-open');
+    burger?.setAttribute('aria-expanded', 'true');
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.remove('is-open');
+    overlay.classList.remove('is-visible');
+    overlay.setAttribute('aria-hidden', 'true');
+    burger?.classList.remove('is-open');
+    burger?.setAttribute('aria-expanded', 'false');
+  };
+
+  burger?.addEventListener('click', () =>
+    sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar()
+  );
+  overlay?.addEventListener('click', closeSidebar);
+
+  // ── Desktop: colapsar / expandir ─────────────────────────
+  const collapseSidebar = () => {
+    sidebar.classList.add('is-collapsed');
+    sidebar.classList.remove('is-expanded');
+    toggleBtn?.setAttribute('aria-expanded', 'false');
+    toggleBtn?.setAttribute('aria-label', 'Expandir menu');
+    try { localStorage.setItem('sidebarCollapsed', '1'); } catch (e) {}
+  };
+
+  const expandSidebar = () => {
+    sidebar.classList.remove('is-collapsed');
+    sidebar.classList.add('is-expanded');
+    toggleBtn?.setAttribute('aria-expanded', 'true');
+    toggleBtn?.setAttribute('aria-label', 'Recolher menu');
+    try { localStorage.setItem('sidebarCollapsed', '0'); } catch (e) {}
+  };
+
+  toggleBtn?.addEventListener('click', () =>
+    sidebar.classList.contains('is-collapsed') ? expandSidebar() : collapseSidebar()
+  );
+
+  // Restaura estado da última visita
+  try {
+    if (localStorage.getItem('sidebarCollapsed') === '0') expandSidebar();
+  } catch (e) {}
+}
+
 /* ─── 11. SIDEBAR MOBILE ────────────────────────────────── */
 
 function initSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  const burger = document.getElementById('burgerBtn');
+  const sidebar   = document.getElementById('sidebar');
+  const overlay   = document.getElementById('sidebarOverlay');
+  const burger    = document.getElementById('burgerBtn');
+  const toggleBtn = document.getElementById('sidebarToggleBtn');
 
+  // ── Mobile ───────────────────────────────────────────────
   function openSidebar() {
     sidebar.classList.add('is-open');
     overlay.classList.add('is-visible');
@@ -1532,10 +1590,33 @@ function initSidebar() {
       if (window.innerWidth <= 900) closeSidebar();
     });
   });
+
+  function collapseSidebar() {
+    sidebar.classList.add('is-collapsed');
+    sidebar.classList.remove('is-expanded');
+    toggleBtn && toggleBtn.setAttribute('aria-expanded', 'false');
+    toggleBtn && toggleBtn.setAttribute('aria-label', 'Expandir menu');
+    try { localStorage.setItem('sidebarCollapsed', '1'); } catch (e) {}
+  }
+
+  function expandSidebar() {
+    sidebar.classList.remove('is-collapsed');
+    sidebar.classList.add('is-expanded');
+    toggleBtn && toggleBtn.setAttribute('aria-expanded', 'true');
+    toggleBtn && toggleBtn.setAttribute('aria-label', 'Recolher menu');
+    try { localStorage.setItem('sidebarCollapsed', '0'); } catch (e) {}
+  }
+
+  toggleBtn && toggleBtn.addEventListener('click', () => {
+    sidebar.classList.contains('is-collapsed') ? expandSidebar() : collapseSidebar();
+  });
+
+  // Restaura estado da última visita
+  try {
+    if (localStorage.getItem('sidebarCollapsed') === '0') expandSidebar();
+  } catch (e) {}
 }
 
-
-/* ─── 12. TOAST ─────────────────────────────────────────── */
 
 function showToast(message, type = 'success') {
   // Remove toast anterior se existir
@@ -1545,7 +1626,7 @@ function showToast(message, type = 'success') {
   const colors = {
     success: { bg: 'var(--green-bg)', border: 'rgba(76,175,121,0.3)', text: 'var(--green)' },
     blue: { bg: 'var(--blue-bg)', border: 'rgba(59,130,246,0.3)', text: 'var(--blue-lt)' },
-    gold: { bg: 'var(--blue-bg)', border: 'rgba(59,130,246,0.3)', text: 'var(--blue-lt)' }, // alias legado → blue
+    gold: { bg: 'var(--blue-bg)', border: 'rgba(59,130,246,0.3)', text: 'var(--blue-lt)' }, 
     error: { bg: 'var(--red-bg)', border: 'rgba(224,84,84,0.3)', text: 'var(--red)' },
   };
 

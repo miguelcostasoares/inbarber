@@ -1377,3 +1377,80 @@ input[type="date"] { color-scheme: dark; }
 @media (min-width: 1440px) {
   .main { padding-left: 36px; padding-right: 36px; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   17. ANIMAÇÕES DE ENTRADA — Clientes
+   Keyframes e classes de reveal que espelham o Dashboard.
+   O JS (initScrollReveal + animateClientesStats) aplica
+   opacity/transform via style inline; estes keyframes
+   cobrem os elementos estruturais que não passam pelo JS.
+═══════════════════════════════════════════════════════════ */
+
+/* ── Keyframe: fade-in + slide-up (base) ─────────────────── */
+@keyframes clFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Keyframe: fade-in suave ──────────────────────────────── */
+@keyframes clFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Header da página ─────────────────────────────────────── */
+.clientes-header {
+  animation: clFadeUp 500ms var(--ease-out) both;
+}
+
+/* ── Barra de busca / toolbar ─────────────────────────────── */
+.clientes-toolbar {
+  animation: clFadeUp 500ms 80ms var(--ease-out) both;
+}
+
+/* ── Stat-pills: stagger via JS (revealDelay) ─────────────── */
+/* O JS define opacity/transform/transition inline;
+   will-change prepara o browser para a transição. */
+.stat-pill {
+  will-change: opacity, transform;
+}
+
+/* ── Wrapper da tabela: gerenciado pelo JS (initScrollReveal) */
+.clientes-table-wrap {
+  will-change: opacity, transform;
+}
+
+/* ── Paginação ─────────────────────────────────────────────── */
+.clientes-pagination {
+  will-change: opacity, transform;
+}
+
+/* ── Linhas da tabela: fade-in escalonado ──────────────────── */
+.clientes-table tbody tr {
+  animation: clFadeIn 320ms var(--ease-out) both;
+}
+
+/* Stagger nas primeiras 8 linhas (uma página completa) */
+.clientes-table tbody tr:nth-child(1) { animation-delay:  40ms; }
+.clientes-table tbody tr:nth-child(2) { animation-delay:  70ms; }
+.clientes-table tbody tr:nth-child(3) { animation-delay: 100ms; }
+.clientes-table tbody tr:nth-child(4) { animation-delay: 130ms; }
+.clientes-table tbody tr:nth-child(5) { animation-delay: 160ms; }
+.clientes-table tbody tr:nth-child(6) { animation-delay: 190ms; }
+.clientes-table tbody tr:nth-child(7) { animation-delay: 220ms; }
+.clientes-table tbody tr:nth-child(8) { animation-delay: 250ms; }
+
+/* ── Respeita preferência de movimento reduzido ─────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .clientes-header,
+  .clientes-toolbar,
+  .clientes-table tbody tr {
+    animation: none;
+  }
+}

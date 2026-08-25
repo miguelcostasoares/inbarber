@@ -3056,3 +3056,80 @@ input[type="date"],
 input[type="time"] {
   color-scheme: dark;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   16. ANIMAÇÕES DE ENTRADA — Agenda
+   Keyframes e classes de reveal que espelham o Dashboard.
+   O JS (initScrollReveal + animateAgendaStats) aplica esses
+   estilos dinamicamente via style inline; este bloco garante
+   os keyframes base e o @media prefers-reduced-motion.
+═══════════════════════════════════════════════════════════ */
+
+/* ── Keyframe: fade-in + slide-up (base) ─────────────────── */
+@keyframes agFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Keyframe: fade-in suave (para itens de lista) ────────── */
+@keyframes agFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Header da Agenda: desliza de cima ─────────────────────── */
+.agenda-header {
+  animation: agFadeUp 500ms var(--ease-out) both;
+}
+
+/* ── Controles / barra de filtros ──────────────────────────── */
+.agenda-controls {
+  animation: agFadeUp 500ms 80ms var(--ease-out) both;
+}
+
+/* ── Tabs de visualização ──────────────────────────────────── */
+.view-tabs {
+  animation: agFadeUp 500ms 120ms var(--ease-out) both;
+}
+
+/* ── Stat-pills: stagger via JS (revealDelay) ──────────────── */
+/* O JS já define opacity/transform/transition diretamente.
+   Este bloco é um fallback para quando o JS não estiver pronto. */
+.stat-pill {
+  will-change: opacity, transform;
+}
+
+/* ── Kanban board: fade-in global com ligeiro delay ────────── */
+.kanban-board {
+  animation: agFadeIn 400ms 160ms var(--ease-out) both;
+}
+
+/* ── Calendário ─────────────────────────────────────────────── */
+#calWeekWrap,
+#calMonthWrap {
+  animation: agFadeUp 480ms 140ms var(--ease-out) both;
+}
+
+/* ── View de lista ──────────────────────────────────────────── */
+#listView {
+  animation: agFadeUp 480ms 140ms var(--ease-out) both;
+}
+
+/* ── Respeita preferência de movimento reduzido ─────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .agenda-header,
+  .agenda-controls,
+  .view-tabs,
+  .kanban-board,
+  #calWeekWrap,
+  #calMonthWrap,
+  #listView {
+    animation: none;
+  }
+}

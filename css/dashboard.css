@@ -130,6 +130,10 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 
 
 /* ─── 4. SIDEBAR ────────────────────────────────────────── */
+
+/* Variável de largura recolhida — usada pelo toggle desktop */
+:root { --nav-w-collapsed: 64px; }
+
 .sidebar {
   position: fixed;
   top: 0; left: 0;
@@ -140,7 +144,7 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   display: flex;
   flex-direction: column;
   z-index: 200;
-  transition: transform var(--dur) var(--ease-drawer);
+  transition: width var(--dur) var(--ease-out), transform var(--dur) var(--ease-drawer);
   will-change: transform;
 }
 
@@ -239,6 +243,118 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   border-radius: var(--r-full);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+/* ── Toggle (botão de colapso desktop) ── */
+.sidebar__toggle {
+  position: absolute;
+  top: 22px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-full);
+  background: var(--bg-3);
+  border: 1px solid var(--divider);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background var(--dur), color var(--dur), transform var(--dur) var(--ease-out);
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar__toggle:hover {
+  background: var(--bg-4);
+  color: var(--cream);
+}
+
+.sidebar.is-expanded .sidebar__toggle {
+  transform: rotate(180deg);
+}
+
+/* Estado recolhido */
+.sidebar.is-collapsed {
+  width: var(--nav-w-collapsed);
+}
+
+.sidebar.is-collapsed .sidebar__nav,
+.sidebar.is-collapsed .sidebar__bottom,
+.sidebar.is-collapsed .sidebar__brand {
+  overflow: hidden;
+}
+
+.sidebar.is-collapsed .sidebar__name,
+.sidebar.is-collapsed .nav-item span:not(.sr-only),
+.sidebar.is-collapsed .nav-badge,
+.sidebar.is-collapsed .sidebar__user-info,
+.sidebar.is-collapsed .sidebar__user-name,
+.sidebar.is-collapsed .sidebar__user-role {
+  display: none;
+}
+
+.sidebar.is-collapsed .sidebar__brand {
+  justify-content: center;
+  padding: 20px 0 18px;
+}
+
+.sidebar.is-collapsed .nav-item {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+}
+
+.sidebar.is-collapsed .sidebar__bottom {
+  align-items: center;
+  padding: 12px 0 16px;
+}
+
+.sidebar.is-collapsed .sidebar__user {
+  justify-content: center;
+  padding: 10px 0;
+  background: transparent;
+}
+
+.sidebar.is-collapsed .sidebar__nav {
+  padding: 16px 8px;
+}
+
+/* Tooltip de hover quando recolhida */
+.sidebar.is-collapsed .nav-item::after {
+  content: attr(data-label);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-4);
+  color: var(--cream);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--divider);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms var(--ease-out);
+  z-index: 300;
+}
+
+.sidebar.is-collapsed .nav-item:hover::after {
+  opacity: 1;
+}
+
+/* Ajusta o main quando sidebar está recolhida */
+.sidebar.is-collapsed ~ .main {
+  margin-left: var(--nav-w-collapsed);
+}
+
+/* Esconde o toggle no mobile — o burger já faz esse papel */
+@media (max-width: 900px) {
+  .sidebar__toggle { display: none; }
+  .sidebar.is-collapsed { width: var(--nav-w); }
+  .sidebar.is-collapsed ~ .main { margin-left: 0; }
 }
 
 /* ── Bottom ── */

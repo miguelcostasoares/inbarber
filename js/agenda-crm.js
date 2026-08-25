@@ -1898,6 +1898,92 @@ function positionTooltip(tip, e) {
   tip.style.top = `${y}px`;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ANIMAÇÕES DE ENTRADA — Agenda
+   Replicando o padrão do Dashboard:
+     • animateCounter  → contagem de 0 até o valor (ease-out cubic)
+     • initScrollReveal → fade-in + translateY nos cards/pills
+═══════════════════════════════════════════════════════════ */
+
+/**
+ * Anima um contador de `from` até `to` em `duration`ms
+ * Idêntico ao dashboard.js — ease-out cubic
+ * @param {HTMLElement} el
+ * @param {number} from
+ * @param {number} to
+ * @param {number} duration
+ * @param {Function} [formatter]
+ */
+function animateCounter(el, from, to, duration, formatter) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = formatter ? formatter(to) : to;
+    return;
+  }
+  const start = performance.now();
+  function tick(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(from + (to - from) * ease);
+    el.textContent = formatter ? formatter(current) : current;
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/**
+ * Scroll-reveal para cards, pills e colunas kanban —
+ * fade-in + translateY, com stagger de 40ms (máx 300ms),
+ * idêntico ao initScrollReveal do dashboard.js
+ */
+function initScrollReveal() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const targets = document.querySelectorAll(
+    '.stat-pill, .kanban-col, .agenda-list-card, .cal-legend-item'
+  );
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const delay = parseInt(el.dataset.revealDelay || 0);
+        setTimeout(() => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, delay);
+        observer.unobserve(el);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  targets.forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(18px)';
+    el.style.transition = 'opacity 480ms var(--ease-out), transform 480ms var(--ease-out)';
+    el.dataset.revealDelay = Math.min(i * 40, 300);
+    observer.observe(el);
+  });
+}
+
+/**
+ * Anima os valores numéricos dos stat-pills da Agenda
+ * após o renderStats() popular o DOM.
+ */
+function animateAgendaStats() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const pills = document.querySelectorAll('#agendaStats .stat-pill__value');
+  pills.forEach((el) => {
+    const raw = parseInt(el.textContent, 10);
+    if (!isNaN(raw)) {
+      el.textContent = '0';
+      // Pequeno delay para a animação de fade-in do pill já ter iniciado
+      setTimeout(() => animateCounter(el, 0, raw, 900), 150);
+    }
+  });
+}
+
 function boot() {
   renderHeader();
   renderStats();
@@ -1912,6 +1998,11 @@ function boot() {
   initSidebar();
   initCalTooltip();
   startRealtimeSimulation();
+
+  // ── Animações de entrada ──────────────────────────────────
+  animateAgendaStats();
+  initScrollReveal();
+  // ─────────────────────────────────────────────────────────
 
   console.log('[InBarber Agenda] Inicializado com sucesso.');
 }

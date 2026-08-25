@@ -1673,7 +1673,7 @@ textarea {
 .metas-comissao-val {
     font-size: 14px;
     font-weight: 700;
-    color: var(--gold-lt);
+    color: #00a971;
 }
 
 /* ─── 13. SAÍDAS ────────────────────────────────────────── */
@@ -1716,8 +1716,8 @@ textarea {
 
 .saidas-pgto-donut-wrap {
     position: relative;
-    width: 88px;
-    height: 88px;
+    width: 160px;
+    height: 160px;
     flex-shrink: 0;
 }
 
@@ -1731,7 +1731,7 @@ textarea {
 }
 
 .saidas-pgto-donut-total {
-    font-size: 11px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--white);
     line-height: 1;
@@ -1771,7 +1771,7 @@ textarea {
 .saidas-pgto-name {
     color: var(--cream-2);
     font-weight: 500;
-    min-width: 80px;
+    min-width: 60px;
     flex-shrink: 0;
 }
 
@@ -2067,11 +2067,11 @@ input[type="date"].saidas-form-input::-webkit-calendar-picker-indicator {
 
 /* Botão de exclusão com cor vermelha */
 .saidas-btn-delete {
-    background: var(--red) !important;
+    background: #d30a0a !important;
 }
 
 .saidas-btn-delete:hover {
-    background: #e0394d !important;
+    background: #f71f1f !important;
     box-shadow: 0 4px 16px rgba(255, 77, 106, 0.35) !important;
 }
 
@@ -2196,4 +2196,88 @@ input[type="date"].saidas-form-input::-webkit-calendar-picker-indicator {
     .kpi-card__value {
         font-size: 22px;
     }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   15. ANIMAÇÕES DE ENTRADA — Financeiro
+   Keyframes e classes de reveal que espelham o Dashboard.
+   O JS (initScrollReveal + animateCounter) cuida dos
+   elementos dinâmicos; estes keyframes cobrem estrutura fixa.
+═══════════════════════════════════════════════════════════ */
+
+/* ── Keyframe: fade-in + slide-up (base) ─────────────────── */
+@keyframes finFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Keyframe: fade-in suave ──────────────────────────────── */
+@keyframes finFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Header da página ─────────────────────────────────────── */
+.page-header {
+  animation: finFadeUp 500ms var(--ease-out) both;
+}
+
+/* ── Tabs de navegação ────────────────────────────────────── */
+.fin-tabs {
+  animation: finFadeUp 500ms 80ms var(--ease-out) both;
+}
+
+/* ── KPI Cards: stagger (o JS também os observa via IntersectionObserver) */
+/* will-change prepara GPU para a transição controlada pelo JS */
+.fin-kpi-card {
+  will-change: opacity, transform;
+}
+
+/* Stagger via CSS para quem entrar antes do observer JS atuar */
+.fin-kpi-card:nth-child(1) { animation: finFadeUp 480ms 120ms var(--ease-out) both; }
+.fin-kpi-card:nth-child(2) { animation: finFadeUp 480ms 160ms var(--ease-out) both; }
+.fin-kpi-card:nth-child(3) { animation: finFadeUp 480ms 200ms var(--ease-out) both; }
+
+/* ── Payment Cards: stagger suave ────────────────────────── */
+.payment-card {
+  will-change: opacity, transform;
+}
+
+/* ── Caixa card (donut + legenda) ────────────────────────── */
+.caixa-card {
+  will-change: opacity, transform;
+}
+
+/* ── Gráfico de linha ────────────────────────────────────── */
+.chart-card {
+  will-change: opacity, transform;
+}
+
+/* ── Seções do Financeiro (Metas, Saídas, etc.) ──────────── */
+.fin-section {
+  will-change: opacity, transform;
+}
+
+/* ── Barra de progresso das payment cards:
+      a animação real vem do JS (animatePaymentBars).
+      Esta transition é um fallback. ─────────────────────── */
+.payment-card__bar-fill {
+  transition: width 900ms var(--ease-out);
+}
+
+/* ── Respeita preferência de movimento reduzido ─────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .page-header,
+  .fin-tabs,
+  .fin-kpi-card,
+  .payment-card__bar-fill {
+    animation: none;
+    transition: none;
+  }
 }

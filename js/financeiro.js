@@ -168,17 +168,22 @@ function renderKPIs() {
     const faturamentoLiquido = totalFaturamento - SAIDAS_TOTAL;
     const totalCortes = FIN_BARBERS.reduce((a, b) => a + b.cortes, 0);
 
-    document.getElementById('kpiFaturamentoTotal').textContent = fmt(totalFaturamento);
-    document.getElementById('kpiFaturamentoLiquido').textContent = fmt(faturamentoLiquido);
-    document.getElementById('kpiCortes').textContent = totalCortes;
-
+    // Valores estáticos imediatos (trends e datas não são animados)
     document.getElementById('kpiFaturamentoTrend').textContent = '↑ 12,4%';
     document.getElementById('kpiLiquidoTrend').textContent = '↑ 9,8%';
     document.getElementById('kpiCortesTrend').textContent = '↑ 8,2%';
-
     document.getElementById('caixaTotalRecebido').textContent = fmt(totalFaturamento);
     document.getElementById('donutCenterValue').textContent = fmtK(totalFaturamento);
     document.getElementById('finHeaderDate').textContent = getTodayLabel();
+
+    // Count-up nos KPIs numéricos — idêntico ao padrão do dashboard.js
+    const elTotal   = document.getElementById('kpiFaturamentoTotal');
+    const elLiquido = document.getElementById('kpiFaturamentoLiquido');
+    const elCortes  = document.getElementById('kpiCortes');
+
+    if (elTotal)   animateCounter(elTotal,   0, totalFaturamento,   1200, fmt);
+    if (elLiquido) animateCounter(elLiquido, 0, faturamentoLiquido, 1000, fmt);
+    if (elCortes)  animateCounter(elCortes,  0, totalCortes,         800);
 }
 
 /* ─── 4. DONUT CHART ────────────────────────────────────── */
@@ -775,7 +780,6 @@ function renderSaidasKPIs(data) {
                     <div class="saidas-pgto-bar-fill" style="width: ${pct}%; background: ${col};"></div>
                 </div>
                 <span class="saidas-pgto-pct">${pct}%</span>
-                <span class="saidas-pgto-val">${fmtK(val)}</span>
             </div>
         `;
     }).join('');
@@ -785,6 +789,40 @@ function renderSaidasKPIs(data) {
     if (saidasPgtoChart) saidasPgtoChart.destroy();
 
     if (pgtoEntries.length === 0) return;
+
+    const tooltip      = document.getElementById('chartTooltip');
+    const tooltipInner = document.getElementById('chartTooltipInner');
+
+    const saidasPgtoTooltip = (context) => {
+        const { chart, tooltip: tip } = context;
+        if (tip.opacity === 0) { tooltip.classList.remove('is-visible'); return; }
+
+        const idx = tip.dataPoints[0].dataIndex;
+        const [pgto, val] = pgtoEntries[idx];
+        const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
+        const col = SAIDAS_PGTO_COLORS[pgto] || '#6B6762';
+
+        tooltipInner.innerHTML = `
+          <div class="chart-tooltip__title">${pgto}</div>
+          <div class="chart-tooltip__row">
+            <span class="chart-tooltip__dot" style="background:${col}"></span>
+            <span class="chart-tooltip__label">Total pago</span>
+            <span class="chart-tooltip__val">${fmt(val)}</span>
+          </div>
+          <div class="chart-tooltip__divider"></div>
+          <div class="chart-tooltip__row">
+            <span class="chart-tooltip__total-label">Participação</span>
+            <span class="chart-tooltip__total-val">${pct}%</span>
+          </div>
+        `;
+
+        const canvasRect = chart.canvas.getBoundingClientRect();
+        const x = canvasRect.left + tip.caretX;
+        const y = canvasRect.top  + tip.caretY;
+
+        positionTooltip(tooltip, x, y);
+        tooltip.classList.add('is-visible');
+    };
 
     saidasPgtoChart = new Chart(ctx, {
         type: 'doughnut',
@@ -800,10 +838,15 @@ function renderSaidasKPIs(data) {
         },
         options: {
             cutout: '68%',
-            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false, external: saidasPgtoTooltip },
+            },
             animation: { duration: 600, easing: 'easeInOutQuart' },
         },
     });
+
+    document.getElementById('saidasPgtoChart').addEventListener('mouseleave', hideTooltip);
 }
 
 function renderSaidasTable(data) {
@@ -1129,6 +1172,91 @@ function initTooltipHide() {
     document.addEventListener('scroll', hideTooltip, { passive: true });
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ANIMAÇÕES DE ENTRADA — Financeiro
+   Replicando o padrão do Dashboard:
+     • animateCounter    → contagem de 0 até o valor (ease-out cubic)
+     • initScrollReveal  → fade-in + translateY nos cards e seções
+═══════════════════════════════════════════════════════════ */
+
+/**
+ * Anima um contador de `from` até `to` em `duration`ms
+ * Idêntico ao dashboard.js — ease-out cubic
+ * @param {HTMLElement} el
+ * @param {number} from
+ * @param {number} to
+ * @param {number} duration
+ * @param {Function} [formatter]
+ */
+function animateCounter(el, from, to, duration, formatter) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        el.textContent = formatter ? formatter(to) : to;
+        return;
+    }
+    const start = performance.now();
+    function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(from + (to - from) * ease);
+        el.textContent = formatter ? formatter(current) : current;
+        if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+}
+
+/**
+ * Scroll-reveal para KPI cards, payment cards, chart cards e seções —
+ * fade-in + translateY, com stagger de 40ms (máx 300ms),
+ * idêntico ao initScrollReveal do dashboard.js
+ */
+function initScrollReveal() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const targets = document.querySelectorAll(
+        '.fin-kpi-card, .payment-card, .caixa-card, .chart-card, .metas-card, .saidas-card, .fin-section'
+    );
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                const delay = parseInt(el.dataset.revealDelay || 0);
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, delay);
+                observer.unobserve(el);
+            }
+        });
+    }, { threshold: 0.08 });
+
+    targets.forEach((el, i) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(18px)';
+        el.style.transition = 'opacity 480ms var(--ease-out), transform 480ms var(--ease-out)';
+        el.dataset.revealDelay = Math.min(i * 40, 300);
+        observer.observe(el);
+    });
+}
+
+/**
+ * Anima as barras de progresso dos payment cards após renderização.
+ * As barras começam em 0% e expandem até o valor real.
+ */
+function animatePaymentBars() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    document.querySelectorAll('.payment-card__bar-fill').forEach((bar) => {
+        const targetWidth = bar.style.width;
+        bar.style.width = '0%';
+        bar.style.transition = 'width 900ms var(--ease-out)';
+        // Delay alinhado com o stagger do scroll-reveal dos payment cards
+        setTimeout(() => { bar.style.width = targetWidth; }, 300);
+    });
+}
+
+
 /* ─── 12. BOOT ──────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
     renderKPIs();
@@ -1143,4 +1271,9 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshMetas();
     refreshSaidas();
     initSaidasModals();
+
+    // ── Animações de entrada ──────────────────────────────────
+    initScrollReveal();
+    animatePaymentBars();
+    // ─────────────────────────────────────────────────────────
 });

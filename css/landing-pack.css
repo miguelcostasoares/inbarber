@@ -1944,3 +1944,456 @@
   .loc-hours-head { display: none !important; }
   .loc-card, .loc-mode { border-color: #999; }
 }
+/* ═════════════════════════════════════════════════════════════════
+   14. CTA FINAL — composição de desktop
+
+   Em telemóvel a secção funciona: uma coluna estreita, título
+   grande, dois botões. Esticada para 1440px deixava de funcionar —
+   e nada abaixo dos 1024px muda aqui.
+
+   O que estava mal no ecrã grande:
+
+   a) Um terço cheio, dois terços vazios. Todo o conteúdo vivia nos
+      primeiros ~400px e o resto da faixa azul era um vão morto
+      atravessado por uma palavra cortada.
+
+   b) A palavra "BOOK" estava ancorada a `right: -1rem` e o
+      `overflow: hidden` da secção comia-lhe o K. Lida como erro de
+      renderização, não como intenção. Passa a assentar em baixo,
+      alinhada com a goteira de 4rem, inteira.
+
+   c) O título trazia os <br> do telemóvel: "Seu visual / começa /
+      agora." em três degraus curtos com uma rasga branca à direita.
+      Em desktop os <br> desaparecem e ficam duas linhas — o <em>
+      continua na sua, que é onde tem a ênfase.
+
+   d) O subtítulo a 13px por baixo de um título de 5rem não se lia
+      como frase, lia-se como legenda.
+
+   e) Os dois botões tinham raios diferentes — pílula e caixa de 6px
+      lado a lado. Passam ambos a pílula, à mesma altura.
+
+   f) A segunda coluna é a prova. Não inventa argumento nenhum: a
+      nota e o total são os da secção de avaliações, "sem taxa de
+      sinal" e "cartão e Pix" são os factos da secção de localização.
+      A objeção que sobra no fundo da página não é o preço, é o
+      risco — e é aqui que ela se responde, ao lado do botão.
+───────────────────────────────────────────────────────────────── */
+
+/* Fora de qualquer media query: abaixo de 1024px a grelha não
+   existe (`contents` faz os filhos subirem ao .cta-final, como
+   estavam) e a coluna de prova não é servida. */
+.cta-grid  { display: contents; }
+.cta-aside { display: none; }
+
+@media (min-width: 1024px) {
+  .cta-final { padding: 7.5rem 4rem 8.5rem; }
+
+  .cta-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(290px, 380px);
+    gap: 3rem 5rem;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Coluna do apelo ── */
+  .label-dark {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.78);
+    margin-bottom: 1.4rem;
+  }
+  .label-dark::before {
+    width: 34px;
+    background: rgba(255,255,255,0.55);
+  }
+
+  .cta-h {
+    font-size: clamp(3.6rem, 5vw, 5.4rem);
+    line-height: 0.98;
+    letter-spacing: -2px;
+    max-width: 14ch;
+    margin-bottom: 1.4rem;
+  }
+  /* Os <br> vêm da string de i18n (cta.h), igual nos três idiomas.
+     Escondê-los aqui evita ter de manter duas versões do título.
+     Cada <br> tem um espaço antes, no HTML e nas três traduções:
+     em mobile o browser come-o no fim da linha, em desktop é ele
+     que separa "visual" de "começa". */
+  .cta-h br { display: none; }
+
+  .cta-sub {
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.72);
+    max-width: 42ch;
+    margin-bottom: 2.6rem;
+  }
+
+  .cta-btns { gap: 14px; }
+
+  .cta-btns .btn-fill-dark,
+  .cta-btns .btn-wa-dark {
+    height: 54px;
+    padding: 0 2rem;
+    border-radius: var(--r-full);
+    font-size: 12px;
+    letter-spacing: 1.6px;
+  }
+  .cta-btns .btn-fill-dark {
+    padding: 0 2.4rem;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+  }
+  .cta-btns .btn-wa-dark {
+    border-color: rgba(255,255,255,0.45);
+    color: var(--white);
+  }
+  .cta-btns .btn-wa-dark:hover {
+    background: var(--wa);
+    border-color: var(--wa);
+    color: #062d14;
+  }
+
+  /* ── Coluna de prova ── */
+  .cta-aside {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem 1.9rem 1.9rem;
+    border: 1px solid rgba(255,255,255,0.24);
+    border-radius: var(--r-md);
+    background: rgba(255,255,255,0.09);
+  }
+
+  .cta-aside-h {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .cta-score {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+  }
+  .cta-score-num {
+    font-family: var(--ff-d);
+    font-size: 3.4rem;
+    line-height: 0.9;
+    color: var(--white);
+  }
+  .cta-score-side {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .cta-stars {
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--gold-lt);
+  }
+  .cta-score-total {
+    font-size: 12px;
+    color: rgba(255,255,255,0.78);
+  }
+
+  .cta-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .cta-facts li {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--white);
+  }
+  /* Visto desenhado com duas arestas: sem ficheiro, sem fonte de
+     ícones, e acompanha a cor do texto. */
+  .cta-facts li::before {
+    content: '';
+    flex-shrink: 0;
+    width: 11px;
+    height: 6px;
+    margin-top: 5px;
+    border-left: 1.8px solid var(--gold-lt);
+    border-bottom: 1.8px solid var(--gold-lt);
+    transform: rotate(-45deg);
+  }
+
+  /* ── Marca de água ──
+     Assente na base da secção e cortada pelo `overflow: hidden`:
+     aparece a parte de cima das letras, como uma faixa. Cortar por
+     baixo lê-se como decisão; cortar o K à direita, que era o que
+     acontecia antes, lia-se como erro. */
+  .cta-bg-word {
+    right: auto;
+    left: 4rem;
+    top: auto;
+    bottom: -5.5rem;
+    transform: none;
+    font-size: 13rem;
+    letter-spacing: 0.02em;
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: rgba(255,255,255,0.12);
+  }
+}
+
+/* Entre 1024 e 1280 a coluna da esquerda tem ~530px: com a goteira
+   de 5rem e os botões à medida do 1440, o WhatsApp caía para a linha
+   de baixo. Aperta-se a goteira e o botão, não a composição. */
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+  .cta-grid { grid-template-columns: minmax(0, 1fr) minmax(268px, 320px); gap: 3rem 3.5rem; }
+  .cta-btns .btn-fill-dark { padding: 0 1.9rem; }
+  .cta-btns .btn-wa-dark   { padding: 0 1.5rem; }
+  .cta-btns .btn-fill-dark,
+  .cta-btns .btn-wa-dark   { font-size: 11.5px; letter-spacing: 1.4px; }
+  .cta-aside { padding: 1.8rem 1.6rem 1.7rem; }
+  .cta-h { font-size: clamp(3.2rem, 4.6vw, 4.2rem); }
+}
+
+@media (min-width: 1440px) {
+  .cta-final { padding: 8.5rem 6rem 9.5rem; }
+  .cta-grid  { gap: 3rem 6rem; }
+  .cta-bg-word { left: 6rem; bottom: -7rem; font-size: 15rem; }
+  .cta-sub { font-size: 16px; }
+  /* O clamp trava aos 5.4rem mas o letter-spacing de -2px não
+     acompanha: a 1600px+ a primeira linha ficava a um cabelo de
+     caber e partia em três. Duas linhas é a composição. */
+  .cta-h { max-width: 16ch; }
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   15. RODAPÉ — desktop
+
+   O rodapé mobile é uma pilha de três blocos. Em desktop essa pilha
+   ficava com a descrição atirada para a direita, uma fita de seis
+   links de 11px e duas linhas de crédito quase invisíveis — 1300px
+   de largura para dizer muito pouco, logo a seguir a uma secção que
+   diz muito.
+
+   Passa a grelha de quatro colunas: marca, navegação, visita e
+   horários. As três colunas novas (`.footer-col`, `.footer-social`,
+   `.footer-h`) estão escondidas abaixo de 1024px — em mobile essa
+   informação já está a dois dedos, na secção de localização, e o
+   rodapé curto é o que serve o polegar.
+
+   O estado "aberto agora" é o mesmo componente da localização e lê
+   o mesmo BUSINESS_HOURS (app.js › data-hours-status). Nasce
+   `hidden`: sem JS não há hora de que se possa ter certeza.
+───────────────────────────────────────────────────────────────── */
+
+.footer-grid   { display: contents; }
+.footer-h,
+.footer-col,
+.footer-social { display: none; }
+
+/* Correcção de contraste, em todos os tamanhos: --bg-4 (#242424)
+   sobre --bg dava 1,6:1 — a linha de direitos de autor estava
+   praticamente apagada. --muted dá 5,9:1. O roxo do "InBarber"
+   sobe de #8b5cf6 (4,2:1) para #a78bfa (6,3:1), mesma família. */
+.footer-bottom p      { color: var(--muted); }
+.footer-bottom strong { color: #a78bfa; }
+.footer-bottom a:hover { text-decoration: underline; }
+
+@media (min-width: 1024px) {
+  .footer { padding: 5rem 4rem 2.25rem; }
+
+  .footer-grid {
+    display: grid;
+    /* A coluna da visita é a mais larga das três da direita: leva o
+       endereço, que é a única linha que não se pode partir à vontade. */
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.8fr) minmax(0, 1.1fr) minmax(0, 0.95fr);
+    gap: 2.75rem;
+    align-items: start;
+    max-width: 1400px;
+    margin: 0 auto 2.5rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--divider);
+  }
+
+  /* As bordas e margens da pilha mobile desaparecem: a única linha
+     do rodapé passa a ser a da grelha. */
+  .footer-top,
+  .footer-links {
+    padding-bottom: 0;
+    border-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .footer-top {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.15rem;
+  }
+  .footer-desc {
+    font-size: 13px;
+    line-height: 1.8;
+    max-width: 34ch;
+  }
+
+  .footer-h {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.15rem;
+  }
+
+  /* ── Coluna 1 · contacto ── */
+  .footer-social {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 0.35rem;
+  }
+  .footer-social a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--cream-2);
+    transition: color 180ms ease-out;
+  }
+  .footer-social svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    color: var(--muted);
+    transition: color 180ms ease-out;
+  }
+  .footer-social a:hover,
+  .footer-social a:hover svg { color: var(--gold-lt); }
+
+  /* ── Coluna 2 · navegação ── */
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .footer-links a {
+    font-size: 13px;
+    color: var(--cream-2);
+    width: fit-content;
+  }
+
+  /* ── Coluna 3 · visita ── */
+  .footer-col { display: block; }
+
+  /* O mesmo componente, sem a pílula: numa coluna de ~250px a
+     frase "Aberto · última hora, fecha às 20h" parte em duas linhas,
+     e uma pílula de duas linhas com o ponto encostado ao topo lê-se
+     mal. Fica a linha e o ponto — que é o que carrega o estado. */
+  .footer-status {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.1rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--cream);
+  }
+  .footer-status .loc-status-dot { margin-top: 6px; }
+
+  .footer-addr {
+    font-style: normal;
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--cream-2);
+  }
+
+  .footer-route,
+  .footer-book {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 1rem;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--gold-lt);
+  }
+  .footer-route span:last-child,
+  .footer-book  span:last-child {
+    transition: transform 180ms var(--ease-out);
+  }
+  .footer-route:hover span:last-child,
+  .footer-book:hover  span:last-child { transform: translateX(4px); }
+
+  /* ── Coluna 4 · horários ── */
+  .footer-hours {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    max-width: 220px;
+  }
+  .footer-hours li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12.5px;
+    color: var(--cream-2);
+  }
+  .footer-hours li span:last-child  { white-space: nowrap; }
+  .footer-hours li span:first-child { color: var(--muted); }
+  /* day.6 / day.0 vêm em minúsculas do i18n ("sábado"), porque na
+     lista da localização entram a meio de frase. `capitalize` punha
+     "Segunda A Sexta"; ::first-letter só toca na primeira. */
+  .footer-hours li span:first-child::first-letter { text-transform: uppercase; }
+  .footer-hours li[data-closed] span:last-child { color: var(--muted); }
+
+  /* ── Barra inferior ── */
+  .footer-bottom {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .footer-bottom p { font-size: 11.5px; }
+
+  /* Alvos de foco visíveis nas colunas novas. */
+  .footer-social a:focus-visible,
+  .footer-links a:focus-visible,
+  .footer-route:focus-visible,
+  .footer-book:focus-visible {
+    outline: 2px solid var(--gold-lt);
+    outline-offset: 4px;
+    border-radius: var(--r-sm);
+  }
+}
+
+@media (min-width: 1280px) {
+  .footer-grid { gap: 3rem 4rem; }
+}
+
+@media (min-width: 1440px) {
+  .footer { padding: 6rem 6rem 2.5rem; }
+  .footer-grid { gap: 3rem 5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-route:hover span:last-child,
+  .footer-book:hover  span:last-child { transform: none; }
+}
+
+@media print {
+  .cta-bg-word, .cta-aside, .footer-social, .footer-book { display: none !important; }
+}

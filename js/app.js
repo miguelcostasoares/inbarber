@@ -1287,8 +1287,11 @@
        Fonte única: BUSINESS_HOURS, o mesmo objeto que alimenta os
        horários livres do hero. O horário do HTML é só a versão para
        quem chega sem JS; a partir daqui é calculado. */
-    const statusEl = $('#loc-status');
-    const statusTxt = statusEl && statusEl.querySelector('.loc-status-txt');
+    /* Dois sítios mostram o mesmo estado — a secção de localização e o
+       rodapé — e ambos se marcam com data-hours-status. A fonte continua
+       a ser uma só; acrescentar um terceiro sítio é acrescentar o
+       atributo, não código. */
+    const statusEls = $$('[data-hours-status]');
     const badgeDot = $('#loc-badge-dot');
     const hoursBox = $('#loc-hours');
     const hoursHead = $('#loc-hours-toggle');
@@ -1357,6 +1360,13 @@
     }
  
     function renderHours(now) {
+      /* Resumo do rodapé: mesma fonte, mesmo formato de hora (que muda
+         com o idioma). Fica antes do guard porque não depende da lista
+         da secção de localização. */
+      $$('[data-hours-range]').forEach(function (el) {
+        el.textContent = rangeLabel(BUSINESS_HOURS[Number(el.dataset.hoursRange)]);
+      });
+
       if (!hoursList) return;
       const dow = now.getDay();
       const frag = document.createDocumentFragment();
@@ -1400,11 +1410,13 @@
       const now = new Date();
       const s = readStatus(now);
  
-      if (statusEl && statusTxt) {
-        statusEl.hidden = false;
-        statusEl.dataset.state = s.state;
-        statusTxt.textContent = s.text;
-      }
+      statusEls.forEach(function (el) {
+        const txt = el.querySelector('.loc-status-txt');
+        if (!txt) return;
+        el.hidden = false;
+        el.dataset.state = s.state;
+        txt.textContent = s.text;
+      });
       if (badgeDot) badgeDot.dataset.state = s.state;
       renderHours(now);
     }

@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/perfil.css">
+<link rel="stylesheet" href="/css/profile-btn.css">
 </head>
 <body>
 
@@ -37,6 +38,11 @@
     <p class="page-hd-hint" data-i18n="hd.hint">Os seus dados, preferências e segurança — tudo num só lugar.</p>
   </div>
 
+  <div class="profile-layout">
+
+  <!-- ═══════════ COLUNA LATERAL ═══════════ -->
+  <aside class="profile-side">
+
   <!-- ── CARTÃO DE IDENTIDADE ── -->
   <section class="acct-card" aria-label="Resumo da conta">
     <div class="acct-head">
@@ -52,10 +58,6 @@
         <p class="acct-name" id="acct-name">Ricardo Almeida</p>
         <p class="acct-mail" id="acct-mail">ricardo.almeida@email.com</p>
         <div class="acct-badges">
-          <span class="badge badge--gold">
-            <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 1l1.4 3 3.1.4-2.3 2.2.6 3.1L6 8.2 3.2 9.7l.6-3.1L1.5 4.4 4.6 4z"/></svg>
-            <span data-i18n="badge.tier">Cliente Ouro</span>
-          </span>
           <span class="badge badge--green">
             <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5,6.2 5,8.7 9.5,3.5"/></svg>
             <span data-i18n="badge.verified">Email verificado</span>
@@ -70,24 +72,42 @@
         <span class="acct-stat-label" data-i18n="stat.appts">Agendamentos</span>
       </div>
       <div class="acct-stat">
-        <span class="acct-stat-num acct-stat-num--gold">320</span>
-        <span class="acct-stat-label" data-i18n="stat.points">Pontos</span>
-      </div>
-      <div class="acct-stat">
         <span class="acct-stat-num">2023</span>
         <span class="acct-stat-label" data-i18n="stat.since">Cliente desde</span>
+      </div>
+      <div class="acct-stat">
+        <span class="acct-stat-num acct-stat-num--sm">12 ago</span>
+        <span class="acct-stat-label" data-i18n="stat.last">Última visita</span>
       </div>
     </div>
   </section>
 
-  <!-- ── TABS ── -->
+  <!-- ── NAVEGAÇÃO DE SECÇÕES ── -->
   <div class="profile-tabs" role="tablist" aria-label="Secções do perfil">
-    <button class="tab-btn tab-btn--active" role="tab" aria-selected="true"  aria-controls="tab-conta"      id="tabbtn-conta"      data-tab="conta"      data-i18n="tab.account">Conta</button>
-    <button class="tab-btn"                 role="tab" aria-selected="false" aria-controls="tab-prefs"      id="tabbtn-prefs"      data-tab="prefs"      data-i18n="tab.prefs">Preferências</button>
-    <button class="tab-btn"                 role="tab" aria-selected="false" aria-controls="tab-seguranca"  id="tabbtn-seguranca"  data-tab="seguranca"  data-i18n="tab.security">Segurança</button>
+    <button class="tab-btn tab-btn--active" role="tab" aria-selected="true"  aria-controls="tab-conta" id="tabbtn-conta" data-tab="conta">
+      <span class="tab-ico" aria-hidden="true">
+        <svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="3.2"/><path d="M3.5 17c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/></svg>
+      </span>
+      <span data-i18n="tab.account">Conta</span>
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-prefs" id="tabbtn-prefs" data-tab="prefs">
+      <span class="tab-ico" aria-hidden="true">
+        <svg viewBox="0 0 20 20"><path d="M4 6h12M4 10h12M4 14h12"/><circle cx="7.5" cy="6" r="1.9"/><circle cx="12.5" cy="14" r="1.9"/></svg>
+      </span>
+      <span data-i18n="tab.prefs">Preferências</span>
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-seguranca" id="tabbtn-seguranca" data-tab="seguranca">
+      <span class="tab-ico" aria-hidden="true">
+        <svg viewBox="0 0 20 20"><path d="M10 2.5l6 2.5v5c0 3.6-2.5 6.5-6 7.5-3.5-1-6-3.9-6-7.5v-5z"/><polyline points="7.5,10 9.3,11.8 12.8,8.3"/></svg>
+      </span>
+      <span data-i18n="tab.security">Segurança</span>
+    </button>
     <span class="tab-indicator" id="tab-indicator"></span>
   </div>
 
+  </aside>
+
+  <!-- ═══════════ COLUNA PRINCIPAL ═══════════ -->
   <div class="tab-panels">
 
     <!-- ═══════════ TAB: CONTA ═══════════ -->
@@ -180,21 +200,12 @@
         </div>
       </div>
 
-      <!-- Fidelidade -->
+      <!-- Atividade -->
       <div class="card">
         <div class="card-hd">
           <div class="card-hd-text">
-            <p class="card-title" data-i18n="acc.loyalty">Programa de fidelidade</p>
-            <p class="card-sub" data-i18n="acc.loyalty_sub">Cada 10 € gastos valem 1 ponto.</p>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="prog-head">
-            <span class="prog-now">320 <span class="prog-unit" data-i18n="acc.points">pontos</span></span>
-            <span class="prog-next" data-i18n="acc.to_next">80 para o nível Platina</span>
-          </div>
-          <div class="prog" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" aria-label="Progresso de fidelidade">
-            <span class="prog-fill" style="width:80%"></span>
+            <p class="card-title" data-i18n="acc.activity">Atividade</p>
+            <p class="card-sub" data-i18n="acc.activity_sub">As suas reservas, de relance.</p>
           </div>
         </div>
         <a class="row row--link" href="#" id="row-history">
@@ -204,6 +215,16 @@
           <span class="row-text">
             <strong data-i18n="acc.history">Histórico de agendamentos</strong>
             <small data-i18n="acc.history_sub">Ver e repetir reservas anteriores</small>
+          </span>
+          <svg class="row-arrow" viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg>
+        </a>
+        <a class="row row--link" href="/servicos.html" id="row-book">
+          <span class="row-icon">
+            <svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2.5v3M13 2.5v3"/><path d="M10 11v3M8.5 12.5h3"/></svg>
+          </span>
+          <span class="row-text">
+            <strong data-i18n="acc.new">Marcar novo horário</strong>
+            <small data-i18n="acc.new_sub">Começa com as suas preferências preenchidas</small>
           </span>
           <svg class="row-arrow" viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg>
         </a>
@@ -584,13 +605,14 @@
           </span>
           <span class="row-text">
             <strong data-i18n="danger.delete">Eliminar conta</strong>
-            <small data-i18n="danger.delete_sub">Apaga o histórico e os pontos acumulados</small>
+            <small data-i18n="danger.delete_sub">Apaga o histórico e os dados da conta</small>
           </span>
           <svg class="row-arrow" viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg>
         </button>
       </div>
     </section>
 
+  </div>
   </div>
 </main>
 
@@ -621,7 +643,7 @@
       <h2 class="modal-title" id="delete-modal-title" data-i18n="danger.delete">Eliminar conta</h2>
     </div>
     <div class="modal-body">
-      <p data-i18n="danger.modal_text">Perde o histórico de reservas, os 320 pontos e o nível Cliente Ouro. Não conseguimos recuperar depois.</p>
+      <p data-i18n="danger.modal_text">Perde o histórico de reservas e todas as preferências guardadas. Não conseguimos recuperar depois.</p>
       <div class="form-group">
         <label class="form-label" for="delete-confirm" data-i18n="danger.modal_label">Escreva ELIMINAR para confirmar</label>
         <input class="form-input" id="delete-confirm" type="text" autocomplete="off" placeholder="ELIMINAR">
@@ -634,6 +656,7 @@
   </div>
 </div>
 
+<script src="/js/profile-btn.js"></script>
 <script src="/js/perfil.js"></script>
 </body>
 </html>

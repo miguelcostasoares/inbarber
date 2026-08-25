@@ -1,51 +1,281 @@
 /* ═══════════════════════════════════════════════════════════
-   PROFILE-BTN — botão de perfil no topbar
+   PROFILE-BTN — botão de perfil (azul) + menu de conta
+   Usado em: index.html, servicos, barbeiro, agendar,
+             confirmacao e perfil.
 ═══════════════════════════════════════════════════════════ */
 
-.topbar-profile-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(0, 71, 255, 0.3);
-  background: rgba(0, 71, 255, 0.07);
-  color: #00f0ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 200ms, border-color 200ms, transform 150ms;
+:root {
+  --pb-blue:      #0047ff;
+  --pb-blue-hi:   #1a5bff;
+  --pb-blue-soft: rgba(0, 71, 255, 0.10);
+  --pb-blue-line: rgba(0, 71, 255, 0.38);
+  --pb-cyan:      #00f0ff;
+}
+
+/* ─────────────────────────────────────────────
+   WRAPPER (âncora do menu)
+───────────────────────────────────────────── */
+.profile-menu-wrap {
+  position: relative;
+  display: inline-flex;
   flex-shrink: 0;
 }
 
-.topbar-profile-btn:hover {
-  background: rgba(0, 71, 255, 0.15);
-  border-color: rgba(0, 71, 255, 0.55);
+/* ─────────────────────────────────────────────
+   BOTÃO — topbar das páginas de booking
+───────────────────────────────────────────── */
+.topbar-profile-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--pb-blue-line);
+  background: var(--pb-blue-soft);
+  color: var(--pb-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 200ms cubic-bezier(0.23, 1, 0.32, 1),
+              border-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1),
+              transform 120ms ease-out;
 }
 
-.topbar-profile-btn:active {
-  transform: scale(0.92);
+.topbar-profile-btn:hover {
+  background: rgba(0, 71, 255, 0.20);
+  border-color: var(--pb-blue);
+}
+.topbar-profile-btn:active { transform: scale(0.93); }
+.topbar-profile-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 71, 255, 0.35);
+}
+.topbar-profile-btn[aria-expanded="true"] {
+  background: var(--pb-blue);
+  border-color: var(--pb-blue);
+  color: #fff;
 }
 
 .topbar-profile-btn svg {
   width: 18px;
   height: 18px;
+  display: block;
 }
 
-/* Estado logado: mostra iniciais */
+.topbar-profile-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Estado com sessão: círculo azul cheio com iniciais */
 .topbar-profile-btn--logged {
-  background: #0047ff;
-  border-color: #0047ff;
+  background: var(--pb-blue);
+  border-color: var(--pb-blue);
+  color: #fff;
 }
-
 .topbar-profile-btn--logged:hover {
-  background: #0055ff;
-  border-color: #0055ff;
+  background: var(--pb-blue-hi);
+  border-color: var(--pb-blue-hi);
 }
-
 .topbar-profile-btn--logged .profile-initials {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   color: #ffffff;
   line-height: 1;
+}
+
+/* ─────────────────────────────────────────────
+   BOTÃO — nav da landing (#nav-profile-btn)
+   Fica azul, quadrado-arredondado como os irmãos.
+───────────────────────────────────────────── */
+.nav-icon-btn#nav-profile-btn {
+  border-radius: 50%;
+  padding: 0;
+  background: var(--pb-blue);
+  border: 1px solid var(--pb-blue);
+  color: #ffffff;
+  transition: background 200ms cubic-bezier(0.23, 1, 0.32, 1),
+              border-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1),
+              transform 120ms ease-out;
+  overflow: hidden;
+}
+.nav-icon-btn#nav-profile-btn:hover {
+  background: var(--pb-blue-hi);
+  border-color: var(--pb-blue-hi);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 71, 255, 0.28);
+}
+.nav-icon-btn#nav-profile-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 71, 255, 0.4);
+}
+.nav-icon-btn#nav-profile-btn[aria-expanded="true"] {
+  background: var(--pb-blue-hi);
+  border-color: var(--pb-blue-hi);
+}
+.nav-icon-btn#nav-profile-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.nav-icon-btn#nav-profile-btn .profile-initials {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+/* ─────────────────────────────────────────────
+   MENU DE CONTA
+───────────────────────────────────────────── */
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 900;
+  width: 244px;
+  padding: 6px;
+  background: rgba(17, 17, 17, 0.96);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.6),
+              0 0 0 1px rgba(0, 71, 255, 0.10);
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: opacity 160ms ease-out,
+              transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.profile-menu.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Cabeçalho com identidade */
+.profile-menu-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 12px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.profile-menu-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--pb-blue);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.profile-menu-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.profile-menu-id {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.profile-menu-id strong {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #F0EBE1;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-menu-id small {
+  font-size: 11px;
+  color: #6B6762;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Itens */
+.profile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 10px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: #C8C0B4;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease-out, color 150ms ease-out;
+}
+.profile-menu-item + .profile-menu-item { margin-top: 2px; }
+.profile-menu-item:hover,
+.profile-menu-item:focus-visible {
+  background: rgba(255, 255, 255, 0.05);
+  color: #F0EBE1;
+  outline: none;
+}
+.profile-menu-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.profile-menu-item--primary { color: #F0EBE1; }
+.profile-menu-item--primary svg { color: var(--pb-cyan); }
+.profile-menu-item--primary:hover { background: rgba(0, 71, 255, 0.16); }
+
+.profile-menu-item--danger { color: #E0806E; }
+.profile-menu-item--danger:hover,
+.profile-menu-item--danger:focus-visible {
+  background: rgba(224, 84, 84, 0.12);
+  color: #ff8a75;
+}
+
+.profile-menu-sep {
+  height: 1px;
+  margin: 6px 4px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Ecrãs estreitos: o menu encosta ao bordo sem sair do viewport */
+@media (max-width: 420px) {
+  .profile-menu { width: min(244px, calc(100vw - 2rem)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-menu,
+  .topbar-profile-btn,
+  .nav-icon-btn#nav-profile-btn { transition-duration: 0.01ms; }
 }

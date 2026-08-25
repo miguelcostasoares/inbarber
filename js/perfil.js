@@ -22,8 +22,8 @@
       'top.sub': 'Perfil',
       'hd.tag': 'A sua conta', 'hd.hello': 'Olá,',
       'hd.hint': 'Os seus dados, preferências e segurança — tudo num só lugar.',
-      'badge.tier': 'Cliente Ouro', 'badge.verified': 'Email verificado',
-      'stat.appts': 'Agendamentos', 'stat.points': 'Pontos', 'stat.since': 'Cliente desde',
+      'badge.verified': 'Email verificado',
+      'stat.appts': 'Agendamentos', 'stat.since': 'Cliente desde', 'stat.last': 'Última visita',
       'tab.account': 'Conta', 'tab.prefs': 'Preferências', 'tab.security': 'Segurança',
 
       'acc.personal': 'Dados pessoais',
@@ -39,9 +39,9 @@
       'acc.fav_slot': 'Horário preferido',
       'acc.slot_morning': 'Manhã (9h–12h)', 'acc.slot_afternoon': 'Tarde (12h–18h)', 'acc.slot_evening': 'Fim do dia (18h–21h)',
       'acc.pay': 'Pagamento habitual', 'acc.pay_local': 'No balcão', 'acc.pay_card': 'Cartão guardado',
-      'acc.loyalty': 'Programa de fidelidade', 'acc.loyalty_sub': 'Cada 10 € gastos valem 1 ponto.',
-      'acc.points': 'pontos', 'acc.to_next': '80 para o nível Platina',
+      'acc.activity': 'Atividade', 'acc.activity_sub': 'As suas reservas, de relance.',
       'acc.history': 'Histórico de agendamentos', 'acc.history_sub': 'Ver e repetir reservas anteriores',
+      'acc.new': 'Marcar novo horário', 'acc.new_sub': 'Começa com as suas preferências preenchidas',
 
       'pref.region': 'Idioma e formato', 'pref.region_sub': 'Aplica-se de imediato a todo o site.',
       'pref.language': 'Idioma',
@@ -79,8 +79,8 @@
 
       'danger.title': 'Zona de risco', 'danger.sub': 'Estas ações não se desfazem.',
       'danger.logout': 'Terminar sessão', 'danger.logout_sub': 'Sai desta conta neste dispositivo',
-      'danger.delete': 'Eliminar conta', 'danger.delete_sub': 'Apaga o histórico e os pontos acumulados',
-      'danger.modal_text': 'Perde o histórico de reservas, os 320 pontos e o nível Cliente Ouro. Não conseguimos recuperar depois.',
+      'danger.delete': 'Eliminar conta', 'danger.delete_sub': 'Apaga o histórico e os dados da conta',
+      'danger.modal_text': 'Perde o histórico de reservas e todas as preferências guardadas. Não conseguimos recuperar depois.',
       'danger.modal_label': 'Escreva ELIMINAR para confirmar',
       'danger.word': 'ELIMINAR', 'danger.confirm': 'Eliminar para sempre',
 
@@ -106,8 +106,8 @@
       'top.sub': 'Profile',
       'hd.tag': 'Your account', 'hd.hello': 'Hi,',
       'hd.hint': 'Your details, preferences and security — all in one place.',
-      'badge.tier': 'Gold member', 'badge.verified': 'Email verified',
-      'stat.appts': 'Bookings', 'stat.points': 'Points', 'stat.since': 'Member since',
+      'badge.verified': 'Email verified',
+      'stat.appts': 'Bookings', 'stat.since': 'Member since', 'stat.last': 'Last visit',
       'tab.account': 'Account', 'tab.prefs': 'Preferences', 'tab.security': 'Security',
 
       'acc.personal': 'Personal details',
@@ -123,9 +123,9 @@
       'acc.fav_slot': 'Preferred time',
       'acc.slot_morning': 'Morning (9am–12pm)', 'acc.slot_afternoon': 'Afternoon (12pm–6pm)', 'acc.slot_evening': 'Evening (6pm–9pm)',
       'acc.pay': 'Usual payment', 'acc.pay_local': 'At the counter', 'acc.pay_card': 'Saved card',
-      'acc.loyalty': 'Loyalty programme', 'acc.loyalty_sub': 'Every €10 spent earns 1 point.',
-      'acc.points': 'points', 'acc.to_next': '80 to Platinum',
+      'acc.activity': 'Activity', 'acc.activity_sub': 'Your bookings at a glance.',
       'acc.history': 'Booking history', 'acc.history_sub': 'View and rebook past visits',
+      'acc.new': 'Book a new slot', 'acc.new_sub': 'Starts with your preferences filled in',
 
       'pref.region': 'Language and format', 'pref.region_sub': 'Applies across the site right away.',
       'pref.language': 'Language',
@@ -163,8 +163,8 @@
 
       'danger.title': 'Danger zone', 'danger.sub': 'These actions cannot be undone.',
       'danger.logout': 'Sign out', 'danger.logout_sub': 'Leaves this account on this device',
-      'danger.delete': 'Delete account', 'danger.delete_sub': 'Erases your history and points',
-      'danger.modal_text': 'You lose your booking history, 320 points and Gold status. We cannot bring them back.',
+      'danger.delete': 'Delete account', 'danger.delete_sub': 'Erases your history and account data',
+      'danger.modal_text': 'You lose your booking history and every saved preference. We cannot bring them back.',
       'danger.modal_label': 'Type DELETE to confirm',
       'danger.word': 'DELETE', 'danger.confirm': 'Delete permanently',
 
@@ -190,8 +190,8 @@
       'top.sub': 'Perfil',
       'hd.tag': 'Tu cuenta', 'hd.hello': 'Hola,',
       'hd.hint': 'Tus datos, preferencias y seguridad — todo en un sitio.',
-      'badge.tier': 'Cliente Oro', 'badge.verified': 'Email verificado',
-      'stat.appts': 'Reservas', 'stat.points': 'Puntos', 'stat.since': 'Cliente desde',
+      'badge.verified': 'Email verificado',
+      'stat.appts': 'Reservas', 'stat.since': 'Cliente desde', 'stat.last': 'Última visita',
       'tab.account': 'Cuenta', 'tab.prefs': 'Preferencias', 'tab.security': 'Seguridad',
 
       'acc.personal': 'Datos personales',
@@ -207,9 +207,9 @@
       'acc.fav_slot': 'Horario preferido',
       'acc.slot_morning': 'Mañana (9h–12h)', 'acc.slot_afternoon': 'Tarde (12h–18h)', 'acc.slot_evening': 'Última hora (18h–21h)',
       'acc.pay': 'Pago habitual', 'acc.pay_local': 'En el mostrador', 'acc.pay_card': 'Tarjeta guardada',
-      'acc.loyalty': 'Programa de fidelidad', 'acc.loyalty_sub': 'Cada 10 € gastados dan 1 punto.',
-      'acc.points': 'puntos', 'acc.to_next': '80 para el nivel Platino',
+      'acc.activity': 'Actividad', 'acc.activity_sub': 'Tus reservas de un vistazo.',
       'acc.history': 'Historial de reservas', 'acc.history_sub': 'Ver y repetir visitas anteriores',
+      'acc.new': 'Reservar nuevo horario', 'acc.new_sub': 'Empieza con tus preferencias rellenadas',
 
       'pref.region': 'Idioma y formato', 'pref.region_sub': 'Se aplica al instante en todo el sitio.',
       'pref.language': 'Idioma',
@@ -247,8 +247,8 @@
 
       'danger.title': 'Zona de riesgo', 'danger.sub': 'Estas acciones no se deshacen.',
       'danger.logout': 'Cerrar sesión', 'danger.logout_sub': 'Sales de esta cuenta en este dispositivo',
-      'danger.delete': 'Eliminar cuenta', 'danger.delete_sub': 'Borra tu historial y tus puntos',
-      'danger.modal_text': 'Pierdes el historial de reservas, los 320 puntos y el nivel Cliente Oro. No podemos recuperarlo.',
+      'danger.delete': 'Eliminar cuenta', 'danger.delete_sub': 'Borra tu historial y los datos de la cuenta',
+      'danger.modal_text': 'Pierdes el historial de reservas y todas las preferencias guardadas. No podemos recuperarlo.',
       'danger.modal_label': 'Escribe ELIMINAR para confirmar',
       'danger.word': 'ELIMINAR', 'danger.confirm': 'Eliminar para siempre',
 
@@ -338,10 +338,21 @@
       b.classList.toggle('tab-btn--active', on);
       b.setAttribute('aria-selected', String(on));
       if (on && ind) {
-        var pr = b.parentElement.getBoundingClientRect();
+        var wrap = b.parentElement;
+        var pr = wrap.getBoundingClientRect();
         var br = b.getBoundingClientRect();
-        ind.style.left = (br.left - pr.left) + 'px';
-        ind.style.width = br.width + 'px';
+        var vertical = getComputedStyle(wrap).flexDirection === 'column';
+        if (vertical) {
+          ind.style.left = '';
+          ind.style.width = '';
+          ind.style.top = (br.top - pr.top + 8) + 'px';
+          ind.style.height = (br.height - 16) + 'px';
+        } else {
+          ind.style.top = '';
+          ind.style.height = '';
+          ind.style.left = (br.left - pr.left) + 'px';
+          ind.style.width = br.width + 'px';
+        }
       }
     });
 
@@ -758,8 +769,13 @@
     });
 
     $('#logout-btn').addEventListener('click', function () {
+      try {
+        localStorage.removeItem('inbarber_user');
+        localStorage.removeItem('inbarber.profile');
+        localStorage.removeItem('inbarber.avatar');
+      } catch (e) {}
       toast(t('toast.logout'), 'info');
-      setTimeout(function () { window.location.href = 'index.html'; }, 900);
+      setTimeout(function () { window.location.href = '/index.html'; }, 900);
     });
 
     $('#row-history').addEventListener('click', function (e) {

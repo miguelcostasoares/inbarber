@@ -54,7 +54,9 @@ function applyLang(lang) {
   menuBtn.addEventListener('click', () => drawer.classList.contains('open') ? closeDrawer() : openDrawer());
   if (overlay) overlay.addEventListener('click', closeDrawer);
   if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-  if (profileBtn) profileBtn.addEventListener('click', () => { window.location.href = 'perfil.html'; });
+  /* O #nav-profile-btn é tratado por js/profile-btn.js — abre o menu
+     de conta (Entrar no perfil / Sair da conta). Não navegar aqui. */
+  void profileBtn;
 
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer(); });
 

@@ -267,7 +267,7 @@
    leitor de ecrã anunciava "item de lista" sem nunca dizer se
    estava selecionado.
 ───────────────────────────────────────── */
-.svc-list > li { display: flex; }
+.svc-list > li { display: flex; min-width: 0; }
 
 .svc-card {
   width: 100%;
@@ -2568,9 +2568,8 @@
    cartão fica levantado até se tocar noutro sítio.
 ───────────────────────────────────────── */
 @media (min-width: 768px) and (max-width: 1023.98px) {
-  .svc-list { gap: 12px; }
+  .svc-list { gap: 12px; grid-template-columns: repeat(2, 1fr); }
   .svc-card {
-    flex: calc(50% - 6px);
     border-radius: var(--r-lg);
   }
   .svc-card-inner { padding: 1.45rem 1.35rem; gap: 1.1rem; }

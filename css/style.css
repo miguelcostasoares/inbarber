@@ -1186,8 +1186,8 @@ a.brand:active .brand-mark { transform: scale(0.96); }
 }
 
 .svc-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 8px;
   padding: 0 1.25rem;
 }
@@ -3163,8 +3163,7 @@ a.brand:active .brand-mark { transform: scale(0.96); }
   .about-visual { flex: 0 0 42%; }
   .about-copy { flex: 1; padding-top: 0.5rem; }
 
-  .svc-list { flex-direction: row; flex-wrap: wrap; gap: 8px; }
-  .svc-card { flex: calc(50% - 4px); }
+  .svc-list { grid-template-columns: repeat(2, 1fr); gap: 8px; }
 
   .carousel { aspect-ratio: 16/6; }
   .carousel-content { left: 3rem; bottom: 3rem; }
@@ -3534,9 +3533,8 @@ a.brand:active .brand-mark { transform: scale(0.96); }
 
   .services { padding: 7rem 0; }
   .services-top { padding: 0 4rem; margin-bottom: 2.5rem; }
-  .svc-list { padding: 0 4rem; gap: 14px; }
+  .svc-list { padding: 0 4rem; gap: 14px; grid-template-columns: repeat(3, 1fr); }
   .svc-card {
-    flex: calc(33.333% - 10px);
     border-radius: var(--r-lg);
     transition:
       background 180ms ease-out,

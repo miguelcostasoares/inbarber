@@ -17,50 +17,17 @@ const CFG = {
 };
 
 
-/* ─── 2. MOCK DATA ──────────────────────────────────────── */
-/*
- * Em produção, substitua cada bloco por fetch() ao endpoint indicado.
- * A estrutura de retorno deve permanecer idêntica.
- */
+/* ─── 2. DADOS DINÂMICOS (populados via API no boot) ────── */
+// Estrutura de cada item idêntica ao que os endpoints retornam.
+// Iniciam vazios; boot() aguarda o carregamento antes de renderizar.
 
 // GET /api/services
-const SERVICES = [
-  { id: 'corte', name: 'Corte Masculino', price: 45, duration: 30, color: '#BFA06A' },
-  { id: 'barba', name: 'Barba', price: 35, duration: 30, color: '#5B8DEF' },
-  { id: 'combo', name: 'Corte + Barba', price: 70, duration: 60, color: '#9B72CF' },
-  { id: 'pigmentacao', name: 'Pigmentação', price: 90, duration: 60, color: '#4CAF79' },
-  { id: 'relaxamento', name: 'Relaxamento', price: 80, duration: 60, color: '#E0924A' },
-  { id: 'sobrancelha', name: 'Sobrancelha', price: 20, duration: 20, color: '#E05454' },
-];
+let SERVICES = [];
 
 // GET /api/barbers
-const BARBERS = [
-  { id: 'marcos', name: 'Marcos Silva', avatar: 'MS', rating: 4.9 },
-  { id: 'joao', name: 'João Pereira', avatar: 'JP', rating: 4.7 },
-  { id: 'andre', name: 'André Santos', avatar: 'AS', rating: 4.8 },
-];
+let BARBERS = [];
 
-// GET /api/clients (lista para autocomplete)
-const CLIENTS_DB = [
-  { name: 'Lucas Andrade', phone: '84999990001' },
-  { name: 'Felipe Rocha', phone: '84999990002' },
-  { name: 'Gabriel Souza', phone: '84999990003' },
-  { name: 'Matheus Lima', phone: '84999990004' },
-  { name: 'Ricardo Ferreira', phone: '84999990005' },
-  { name: 'Bruno Carvalho', phone: '84999990006' },
-  { name: 'Diego Martins', phone: '84999990007' },
-  { name: 'Thiago Oliveira', phone: '84999990008' },
-  { name: 'Cauã Ribeiro', phone: '84999990009' },
-  { name: 'Vinicius Alves', phone: '84999990010' },
-  { name: 'Leonardo Costa', phone: '84999990011' },
-  { name: 'Samuel Pereira', phone: '84999990012' },
-  { name: 'Rafael Nascimento', phone: '84999990013' },
-  { name: 'Igor Campos', phone: '84999990014' },
-  { name: 'Henrique Duarte', phone: '84999990015' },
-  { name: 'Gustavo Mendes', phone: '84999990016' },
-  { name: 'Pedro Linhares', phone: '84999990017' },
-  { name: 'Rodrigo Fonseca', phone: '84999990018' },
-];
+// GET /api/clients?search=<q>  — buscado sob demanda no autocomplete
 
 // Populado via API (InBarberAPI.listAppointments) — ver reloadAppointments().
 // Formato de cada item segue o mesmo shape do mock anterior
@@ -1253,6 +1220,10 @@ function openEditAppt(id) {
 function populateServicePicker(selectedId) {
   const picker = document.getElementById('servicePicker');
   if (!picker) return;
+  if (!SERVICES.length) {
+    picker.innerHTML = `<span style="color:var(--muted);font-size:13px">Carregando serviços…</span>`;
+    return;
+  }
   picker.innerHTML = SERVICES.map(svc => `
     <button type="button"
             class="service-option ${svc.id === selectedId ? 'is-selected' : ''}"
@@ -1279,6 +1250,10 @@ function selectService(id) {
 function populateBarberPicker(selectedId) {
   const picker = document.getElementById('barberPicker');
   if (!picker) return;
+  if (!BARBERS.length) {
+    picker.innerHTML = `<span style="color:var(--muted);font-size:13px">Carregando barbeiros…</span>`;
+    return;
+  }
   picker.innerHTML = BARBERS.map(b => `
     <button type="button"
             class="barber-option ${b.id === selectedId ? 'is-selected' : ''}"
@@ -1437,19 +1412,32 @@ function initClientAutocomplete() {
   const list = document.getElementById('autocompleteList');
   if (!input || !list) return;
 
+  let _acTimer = null;
+
   input.addEventListener('input', () => {
-    const q = input.value.trim().toLowerCase();
+    const q = input.value.trim();
     if (q.length < 2) { list.hidden = true; return; }
-    const matches = CLIENTS_DB.filter(c => c.name.toLowerCase().includes(q)).slice(0, 6);
-    if (!matches.length) { list.hidden = true; return; }
-    list.innerHTML = matches.map((c, i) => `
-      <li class="autocomplete-item"
-          role="option"
-          id="ac-${i}"
-          onclick="selectClient('${c.name}','${c.phone}')">
-        ${c.name} <span style="color:var(--muted);margin-left:6px;font-size:11px">${formatPhone(c.phone)}</span>
-      </li>`).join('');
-    list.hidden = false;
+
+    clearTimeout(_acTimer);
+    _acTimer = setTimeout(async () => {
+      let matches = [];
+      try {
+        matches = await InBarberAPI.searchClients(q);
+      } catch (_) {
+        // Falha silenciosa: esconde o autocomplete sem travar o formulário
+        list.hidden = true;
+        return;
+      }
+      if (!matches.length) { list.hidden = true; return; }
+      list.innerHTML = matches.slice(0, 6).map((c, i) => `
+        <li class="autocomplete-item"
+            role="option"
+            id="ac-${i}"
+            onclick="selectClient('${c.name}','${c.phone || ''}')">
+          ${c.name} <span style="color:var(--muted);margin-left:6px;font-size:11px">${formatPhone(c.phone)}</span>
+        </li>`).join('');
+      list.hidden = false;
+    }, 250);
   });
 
   document.addEventListener('click', e => {
@@ -2025,10 +2013,9 @@ function animateAgendaStats() {
   });
 }
 
-function boot() {
+async function boot() {
   renderHeader();
   initViewTabs();
-  initFilters();
   initListFilters();
   initCalNav();
   initModalClose();
@@ -2036,6 +2023,26 @@ function boot() {
   initBlockModal();
   initSidebar();
   initCalTooltip();
+
+  // Carrega serviços e barbeiros em paralelo antes de qualquer render,
+  // para que getService()/getBarber(), os pickers do modal e os selects
+  // de filtro já tenham dados reais quando a tela aparecer.
+  try {
+    [SERVICES, BARBERS] = await Promise.all([
+      InBarberAPI.listServices(),
+      InBarberAPI.listBarbers(),
+    ]);
+  } catch (err) {
+    showToast('Erro ao carregar dados da barbearia. Recarregue a página.', 'error');
+  }
+
+  // Popula os <select> de filtro com os dados vindos da API.
+  // Feito aqui (após o await) para garantir que SERVICES/BARBERS já têm dados.
+  populateFilterSelects();
+
+  // initFilters() registra os listeners DEPOIS que os <select> foram populados,
+  // evitando que o 'change' dispare com um option vazio na montagem.
+  initFilters();
 
   // Carrega os agendamentos da API (substitui as antigas
   // renderStats()/renderKanban() diretas sobre o mock: agora
@@ -2049,6 +2056,29 @@ function boot() {
   // ─────────────────────────────────────────────────────────
 
   console.log('[InBarber Agenda] Inicializado com sucesso.');
+}
+
+function populateFilterSelects() {
+  const filterBarber = document.getElementById('filterBarber');
+  if (filterBarber) {
+    filterBarber.innerHTML =
+      `<option value="">Todos os barbeiros</option>` +
+      BARBERS.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+  }
+
+  const filterService = document.getElementById('filterService');
+  if (filterService) {
+    filterService.innerHTML =
+      `<option value="">Todos os serviços</option>` +
+      SERVICES.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  }
+
+  const blockBarber = document.getElementById('blockBarber');
+  if (blockBarber) {
+    blockBarber.innerHTML =
+      `<option value="">Todos</option>` +
+      BARBERS.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', boot);

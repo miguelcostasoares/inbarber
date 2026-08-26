@@ -5,11 +5,12 @@ import os
 import bcrypt
 import uuid
 from datetime import datetime, timedelta
+from flask_cors import CORS
 
 load_dotenv()
 
 app = Flask(__name__)
-
+CORS(app)
 #Conexões com a env
 
 def get_db():
@@ -359,6 +360,213 @@ def deletar_agendamento(agendamento_id):
         cursor.close()
         conn.close()
 
+# ═══════════════════════════════════════════════════════════
+# SERVIÇOS
+# ═══════════════════════════════════════════════════════════
+
+@app.route('/api/services', methods=['GET'])
+def listar_servicos():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            '''SELECT id, nome AS name, preco AS price, duracao_min AS duration, cor AS color
+               FROM servicos
+               WHERE ativo = 1
+               ORDER BY nome ASC'''
+        )
+        return jsonify(cursor.fetchall()), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao listar serviços: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ═══════════════════════════════════════════════════════════
+# BARBEIROS
+# ═══════════════════════════════════════════════════════════
+
+@app.route('/api/barbers', methods=['GET'])
+def listar_barbeiros():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            '''SELECT id, nome AS name, avatar, avaliacao AS rating
+               FROM barbeiros
+               WHERE ativo = 1
+               ORDER BY nome ASC'''
+        )
+        rows = cursor.fetchall()
+        for row in rows:
+            if row.get('rating') is not None:
+                row['rating'] = float(row['rating'])
+        return jsonify(rows), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao listar barbeiros: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ═══════════════════════════════════════════════════════════
+# CLIENTES
+# ═══════════════════════════════════════════════════════════
+
+def serializar_cliente(row):
+    """Converte tipos DATE do MySQL para JSON-friendly."""
+    return {
+        'id':        row['id'],
+        'name':      row['nome'],
+        'phone':     row['telefone'] or '',
+        'since':     row['cliente_desde'].strftime('%Y-%m-%d') if row['cliente_desde'] else None,
+        'lastVisit': row['ultima_visita'].strftime('%Y-%m-%d') if row['ultima_visita'] else None,
+        'birthdate': row['data_nascimento'].strftime('%Y-%m-%d') if row['data_nascimento'] else None,
+        'obs':       row['observacoes'] or '',
+    }
+
+
+@app.route('/api/clients', methods=['GET'])
+def listar_clientes():
+    search = request.args.get('search', '').strip()
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        if search:
+            # Modo autocomplete (Agenda): retorna apenas id, name, phone
+            cursor.execute(
+                '''SELECT id, nome, telefone, cliente_desde, ultima_visita,
+                          data_nascimento, observacoes
+                   FROM clientes
+                   WHERE nome LIKE %s
+                   ORDER BY nome ASC
+                   LIMIT 10''',
+                (f'%{search}%',)
+            )
+        else:
+            # Modo listagem completa (tela Clientes): sem limite
+            cursor.execute(
+                '''SELECT id, nome, telefone, cliente_desde, ultima_visita,
+                          data_nascimento, observacoes
+                   FROM clientes
+                   ORDER BY nome ASC'''
+            )
+        rows = cursor.fetchall()
+        # Autocomplete só precisa de id/name/phone — mantém contrato original
+        if search:
+            return jsonify([{'id': r['id'], 'name': r['nome'], 'phone': r['telefone']} for r in rows]), 200
+        return jsonify([serializar_cliente(r) for r in rows]), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao listar clientes: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/clients/<cliente_id>', methods=['GET'])
+def buscar_cliente(cliente_id):
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            '''SELECT id, nome, telefone, cliente_desde, ultima_visita,
+                      data_nascimento, observacoes
+               FROM clientes WHERE id = %s''',
+            (cliente_id,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({'error': 'Cliente não encontrado.'}), 404
+        return jsonify(serializar_cliente(row)), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao buscar cliente: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/clients/<cliente_id>', methods=['PUT', 'PATCH'])
+def atualizar_cliente(cliente_id):
+    data = request.get_json(silent=True) or {}
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            'SELECT id FROM clientes WHERE id = %s',
+            (cliente_id,)
+        )
+        if not cursor.fetchone():
+            return jsonify({'error': 'Cliente não encontrado.'}), 404
+
+        campos = []
+        params = []
+
+        if 'name' in data:
+            if not data['name'].strip():
+                return jsonify({'error': 'O nome não pode ser vazio.'}), 400
+            campos.append('nome = %s')
+            params.append(data['name'].strip())
+
+        if 'phone' in data:
+            campos.append('telefone = %s')
+            params.append(data['phone'].strip() or None)
+
+        if 'birthdate' in data:
+            campos.append('data_nascimento = %s')
+            params.append(data['birthdate'] or None)
+
+        if 'obs' in data:
+            campos.append('observacoes = %s')
+            params.append(data['obs'].strip() or None)
+
+        if not campos:
+            return jsonify({'error': 'Nenhum campo para atualizar.'}), 400
+
+        params.append(cliente_id)
+        cursor.execute(
+            f"UPDATE clientes SET {', '.join(campos)} WHERE id = %s",
+            tuple(params)
+        )
+        conn.commit()
+
+        cursor.execute(
+            '''SELECT id, nome, telefone, cliente_desde, ultima_visita,
+                      data_nascimento, observacoes
+               FROM clientes WHERE id = %s''',
+            (cliente_id,)
+        )
+        return jsonify(serializar_cliente(cursor.fetchone())), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao atualizar cliente: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/clients/<cliente_id>', methods=['DELETE'])
+def deletar_cliente(cliente_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            'SELECT id FROM clientes WHERE id = %s',
+            (cliente_id,)
+        )
+        if not cursor.fetchone():
+            return jsonify({'error': 'Cliente não encontrado.'}), 404
+
+        cursor.execute(
+            'DELETE FROM clientes WHERE id = %s',
+            (cliente_id,)
+        )
+        conn.commit()
+        return '', 204
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao excluir cliente: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == '__main__':
     try:

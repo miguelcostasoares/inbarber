@@ -14,7 +14,7 @@
 
 'use strict';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 /* ─── 1. HELPER INTERNO DE REQUEST ──────────────────────────
    Centraliza fetch + parse + tratamento de erro para todas as
@@ -164,10 +164,111 @@ function deleteAppointment(id) {
    então expõe tudo em um namespace único no escopo global,
    evitando colidir com funções soltas do agenda-crm.js.
 ──────────────────────────────────────────────────────────── */
+/* ─── 3. SERVIÇOS ───────────────────────────────────────────
+   GET /api/services
+   Retorna todos os serviços ativos.
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Lista todos os serviços ativos.
+ * @returns {Promise<Array>} lista de serviços
+ */
+function listServices() {
+  return apiRequest('/services', { method: 'GET' });
+}
+
+/* ─── 4. BARBEIROS ──────────────────────────────────────────
+   GET /api/barbers
+   Retorna todos os barbeiros ativos.
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Lista todos os barbeiros ativos.
+ * @returns {Promise<Array>} lista de barbeiros
+ */
+function listBarbers() {
+  return apiRequest('/barbers', { method: 'GET' });
+}
+
+/* ─── 5. CLIENTES ───────────────────────────────────────────
+   GET  /api/clients              → listagem completa (tela Clientes)
+   GET  /api/clients?search=termo → autocomplete (Agenda)
+   GET  /api/clients/:id          → detalhe
+   PATCH /api/clients/:id         → edição
+   DELETE /api/clients/:id        → exclusão (soft-delete no back)
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Busca clientes pelo nome (autocomplete — Agenda).
+ * @param {string} search - Trecho do nome a buscar (mínimo 2 chars)
+ * @returns {Promise<Array>} lista de clientes { id, name, phone }
+ */
+function searchClients(search) {
+  const qs = buildQueryString({ search });
+  return apiRequest(`/clients${qs}`, { method: 'GET' });
+}
+
+/**
+ * Lista todos os clientes ativos (tela Clientes).
+ * @returns {Promise<Array>} lista completa de clientes
+ */
+function listClients() {
+  return apiRequest('/clients', { method: 'GET' });
+}
+
+/**
+ * Busca um cliente específico por id.
+ * @param {string} id
+ * @returns {Promise<Object>} cliente
+ */
+function getClient(id) {
+  return apiRequest(`/clients/${encodeURIComponent(id)}`, { method: 'GET' });
+}
+
+/**
+ * Atualiza os dados de um cliente.
+ * Aceita atualização parcial — envie apenas os campos alterados.
+ *
+ * @param {string} id
+ * @param {Object} data
+ * @param {string} [data.name]
+ * @param {string} [data.phone]
+ * @param {string} [data.birthdate] - formato YYYY-MM-DD
+ * @param {string} [data.obs]
+ * @returns {Promise<Object>} cliente atualizado
+ */
+function updateClient(id, data) {
+  return apiRequest(`/clients/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Remove um cliente (soft-delete no back-end).
+ * @param {string} id
+ * @returns {Promise<void>}
+ */
+function deleteClient(id) {
+  return apiRequest(`/clients/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+/* ─── 6. EXPORT ──────────────────────────────────────────────
+   Sem bundler no projeto ainda (front é HTML + <script> direto),
+   então expõe tudo em um namespace único no escopo global,
+   evitando colidir com funções soltas do agenda-crm.js.
+──────────────────────────────────────────────────────────── */
 window.InBarberAPI = {
   listAppointments,
   getAppointment,
   createAppointment,
   updateAppointment,
   deleteAppointment,
+  listServices,
+  listBarbers,
+  searchClients,
+  listClients,
+  getClient,
+  updateClient,
+  deleteClient,
 };

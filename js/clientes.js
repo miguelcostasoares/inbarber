@@ -13,32 +13,9 @@ const CFG = {
 };
 
 
-/* ─── 2. MOCK DATA ──────────────────────────────────────── */
-// Em produção: GET /api/clients
-let CLIENTS = [
-  { id: 'c001', name: 'Lucas Andrade',     phone: '84999990001', lastVisit: '2025-07-28', since: '2023-03-12', obs: 'Preferência por navalha.' },
-  { id: 'c002', name: 'Felipe Rocha',      phone: '84999990002', lastVisit: '2025-07-15', since: '2023-06-01', obs: '' },
-  { id: 'c003', name: 'Gabriel Souza',     phone: '84999990003', lastVisit: '2025-06-30', since: '2022-11-20', obs: 'Alergia a produtos com álcool.' },
-  { id: 'c004', name: 'Matheus Lima',      phone: '84999990004', lastVisit: '2025-07-20', since: '2024-01-05', obs: '' },
-  { id: 'c005', name: 'Ricardo Ferreira',  phone: '84999990005', lastVisit: '2025-05-10', since: '2023-08-14', obs: 'No-show frequente — confirmar por WhatsApp.' },
-  { id: 'c006', name: 'Bruno Carvalho',    phone: '84999990006', lastVisit: '2025-07-25', since: '2023-02-28', obs: '' },
-  { id: 'c007', name: 'Diego Martins',     phone: '84999990007', lastVisit: '2025-04-18', since: '2022-09-09', obs: 'Cabelo comprido, prefere corte degradê.' },
-  { id: 'c008', name: 'Thiago Oliveira',   phone: '84999990008', lastVisit: '2025-07-18', since: '2024-03-22', obs: '' },
-  { id: 'c009', name: 'Cauã Ribeiro',      phone: '84999990009', lastVisit: '2025-07-22', since: '2024-05-10', obs: '' },
-  { id: 'c010', name: 'Vinicius Alves',    phone: '84999990010', lastVisit: '2025-07-01', since: '2023-12-01', obs: '' },
-  { id: 'c011', name: 'Leonardo Costa',    phone: '84999990011', lastVisit: '2025-03-05', since: '2022-07-30', obs: 'Ligar antes de confirmar.' },
-  { id: 'c012', name: 'Samuel Pereira',    phone: '84999990012', lastVisit: '2025-07-10', since: '2024-02-14', obs: '' },
-  { id: 'c013', name: 'Rafael Nascimento', phone: '84999990013', lastVisit: '2025-07-12', since: '2023-10-08', obs: '' },
-  { id: 'c014', name: 'Igor Campos',       phone: '84999990014', lastVisit: '2025-06-20', since: '2024-06-01', obs: '' },
-  { id: 'c015', name: 'Henrique Duarte',   phone: '84999990015', lastVisit: '2025-07-08', since: '2023-04-17', obs: '' },
-  { id: 'c016', name: 'Gustavo Mendes',    phone: '84999990016', lastVisit: '2025-02-14', since: '2022-12-25', obs: 'Cliente antigo, desconto fidelidade.' },
-  { id: 'c017', name: 'Pedro Linhares',    phone: '84999990017', lastVisit: '2025-07-05', since: '2024-07-03', obs: '' },
-  { id: 'c018', name: 'Rodrigo Fonseca',   phone: '84999990018', lastVisit: '2025-07-27', since: '2023-09-19', obs: '' },
-  { id: 'c019', name: 'André Santos',      phone: '84999990019', lastVisit: '2025-01-20', since: '2022-05-05', obs: '' },
-  { id: 'c020', name: 'Carlos Eduardo',    phone: '84999990020', lastVisit: '2025-07-26', since: '2025-07-01', obs: 'Novo cliente, indicação do Rodrigo.' },
-  { id: 'c021', name: 'Felipe Gomes',      phone: '84999990021', lastVisit: '2025-07-24', since: '2025-07-15', obs: '' },
-  { id: 'c022', name: 'João Victor',       phone: '84999990022', lastVisit: '2025-07-23', since: '2025-06-20', obs: '' },
-];
+/* ─── 2. CLIENTS ────────────────────────────────────────── */
+// Populado via GET /api/clients no boot (loadClients)
+let CLIENTS = [];
 
 
 /* ─── 3. STATE ──────────────────────────────────────────── */
@@ -366,37 +343,35 @@ function openEditModal(id) {
   setTimeout(() => document.getElementById('cliNome').focus(), 80);
 }
 
-function saveClient() {
+async function saveClient() {
   const name  = document.getElementById('cliNome').value.trim();
   const phone = document.getElementById('cliTel').value.trim();
   const obs   = document.getElementById('cliObs').value.trim();
   const birth = document.getElementById('cliAniversario').value;
 
-  if (!name) { flashInput('cliNome'); return; }
-  if (!phone) { flashInput('cliTel'); return; }
+  if (!name)  { flashInput('cliNome'); return; }
+  if (!phone) { flashInput('cliTel');  return; }
 
-  if (STATE.editingId) {
-    const idx = CLIENTS.findIndex(c => c.id === STATE.editingId);
-    if (idx !== -1) {
-      CLIENTS[idx] = { ...CLIENTS[idx], name, phone, obs, birthdate: birth };
-      showToast('success', 'Cliente atualizado com sucesso!');
-    }
-  } else {
-    CLIENTS.unshift({
-      id:        generateId(),
-      name,
-      phone,
-      obs,
-      birthdate: birth,
-      lastVisit: null,
-      since:     new Date().toISOString().slice(0, 10),
+  const btn = document.getElementById('clienteModalSave');
+  btn.disabled = true;
+
+  try {
+    const updated = await InBarberAPI.updateClient(STATE.editingId, {
+      name, phone, obs, birthdate: birth || null,
     });
-    showToast('success', 'Cliente cadastrado com sucesso!');
-  }
 
-  closeModal('clienteModalOverlay');
-  renderStats();
-  renderTable();
+    const idx = CLIENTS.findIndex(c => c.id === STATE.editingId);
+    if (idx !== -1) CLIENTS[idx] = updated;
+
+    showToast('success', 'Cliente atualizado com sucesso!');
+    closeModal('clienteModalOverlay');
+    renderStats();
+    renderTable();
+  } catch (err) {
+    showToast('error', err.message || 'Erro ao salvar cliente.');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function flashInput(id) {
@@ -417,17 +392,32 @@ function initClienteModal() {
 
 
 /* ─── 12. MODAL DETALHES ────────────────────────────────── */
-function openDetailModal(id) {
-  const c = CLIENTS.find(x => x.id === id);
-  if (!c) return;
+async function openDetailModal(id) {
   STATE.viewId = id;
+  // Abre o modal imediatamente com os dados já em memória enquanto
+  // busca a versão mais atualizada do back-end em paralelo.
+  let c = CLIENTS.find(x => x.id === id);
+  if (!c) return;
+  renderDetailModal(c);
+  openModal('detailModalOverlay');
 
-  const active    = isActive(c.lastVisit);
-  const colorIdx  = avatarColor(c.name);
-  const initials  = getInitials(c.name);
+  try {
+    c = await InBarberAPI.getClient(id);
+    const idx = CLIENTS.findIndex(x => x.id === id);
+    if (idx !== -1) CLIENTS[idx] = c;
+    renderDetailModal(c);
+  } catch (_) {
+    // Falha silenciosa: dados em memória já estão visíveis
+  }
+}
 
-  document.getElementById('detailModalTitle').textContent    = c.name;
-  document.getElementById('detailModalSubtitle').innerHTML   = `
+function renderDetailModal(c) {
+  const active   = isActive(c.lastVisit);
+  const colorIdx = avatarColor(c.name);
+  const initials = getInitials(c.name);
+
+  document.getElementById('detailModalTitle').textContent  = c.name;
+  document.getElementById('detailModalSubtitle').innerHTML = `
     <span class="status-badge status-badge--${active ? 'ativo' : 'inativo'}" style="font-size:11px;">
       ${active ? 'Ativo' : 'Inativo'}
     </span>
@@ -475,10 +465,8 @@ function openDetailModal(id) {
   };
   document.getElementById('detailEditBtn').onclick = () => {
     closeModal('detailModalOverlay');
-    openEditModal(id);
+    openEditModal(c.id);
   };
-
-  openModal('detailModalOverlay');
 }
 
 function initDetailModal() {
@@ -496,14 +484,25 @@ function openDeleteModal(id) {
   openModal('deleteModalOverlay');
 }
 
-function confirmDelete() {
+async function confirmDelete() {
   if (!STATE.deleteId) return;
-  CLIENTS = CLIENTS.filter(c => c.id !== STATE.deleteId);
-  STATE.deleteId = null;
-  closeModal('deleteModalOverlay');
-  renderStats();
-  renderTable();
-  showToast('info', 'Cliente removido.');
+
+  const btn = document.getElementById('deleteModalConfirm');
+  btn.disabled = true;
+
+  try {
+    await InBarberAPI.deleteClient(STATE.deleteId);
+    CLIENTS = CLIENTS.filter(c => c.id !== STATE.deleteId);
+    STATE.deleteId = null;
+    closeModal('deleteModalOverlay');
+    renderStats();
+    renderTable();
+    showToast('info', 'Cliente removido.');
+  } catch (err) {
+    showToast('error', err.message || 'Erro ao remover cliente.');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function initDeleteModal() {
@@ -710,10 +709,47 @@ function initScrollReveal() {
 
 
 /* ─── 18. BOOT ──────────────────────────────────────────── */
-function boot() {
-  renderDate();
+
+/**
+ * Carrega os clientes do back-end e popula a tela.
+ * Exibe skeleton/mensagem de erro em caso de falha.
+ */
+async function loadClients() {
+  const tbody = document.getElementById('clientesTableBody');
+  const empty = document.getElementById('tableEmpty');
+
+  // Feedback visual enquanto carrega
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5" style="text-align:center; padding:2rem; color:var(--text-muted);">
+        Carregando clientes…
+      </td>
+    </tr>
+  `;
+  empty.hidden = true;
+
+  try {
+    CLIENTS = await InBarberAPI.listClients();
+  } catch (err) {
+    CLIENTS = [];
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center; padding:2rem; color:var(--red);">
+          ${err.message || 'Erro ao carregar clientes. Tente recarregar a página.'}
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
   renderStats();
   renderTable();
+  animateClientesStats();
+  initScrollReveal();
+}
+
+async function boot() {
+  renderDate();
   initSearch();
   initPaginationClicks();
   initTableClicks();
@@ -723,10 +759,7 @@ function boot() {
   initModalOverlayClose();
   initSidebar();
 
-  // ── Animações de entrada ──────────────────────────────────
-  animateClientesStats();
-  initScrollReveal();
-  // ─────────────────────────────────────────────────────────
+  await loadClients();
 
   console.log('[InBarber Clientes] Inicializado com sucesso.');
 }

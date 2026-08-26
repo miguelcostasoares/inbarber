@@ -155,10 +155,12 @@ textarea {
 }
 
 /* ─── 4. SIDEBAR ────────────────────────────────────────── */
+/* Variável de largura recolhida — usada pelo toggle desktop */
+:root { --nav-w-collapsed: 64px; }
+
 .sidebar {
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   width: var(--nav-w);
   height: 100dvh;
   background: var(--bg-2);
@@ -166,9 +168,7 @@ textarea {
   display: flex;
   flex-direction: column;
   z-index: 200;
-  transition:
-    width var(--dur) var(--ease-out),
-    transform var(--dur) var(--ease-drawer);
+  transition: width var(--dur) var(--ease-out), transform var(--dur) var(--ease-drawer);
   will-change: transform;
 }
 
@@ -200,7 +200,6 @@ textarea {
   font-size: 18px;
   color: var(--white);
   letter-spacing: 0.01em;
-  white-space: nowrap;
 }
 
 .sidebar__nav {
@@ -229,9 +228,7 @@ textarea {
   font-size: 13.5px;
   font-weight: 500;
   color: var(--muted);
-  transition:
-    background var(--dur) var(--ease-out),
-    color var(--dur) var(--ease-out);
+  transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
   position: relative;
 }
 
@@ -242,7 +239,7 @@ textarea {
 
 .nav-item--active {
   background: var(--gold-bg);
-  color: var(--white);
+  color: white;
 }
 
 .nav-item--active .nav-icon {

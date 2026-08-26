@@ -386,24 +386,162 @@ def listar_servicos():
 # BARBEIROS
 # ═══════════════════════════════════════════════════════════
 
+def serializar_barbeiro(row):
+    return {
+        'id':       row['id'],
+        'nome':     row['nome'],
+        'name':     row['nome'],
+        'telefone': row['telefone'] or '',
+        'phone':    row['telefone'] or '',
+        'avatar':   row.get('avatar'),
+        'ativo':    bool(row['ativo']),
+    }
+
+
 @app.route('/api/barbers', methods=['GET'])
 def listar_barbeiros():
+    include_inactive = request.args.get('includeInactive') == '1'
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        if include_inactive:
+            cursor.execute(
+                '''SELECT id, nome, telefone, avatar, ativo
+                   FROM barbeiros
+                   ORDER BY nome ASC'''
+            )
+        else:
+            cursor.execute(
+                '''SELECT id, nome, telefone, avatar, ativo
+                   FROM barbeiros
+                   WHERE ativo = 1
+                   ORDER BY nome ASC'''
+            )
+        rows = cursor.fetchall()
+        return jsonify([serializar_barbeiro(r) for r in rows]), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao listar barbeiros: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/barbers', methods=['POST'])
+def criar_barbeiro():
+    data = request.get_json(silent=True) or {}
+
+    nome = (data.get('nome') or '').strip()
+    if not nome:
+        return jsonify({'error': 'O nome é obrigatório.'}), 400
+
+    telefone = (data.get('telefone') or '').strip() or None
+    ativo    = bool(data.get('ativo', True))
+    novo_id  = 'b' + uuid.uuid4().hex[:12]
+
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            '''SELECT id, nome AS name, avatar, avaliacao AS rating
-               FROM barbeiros
-               WHERE ativo = 1
-               ORDER BY nome ASC'''
+            '''INSERT INTO barbeiros (id, nome, telefone, ativo)
+               VALUES (%s, %s, %s, %s)''',
+            (novo_id, nome, telefone, int(ativo))
         )
-        rows = cursor.fetchall()
-        for row in rows:
-            if row.get('rating') is not None:
-                row['rating'] = float(row['rating'])
-        return jsonify(rows), 200
+        conn.commit()
+        cursor.execute(
+            'SELECT id, nome, telefone, avatar, ativo FROM barbeiros WHERE id = %s',
+            (novo_id,)
+        )
+        return jsonify(serializar_barbeiro(cursor.fetchone())), 201
     except Exception as e:
-        return jsonify({'error': f'Erro ao listar barbeiros: {e}'}), 500
+        conn.rollback()
+        return jsonify({'error': f'Erro ao criar barbeiro: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/barbers/<barbeiro_id>', methods=['PUT', 'PATCH'])
+def atualizar_barbeiro(barbeiro_id):
+    data = request.get_json(silent=True) or {}
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id FROM barbeiros WHERE id = %s', (barbeiro_id,))
+        if not cursor.fetchone():
+            return jsonify({'error': 'Barbeiro não encontrado.'}), 404
+
+        campos = []
+        params = []
+
+        if 'nome' in data:
+            nome = data['nome'].strip()
+            if not nome:
+                return jsonify({'error': 'O nome não pode ser vazio.'}), 400
+            campos.append('nome = %s')
+            params.append(nome)
+
+        if 'telefone' in data:
+            campos.append('telefone = %s')
+            params.append(data['telefone'].strip() or None)
+
+        if 'ativo' in data:
+            campos.append('ativo = %s')
+            params.append(int(bool(data['ativo'])))
+
+        if not campos:
+            return jsonify({'error': 'Nenhum campo para atualizar.'}), 400
+
+        params.append(barbeiro_id)
+        cursor.execute(
+            f"UPDATE barbeiros SET {', '.join(campos)} WHERE id = %s",
+            tuple(params)
+        )
+        conn.commit()
+
+        cursor.execute(
+            'SELECT id, nome, telefone, avatar, ativo FROM barbeiros WHERE id = %s',
+            (barbeiro_id,)
+        )
+        return jsonify(serializar_barbeiro(cursor.fetchone())), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao atualizar barbeiro: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/barbers/<barbeiro_id>/status', methods=['PATCH'])
+def toggle_barbeiro_status(barbeiro_id):
+    data = request.get_json(silent=True) or {}
+
+    if 'ativo' not in data:
+        return jsonify({'error': 'Campo "ativo" é obrigatório.'}), 400
+
+    ativo = int(bool(data['ativo']))
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id FROM barbeiros WHERE id = %s', (barbeiro_id,))
+        if not cursor.fetchone():
+            return jsonify({'error': 'Barbeiro não encontrado.'}), 404
+
+        cursor.execute(
+            'UPDATE barbeiros SET ativo = %s WHERE id = %s',
+            (ativo, barbeiro_id)
+        )
+        conn.commit()
+
+        cursor.execute(
+            'SELECT id, nome, telefone, avatar, ativo FROM barbeiros WHERE id = %s',
+            (barbeiro_id,)
+        )
+        return jsonify(serializar_barbeiro(cursor.fetchone())), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao atualizar status: {e}'}), 500
     finally:
         cursor.close()
         conn.close()

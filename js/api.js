@@ -183,11 +183,58 @@ function listServices() {
 ──────────────────────────────────────────────────────────── */
 
 /**
- * Lista todos os barbeiros ativos.
+ * Lista barbeiros.
+ * @param {Object} [options]
+ * @param {boolean} [options.includeInactive] - se true, retorna ativos e inativos
  * @returns {Promise<Array>} lista de barbeiros
  */
-function listBarbers() {
-  return apiRequest('/barbers', { method: 'GET' });
+function listBarbers(options = {}) {
+  const qs = options.includeInactive ? '?includeInactive=1' : '';
+  return apiRequest(`/barbers${qs}`, { method: 'GET' });
+}
+
+/**
+ * Cria um novo barbeiro.
+ * @param {Object} data
+ * @param {string} data.nome
+ * @param {string} [data.telefone]
+ * @param {boolean} [data.ativo]
+ * @returns {Promise<Object>} barbeiro criado
+ */
+function createBarber(data) {
+  return apiRequest('/barbers', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Atualiza os dados de um barbeiro.
+ * @param {string} id
+ * @param {Object} data
+ * @param {string} [data.nome]
+ * @param {string} [data.telefone]
+ * @param {boolean} [data.ativo]
+ * @returns {Promise<Object>} barbeiro atualizado
+ */
+function updateBarber(id, data) {
+  return apiRequest(`/barbers/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Ativa ou desativa um barbeiro.
+ * @param {string} id
+ * @param {boolean} ativo
+ * @returns {Promise<Object>} barbeiro atualizado
+ */
+function toggleBarberStatus(id, ativo) {
+  return apiRequest(`/barbers/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ ativo }),
+  });
 }
 
 /* ─── 5. CLIENTES ───────────────────────────────────────────
@@ -266,6 +313,9 @@ window.InBarberAPI = {
   deleteAppointment,
   listServices,
   listBarbers,
+  createBarber,
+  updateBarber,
+  toggleBarberStatus,
   searchClients,
   listClients,
   getClient,

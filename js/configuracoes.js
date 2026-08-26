@@ -9,6 +9,12 @@
 /* ─── 1. CONFIG ─────────────────────────────────────────── */
 const STORAGE_KEY = "inbarber:barbearia:v1";
 
+/* ─── EQUIPE: CONFIG ────────────────────────────────────── */
+const EQUIPE_STATE = {
+  barbeiros: [],
+  loading: false,
+};
+
 const DEFAULTS = {
   nome: "",
   telefone: "",
@@ -75,6 +81,288 @@ function formatPhoneInput(value) {
   return value;
 }
 
+/* ─── EQUIPE: UTILS ─────────────────────────────────────── */
+function initialsFrom(name) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
+/* ─── EQUIPE: RENDER ─────────────────────────────────────── */
+function renderEquipe() {
+  const loading = document.getElementById("equipeLoading");
+  const empty   = document.getElementById("equipeEmpty");
+  const table   = document.getElementById("equipeTable");
+  const tbody   = document.getElementById("equipeTableBody");
+
+  if (EQUIPE_STATE.loading) {
+    loading.hidden = false;
+    empty.hidden   = true;
+    table.hidden   = true;
+    return;
+  }
+
+  loading.hidden = true;
+
+  if (!EQUIPE_STATE.barbeiros.length) {
+    empty.hidden = false;
+    table.hidden = true;
+    return;
+  }
+
+  empty.hidden = false;
+  empty.hidden = true;
+  table.hidden = false;
+
+  tbody.innerHTML = "";
+
+  EQUIPE_STATE.barbeiros.forEach((b) => {
+    const ativo    = !!b.ativo;
+    const initials = initialsFrom(b.nome || b.name || "?");
+    const nome     = b.nome || b.name || "—";
+    const telefone = b.telefone || b.phone || "—";
+
+    const tr = document.createElement("tr");
+    tr.className = "equipe-table__tr" + (ativo ? "" : " equipe-table__tr--inativo");
+    tr.dataset.id = b.id;
+
+    tr.innerHTML = `
+      <td class="equipe-table__td">
+        <div class="equipe-cell-nome">
+          <div class="equipe-avatar">${initials}</div>
+          <span class="equipe-nome-text">${escapeHtml(nome)}</span>
+        </div>
+      </td>
+      <td class="equipe-table__td">${escapeHtml(telefone)}</td>
+      <td class="equipe-table__td">
+        <span class="badge-status ${ativo ? "badge-status--ativo" : "badge-status--inativo"}">
+          ${ativo ? "Ativo" : "Inativo"}
+        </span>
+      </td>
+      <td class="equipe-table__td equipe-table__td--actions">
+        <div class="equipe-actions">
+          <button
+            class="btn-table"
+            data-action="editar"
+            data-id="${b.id}"
+            type="button"
+            aria-label="Editar ${escapeHtml(nome)}"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M8.5 1.5l2 2L4 10H2V8L8.5 1.5z" stroke="currentColor" stroke-width="1.4"
+                stroke-linejoin="round"/>
+            </svg>
+            Editar
+          </button>
+          <button
+            class="toggle-switch ${ativo ? "toggle-switch--on" : ""}"
+            data-action="toggle"
+            data-id="${b.id}"
+            data-ativo="${ativo ? "1" : "0"}"
+            type="button"
+            role="switch"
+            aria-checked="${ativo ? "true" : "false"}"
+            aria-label="${ativo ? "Desativar" : "Ativar"} ${escapeHtml(nome)}"
+          >
+            <span class="toggle-switch__track" aria-hidden="true">
+              <span class="toggle-switch__thumb"></span>
+            </span>
+            <span class="toggle-switch__label">${ativo ? "Ativo" : "Inativo"}</span>
+          </button>
+        </div>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/* ─── EQUIPE: LOAD ───────────────────────────────────────── */
+async function loadEquipe() {
+  EQUIPE_STATE.loading = true;
+  renderEquipe();
+
+  try {
+    const lista = await window.InBarberAPI.listBarbers({ includeInactive: true });
+    EQUIPE_STATE.barbeiros = lista;
+  } catch (err) {
+    showToast("error", "Não foi possível carregar a equipe.");
+    EQUIPE_STATE.barbeiros = [];
+  } finally {
+    EQUIPE_STATE.loading = false;
+    renderEquipe();
+  }
+}
+
+/* ─── EQUIPE: MODAL ──────────────────────────────────────── */
+function openBarbeiroModal(barbeiro = null) {
+  const overlay  = document.getElementById("barbeiroModalOverlay");
+  const title    = document.getElementById("barbeiroModalTitle");
+  const idInput  = document.getElementById("barbeiroModalId");
+  const nomeInput = document.getElementById("barbeiroModalNome");
+  const telInput  = document.getElementById("barbeiroModalTelefone");
+  const statusSel = document.getElementById("barbeiroModalStatus");
+
+  if (barbeiro) {
+    title.textContent    = "Editar Barbeiro";
+    idInput.value        = barbeiro.id;
+    nomeInput.value      = barbeiro.nome || barbeiro.name || "";
+    telInput.value       = barbeiro.telefone || barbeiro.phone || "";
+    statusSel.value      = barbeiro.ativo ? "1" : "0";
+  } else {
+    title.textContent    = "Novo Barbeiro";
+    idInput.value        = "";
+    nomeInput.value      = "";
+    telInput.value       = "";
+    statusSel.value      = "1";
+  }
+
+  overlay.hidden = false;
+  nomeInput.focus();
+}
+
+function closeBarbeiroModal() {
+  document.getElementById("barbeiroModalOverlay").hidden = true;
+}
+
+async function handleSalvarBarbeiro() {
+  const id     = document.getElementById("barbeiroModalId").value;
+  const nome   = document.getElementById("barbeiroModalNome").value.trim();
+  const tel    = document.getElementById("barbeiroModalTelefone").value.trim();
+  const ativo  = document.getElementById("barbeiroModalStatus").value === "1";
+
+  if (!nome) {
+    flashInputError("barbeiroModalNome");
+    showToast("error", "O nome do barbeiro é obrigatório.");
+    return;
+  }
+
+  const btnSalvar = document.getElementById("barbeiroModalSalvar");
+  btnSalvar.disabled = true;
+
+  try {
+    if (id) {
+      await window.InBarberAPI.updateBarber(id, { nome, telefone: tel, ativo });
+      showToast("success", "Barbeiro atualizado com sucesso!");
+    } else {
+      await window.InBarberAPI.createBarber({ nome, telefone: tel, ativo });
+      showToast("success", "Barbeiro criado com sucesso!");
+    }
+    closeBarbeiroModal();
+    await loadEquipe();
+  } catch (err) {
+    showToast("error", err.message || "Erro ao salvar barbeiro.");
+  } finally {
+    btnSalvar.disabled = false;
+  }
+}
+
+async function handleToggleBarbeiro(id, ativoAtual) {
+  const novoStatus = !ativoAtual;
+  try {
+    await window.InBarberAPI.toggleBarberStatus(id, novoStatus);
+    showToast(
+      "success",
+      novoStatus ? "Barbeiro ativado." : "Barbeiro desativado."
+    );
+    await loadEquipe();
+  } catch (err) {
+    showToast("error", err.message || "Erro ao alterar status.");
+  }
+}
+
+/* ─── EQUIPE: EVENT LISTENERS ───────────────────────────── */
+function initEquipeListeners() {
+  // Botão novo (header)
+  document
+    .getElementById("btnNovoBarbeiro")
+    ?.addEventListener("click", () => openBarbeiroModal(null));
+
+  // Botão novo (estado vazio)
+  document
+    .getElementById("btnNovoBarbeiroEmpty")
+    ?.addEventListener("click", () => openBarbeiroModal(null));
+
+  // Fechar modal
+  document
+    .getElementById("barbeiroModalClose")
+    ?.addEventListener("click", closeBarbeiroModal);
+
+  document
+    .getElementById("barbeiroModalCancelar")
+    ?.addEventListener("click", closeBarbeiroModal);
+
+  // Fechar ao clicar fora do modal
+  document
+    .getElementById("barbeiroModalOverlay")
+    ?.addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeBarbeiroModal();
+    });
+
+  // Fechar com Escape
+  document.addEventListener("keydown", (e) => {
+    if (
+      e.key === "Escape" &&
+      !document.getElementById("barbeiroModalOverlay")?.hidden
+    ) {
+      closeBarbeiroModal();
+    }
+  });
+
+  // Salvar modal
+  document
+    .getElementById("barbeiroModalSalvar")
+    ?.addEventListener("click", handleSalvarBarbeiro);
+
+  // Máscara de telefone no modal
+  document
+    .getElementById("barbeiroModalTelefone")
+    ?.addEventListener("input", (e) => {
+      const prev = e.target.value;
+      const formatted = formatPhoneInput(prev);
+      if (formatted !== prev) {
+        const cursor = e.target.selectionStart;
+        const diff = formatted.length - prev.length;
+        e.target.value = formatted;
+        try {
+          e.target.setSelectionRange(cursor + diff, cursor + diff);
+        } catch (_) {}
+      }
+    });
+
+  // Delegação de eventos na tabela (editar / toggle)
+  document
+    .getElementById("equipeTableBody")
+    ?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      const id     = btn.dataset.id;
+
+      if (action === "editar") {
+        const barbeiro = EQUIPE_STATE.barbeiros.find((b) => b.id === id);
+        if (barbeiro) openBarbeiroModal(barbeiro);
+      }
+
+      if (action === "toggle") {
+        const ativoAtual = btn.dataset.ativo === "1";
+        handleToggleBarbeiro(id, ativoAtual);
+      }
+    });
+}
+
 /* ─── 4. SIDEBAR ────────────────────────────────────────── */
 function initSidebar() {
   const burger = document.getElementById("burgerBtn");
@@ -135,6 +423,40 @@ function initSidebar() {
   try {
     if (localStorage.getItem("sidebarCollapsed") === "0") expandSidebar();
   } catch (e) {}
+}
+
+/* ─── EQUIPE: TABS ───────────────────────────────────────── */
+function initTabs() {
+  const tabs = document.querySelectorAll(".config-tab:not(:disabled)");
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      // Desativa todas as tabs
+      document.querySelectorAll(".config-tab").forEach((t) => {
+        t.classList.remove("config-tab--active");
+        t.setAttribute("aria-selected", "false");
+      });
+
+      // Esconde todos os painéis via atributo role
+      document.querySelectorAll("[role='tabpanel']").forEach((p) => {
+        p.hidden = true;
+      });
+
+      // Ativa a tab clicada
+      tab.classList.add("config-tab--active");
+      tab.setAttribute("aria-selected", "true");
+
+      // Exibe o painel correspondente
+      const target = tab.dataset.tab;
+      const panel = document.getElementById("tab-" + target);
+      if (panel) panel.hidden = false;
+
+      // Carrega equipe na primeira visita
+      if (target === "equipe" && !EQUIPE_STATE.barbeiros.length && !EQUIPE_STATE.loading) {
+        loadEquipe();
+      }
+    });
+  });
 }
 
 /* ─── 5. DATA NO HEADER ─────────────────────────────────── */
@@ -381,6 +703,8 @@ function boot() {
   initSidebar();
   initPhoneMask();
   initFormListeners();
+  initTabs();
+  initEquipeListeners();
 
   // Dispara checkDirty uma vez para sincronizar estado inicial dos botões
   checkDirty();

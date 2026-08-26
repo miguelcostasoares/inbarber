@@ -62,25 +62,11 @@ const CLIENTS_DB = [
   { name: 'Rodrigo Fonseca', phone: '84999990018' },
 ];
 
-// GET /api/appointments?date=today
-// status: 'pendente' | 'confirmado' | 'em-andamento' | 'concluido' | 'no-show'
-let APPOINTMENTS = [
-  { id: 'a001', date: getTodayStr(), time: '08:00', client: 'Lucas Andrade', phone: '84999990001', serviceId: 'combo', barberId: 'marcos', status: 'concluido', notes: '' },
-  { id: 'a002', date: getTodayStr(), time: '08:30', client: 'Felipe Rocha', phone: '84999990002', serviceId: 'corte', barberId: 'joao', status: 'concluido', notes: '' },
-  { id: 'a003', date: getTodayStr(), time: '09:00', client: 'Gabriel Souza', phone: '84999990003', serviceId: 'barba', barberId: 'andre', status: 'concluido', notes: 'Preferência por navalha' },
-  { id: 'a004', date: getTodayStr(), time: '09:30', client: 'Matheus Lima', phone: '84999990004', serviceId: 'pigmentacao', barberId: 'marcos', status: 'concluido', notes: '' },
-  { id: 'a005', date: getTodayStr(), time: '10:00', client: 'Ricardo Ferreira', phone: '84999990005', serviceId: 'corte', barberId: 'joao', status: 'no-show', notes: '' },
-  { id: 'a006', date: getTodayStr(), time: '10:30', client: 'Bruno Carvalho', phone: '84999990006', serviceId: 'combo', barberId: 'andre', status: 'concluido', notes: '' },
-  { id: 'a007', date: getTodayStr(), time: '11:00', client: 'Diego Martins', phone: '84999990007', serviceId: 'relaxamento', barberId: 'marcos', status: 'em-andamento', notes: 'Cabelo comprido' },
-  { id: 'a008', date: getTodayStr(), time: '11:30', client: 'Thiago Oliveira', phone: '84999990008', serviceId: 'sobrancelha', barberId: 'joao', status: 'confirmado', notes: '' },
-  { id: 'a009', date: getTodayStr(), time: '12:00', client: 'Cauã Ribeiro', phone: '84999990009', serviceId: 'corte', barberId: 'andre', status: 'confirmado', notes: '' },
-  { id: 'a010', date: getTodayStr(), time: '13:00', client: 'Vinicius Alves', phone: '84999990010', serviceId: 'combo', barberId: 'marcos', status: 'confirmado', notes: '' },
-  { id: 'a011', date: getTodayStr(), time: '13:30', client: 'Leonardo Costa', phone: '84999990011', serviceId: 'barba', barberId: 'joao', status: 'pendente', notes: 'Ligar antes' },
-  { id: 'a012', date: getTodayStr(), time: '14:00', client: 'Samuel Pereira', phone: '84999990012', serviceId: 'pigmentacao', barberId: 'andre', status: 'pendente', notes: '' },
-  { id: 'a013', date: getTodayStr(), time: '14:30', client: 'Rafael Nascimento', phone: '84999990013', serviceId: 'corte', barberId: 'marcos', status: 'pendente', notes: '' },
-  { id: 'a014', date: getTodayStr(), time: '15:00', client: 'Igor Campos', phone: '84999990014', serviceId: 'combo', barberId: 'joao', status: 'pendente', notes: '' },
-  { id: 'a015', date: getTodayStr(), time: '16:00', client: 'Henrique Duarte', phone: '84999990015', serviceId: 'relaxamento', barberId: 'andre', status: 'pendente', notes: '' },
-];
+// Populado via API (InBarberAPI.listAppointments) — ver reloadAppointments().
+// Formato de cada item segue o mesmo shape do mock anterior
+// (client, phone, date, time, serviceId, barberId, status, notes),
+// pois é o que api.js devolve já mapeado a partir do back-end.
+let APPOINTMENTS = [];
 
 // GET /api/blocks (bloqueios de horário)
 let BLOCKS = [
@@ -225,6 +211,50 @@ function getFilteredAppointments(dateOverride) {
     }
     return true;
   });
+}
+
+/* ─── RELOAD CENTRAL (API) ──────────────────────────────────
+   Busca os agendamentos no back-end e repõe APPOINTMENTS.
+   "Silencioso": não mostra loading/spinner, só troca os dados
+   por trás e chama refreshAll() pra re-renderizar a view ativa.
+   Todo ponto que hoje mutava APPOINTMENTS localmente (criar,
+   editar, mudar status, deletar) e os filtros de barbeiro/serviço
+   (que o back-end já suporta nativamente) chamam esta função em
+   vez de refreshAll() direto.
+
+   Passa STATE.filterBarber/filterService pra API (são os únicos
+   filtros que disparam reload — busca por nome continua sendo
+   filtro em memória, ver initFilters()). Isso NÃO substitui
+   getFilteredAppointments(): mesmo vindo pré-filtrado do back-end,
+   as views ainda passam pelo filtro local por segurança (ex. troca
+   de STATE.filterBarber por outra via antes do fetch resolver).
+──────────────────────────────────────────────────────────── */
+let _firstAppointmentsLoad = true;
+
+async function reloadAppointments() {
+  try {
+    const data = await InBarberAPI.listAppointments({
+      barberId: STATE.filterBarber || undefined,
+      serviceId: STATE.filterService || undefined,
+    });
+    APPOINTMENTS = data;
+  } catch (err) {
+    showToast(err.message || 'Erro ao carregar agendamentos.', 'error');
+    // Mantém o que já estava carregado em APPOINTMENTS em caso de falha,
+    // em vez de zerar a tela — falha de rede não deve apagar o que já
+    // estava visível.
+  }
+  refreshAll();
+
+  // A animação de contagem dos stats (0 -> valor real) só faz sentido
+  // na primeira carga da página. Precisa rodar aqui (depois que os
+  // dados reais chegaram e refreshAll() já desenhou os números certos
+  // no DOM), não no boot() — lá os stats ainda estariam zerados porque
+  // este fetch é assíncrono e o boot() não espera por ele.
+  if (_firstAppointmentsLoad) {
+    _firstAppointmentsLoad = false;
+    animateAgendaStats();
+  }
 }
 
 /* ─── TOAST ─────────────────────────────────────────────── */
@@ -571,14 +601,9 @@ function handleDrop(event) {
   changeStatus(id, newStatus, { silent: true, dropAnimate: true });
 }
 
-function changeStatus(id, newStatus, opts = {}) {
+async function changeStatus(id, newStatus, opts = {}) {
   const appt = APPOINTMENTS.find(a => a.id === id);
   if (!appt) return;
-
-  const oldStatus = appt.status;
-  appt.status = newStatus;
-
-  // POST /api/appointments/:id/status { status: newStatus }
 
   const labels = {
     'confirmado': 'confirmado',
@@ -588,15 +613,25 @@ function changeStatus(id, newStatus, opts = {}) {
     'pendente': 'movido para pendente',
   };
 
+  try {
+    // PATCH /api/appointments/:id { status: newStatus }
+    await InBarberAPI.updateAppointment(id, { status: newStatus });
+  } catch (err) {
+    showToast(err.message || 'Erro ao atualizar status.', 'error');
+    return;
+  }
+
   if (!opts.silent) {
     showToast(`${appt.client} ${labels[newStatus] || newStatus}.`, 'success');
   } else {
     showToast(`${appt.client} movido para ${getStatusLabel(newStatus)}.`, 'info');
   }
 
-  refreshAll();
+  await reloadAppointments();
 
   // Aplica animação de "soltar com sucesso" no novo card, após o re-render
+  // (só depois que reloadAppointments() já resolveu e o DOM foi atualizado,
+  // senão o card kcard-${id} ainda não existe na nova renderização)
   if (opts.dropAnimate) {
     requestAnimationFrame(() => {
       const newCard = document.getElementById(`kcard-${id}`);
@@ -1097,14 +1132,20 @@ function renderList() {
   }).join('');
 }
 
-function deleteAppt(id) {
+async function deleteAppt(id) {
   const appt = APPOINTMENTS.find(a => a.id === id);
   if (!appt) return;
   if (!confirm(`Excluir agendamento de ${appt.client}?`)) return;
-  // DELETE /api/appointments/:id
-  APPOINTMENTS = APPOINTMENTS.filter(a => a.id !== id);
+
+  try {
+    await InBarberAPI.deleteAppointment(id);
+  } catch (err) {
+    showToast(err.message || 'Erro ao excluir agendamento.', 'error');
+    return;
+  }
+
   showToast('Agendamento excluído.', 'warning');
-  refreshAll();
+  await reloadAppointments();
 }
 
 function initListFilters() {
@@ -1325,7 +1366,7 @@ function hideConflict() {
   document.getElementById('modalConflict').hidden = true;
 }
 
-function saveAppt() {
+async function saveAppt() {
   const data = getFormData();
 
   // Validação básica
@@ -1341,11 +1382,15 @@ function saveAppt() {
   if (!data.serviceId) { showToast('Selecione um serviço.', 'error'); return; }
   if (!data.barberId) { showToast('Selecione um barbeiro.', 'error'); return; }
 
-  if (STATE.editingId) {
-    // PUT /api/appointments/:id
-    const appt = APPOINTMENTS.find(a => a.id === STATE.editingId);
-    if (appt) {
-      Object.assign(appt, {
+  // Trava o botão de salvar durante a chamada, pra evitar duplo clique
+  // criando dois agendamentos com a mesma requisição em voo.
+  const saveBtn = document.getElementById('apptModalSave');
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    if (STATE.editingId) {
+      // PATCH /api/appointments/:id
+      await InBarberAPI.updateAppointment(STATE.editingId, {
         client: data.client,
         phone: data.phone,
         date: data.date,
@@ -1355,26 +1400,35 @@ function saveAppt() {
         notes: data.notes,
       });
       showToast('Agendamento atualizado.', 'success');
+    } else {
+      // POST /api/appointments
+      await InBarberAPI.createAppointment({
+        client: data.client,
+        phone: data.phone,
+        date: data.date,
+        time: data.time,
+        serviceId: data.serviceId,
+        barberId: data.barberId,
+        notes: data.notes,
+      });
+      showToast(`Agendamento de ${data.client} criado com sucesso.`, 'success');
     }
-  } else {
-    // POST /api/appointments
-    const newAppt = {
-      id: genId(),
-      client: data.client,
-      phone: data.phone,
-      date: data.date,
-      time: data.time,
-      serviceId: data.serviceId,
-      barberId: data.barberId,
-      notes: data.notes,
-      status: 'pendente',
-    };
-    APPOINTMENTS.push(newAppt);
-    showToast(`Agendamento de ${data.client} criado com sucesso.`, 'success');
+  } catch (err) {
+    // Conflito de horário (409) o back-end já valida de verdade — mostra
+    // no bloco de conflito do modal (mesmo local usado por checkConflict())
+    // em vez de só um toast, e mantém o modal aberto pra trocar o horário.
+    if (err.status === 409) {
+      showConflict(err.message);
+    } else {
+      showToast(err.message || 'Erro ao salvar agendamento.', 'error');
+    }
+    return;
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
   }
 
   closeModal('apptModalOverlay');
-  refreshAll();
+  await reloadAppointments();
 }
 
 /* Autocomplete de clientes */
@@ -1670,19 +1724,25 @@ function initViewTabs() {
 }
 
 function initFilters() {
+  // Busca por nome: filtro em memória sobre o que já foi carregado,
+  // igual ao padrão do autocomplete de cliente (sem fetch por tecla).
   document.getElementById('searchInput')?.addEventListener('input', function () {
     STATE.filterSearch = this.value.trim();
     refreshAll();
   });
 
+  // Barbeiro/serviço: o back-end já filtra nativamente por barberId/serviceId
+  // (listAppointments), e o evento 'change' só dispara uma vez por seleção
+  // (não por tecla), então aqui vale buscar de novo em vez de só filtrar
+  // o que já está em memória.
   document.getElementById('filterBarber')?.addEventListener('change', function () {
     STATE.filterBarber = this.value;
-    refreshAll();
+    reloadAppointments();
   });
 
   document.getElementById('filterService')?.addEventListener('change', function () {
     STATE.filterService = this.value;
-    refreshAll();
+    reloadAppointments();
   });
 }
 
@@ -1751,25 +1811,6 @@ function refreshAll() {
   if (STATE.activeView === 'kanban') renderKanban();
   if (STATE.activeView === 'calendar') renderCalendar();
   if (STATE.activeView === 'list') renderList();
-}
-
-/* Simula atualização em tempo real (polling de 30s em produção = WebSocket) */
-function startRealtimeSimulation() {
-  // Em produção: substituir por WebSocket ou SSE
-  // ws.onmessage = (e) => { const data = JSON.parse(e.data); applyUpdate(data); refreshAll(); }
-  setInterval(() => {
-    // Simula que um agendamento pendente foi confirmado pelo cliente via link
-    const pendentes = APPOINTMENTS.filter(a => a.status === 'pendente');
-    if (pendentes.length > 0) {
-      const lucky = pendentes[Math.floor(Math.random() * pendentes.length)];
-      // Só ocorre 20% das vezes para não encher de toasts
-      if (Math.random() < 0.20) {
-        lucky.status = 'confirmado';
-        showToast(`${lucky.client} confirmou via link! ✔`, 'success');
-        refreshAll();
-      }
-    }
-  }, 30000);
 }
 
 /* ─── TOOLTIP DO CALENDÁRIO ─────────────────────────────── */
@@ -1986,8 +2027,6 @@ function animateAgendaStats() {
 
 function boot() {
   renderHeader();
-  renderStats();
-  renderKanban();
   initViewTabs();
   initFilters();
   initListFilters();
@@ -1997,10 +2036,15 @@ function boot() {
   initBlockModal();
   initSidebar();
   initCalTooltip();
-  startRealtimeSimulation();
+
+  // Carrega os agendamentos da API (substitui as antigas
+  // renderStats()/renderKanban() diretas sobre o mock: agora
+  // a tela nasce vazia e reloadAppointments() -> refreshAll()
+  // preenche assim que a resposta chega, disparando também a
+  // animação dos stats na primeira carga — ver reloadAppointments()).
+  reloadAppointments();
 
   // ── Animações de entrada ──────────────────────────────────
-  animateAgendaStats();
   initScrollReveal();
   // ─────────────────────────────────────────────────────────
 

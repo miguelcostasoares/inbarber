@@ -159,22 +159,70 @@ function deleteAppointment(id) {
   return apiRequest(`/appointments/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
-/* ─── 3. EXPORT ──────────────────────────────────────────────
-   Sem bundler no projeto ainda (front é HTML + <script> direto),
-   então expõe tudo em um namespace único no escopo global,
-   evitando colidir com funções soltas do agenda-crm.js.
-──────────────────────────────────────────────────────────── */
 /* ─── 3. SERVIÇOS ───────────────────────────────────────────
-   GET /api/services
-   Retorna todos os serviços ativos.
+   GET    /api/services         → apenas ativos (agenda)
+   GET    /api/services?all=1  → todos (admin/configurações)
+   POST   /api/services         → criar
+   PATCH  /api/services/:id     → editar
+   PATCH  /api/services/:id/status → ativar/desativar
 ──────────────────────────────────────────────────────────── */
 
 /**
- * Lista todos os serviços ativos.
- * @returns {Promise<Array>} lista de serviços
+ * Lista serviços ativos (para selects da Agenda).
+ * @returns {Promise<Array>} lista de serviços ativos
  */
 function listServices() {
   return apiRequest('/services', { method: 'GET' });
+}
+
+/**
+ * Lista TODOS os serviços, incluindo inativos (tela de Configurações).
+ * @returns {Promise<Array>} lista completa de serviços
+ */
+function listServicesAdmin() {
+  return apiRequest('/services?all=1', { method: 'GET' });
+}
+
+/**
+ * Cria um novo serviço.
+ * @param {Object} data
+ * @param {string} data.nome
+ * @param {number} data.duracao_min
+ * @param {number} data.preco
+ * @param {boolean} [data.ativo]
+ * @returns {Promise<Object>} serviço criado
+ */
+function createService(data) {
+  return apiRequest('/services', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Atualiza um serviço existente.
+ * @param {string} id
+ * @param {Object} data - { nome?, duracao_min?, preco?, ativo? }
+ * @returns {Promise<Object>} serviço atualizado
+ */
+function updateService(id, data) {
+  return apiRequest(`/services/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Ativa ou desativa um serviço.
+ * @param {string} id
+ * @param {boolean} ativo
+ * @returns {Promise<Object>} serviço atualizado
+ */
+function toggleServiceStatus(id, ativo) {
+  return apiRequest(`/services/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ ativo }),
+  });
 }
 
 /* ─── 4. BARBEIROS ──────────────────────────────────────────
@@ -414,6 +462,10 @@ window.InBarberAPI = {
   updateAppointment,
   deleteAppointment,
   listServices,
+  listServicesAdmin,
+  createService,
+  updateService,
+  toggleServiceStatus,
   listBarbers,
   createBarber,
   updateBarber,

@@ -300,7 +300,109 @@ function deleteClient(id) {
   return apiRequest(`/clients/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
-/* ─── 6. EXPORT ──────────────────────────────────────────────
+/* ─── 6. PRODUTOS E RESERVAS ─────────────────────────────────
+   Espelho exato da camada mock de js/produtos-data.js. Enquanto
+   os endpoints não existirem em app.py, ProdutosData corre em
+   MODO='mock'; ao ligar o back-end basta trocar essa constante.
+
+   Endpoints esperados:
+     GET    /api/products                      ?disponivel=true
+     GET    /api/products/:id
+     PATCH  /api/products/:id                 (CRM: promoção, destaque, stock)
+     POST   /api/product-reservations
+     GET    /api/product-reservations          ?estado=reservado
+     GET    /api/product-reservations/:id
+     POST   /api/product-reservations/:id/confirm
+     POST   /api/product-reservations/:id/release
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Lista o catálogo de produtos da loja.
+ * @param {Object} [filters] - { disponivel, categoria }
+ * @returns {Promise<Array>} produtos com stock, reservado e disponivel
+ */
+function listProducts(filters = {}) {
+  return apiRequest(`/products${buildQueryString(filters)}`);
+}
+
+/**
+ * Detalhe de um produto.
+ * @param {string} id
+ * @returns {Promise<Object>}
+ */
+function getProduct(id) {
+  return apiRequest(`/products/${encodeURIComponent(id)}`);
+}
+
+/**
+ * Atualiza os campos de um produto que o CRM gere.
+ * Enviar precoPromo: null tira o produto de promoção.
+ * @param {string} id
+ * @param {Object} data - { ativo, destaque, precoPromo, preco, stock }
+ * @returns {Promise<Object>} produto atualizado
+ */
+function updateProduct(id, data) {
+  return apiRequest(`/products/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Cria uma reserva de produtos (estado inicial: 'reservado').
+ * O back-end é que trava o stock — o front nunca decide sozinho.
+ * @param {Object} data - { clienteNome, clienteTel, observacoes,
+ *                          agendamentoId, itens: [{ produtoId, quantidade }] }
+ * @returns {Promise<Object>} reserva criada, já com numero e total
+ */
+function createProductReservation(data) {
+  return apiRequest('/product-reservations', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Lista reservas de produtos.
+ * @param {Object} [filters] - { estado: 'reservado'|'confirmado'|'libertado' }
+ * @returns {Promise<Array>}
+ */
+function listProductReservations(filters = {}) {
+  return apiRequest(`/product-reservations${buildQueryString(filters)}`);
+}
+
+/**
+ * Detalhe de uma reserva (aceita id interno ou número #RES-000).
+ * @param {string} id
+ * @returns {Promise<Object>}
+ */
+function getProductReservation(id) {
+  return apiRequest(`/product-reservations/${encodeURIComponent(id)}`);
+}
+
+/**
+ * Barbeiro entregou: 'reservado' → 'confirmado' (venda efetivada).
+ * @param {string} id
+ * @returns {Promise<Object>} reserva atualizada
+ */
+function confirmProductReservation(id) {
+  return apiRequest(`/product-reservations/${encodeURIComponent(id)}/confirm`, {
+    method: 'POST',
+  });
+}
+
+/**
+ * No-show ou cancelamento: 'reservado' → 'libertado' (stock volta).
+ * @param {string} id
+ * @returns {Promise<Object>} reserva atualizada
+ */
+function releaseProductReservation(id) {
+  return apiRequest(`/product-reservations/${encodeURIComponent(id)}/release`, {
+    method: 'POST',
+  });
+}
+
+/* ─── 7. EXPORT ──────────────────────────────────────────────
    Sem bundler no projeto ainda (front é HTML + <script> direto),
    então expõe tudo em um namespace único no escopo global,
    evitando colidir com funções soltas do agenda-crm.js.
@@ -321,4 +423,12 @@ window.InBarberAPI = {
   getClient,
   updateClient,
   deleteClient,
+  listProducts,
+  getProduct,
+  updateProduct,
+  createProductReservation,
+  listProductReservations,
+  getProductReservation,
+  confirmProductReservation,
+  releaseProductReservation,
 };

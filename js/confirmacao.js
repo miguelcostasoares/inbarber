@@ -24,6 +24,91 @@
     return 'R$ ' + val.toFixed(2).replace('.', ',');
   }
 
+  /* ══════════════════════════════════════════════════════════
+     MODO "SÓ PRODUTO"
+     A reserva de produtos não tem barbeiro nem horário: a página
+     mostra o número de reserva e as instruções de retirada, e o
+     fluxo de agendamento abaixo nem chega a arrancar.
+  ══════════════════════════════════════════════════════════ */
+  const MODO_PRODUTO = (function () {
+    try { return new URLSearchParams(location.search).get('modo') === 'produto'; }
+    catch (_) { return false; }
+  })();
+
+  function renderReservaProduto() {
+    const D = window.ProdutosData;
+    const reserva = D && D.ultimaReserva.ler();
+
+    /* Sem reserva em sessão (link direto, refresh depois de limpar) */
+    if (!reserva) { window.location.replace('produtos.html'); return; }
+
+    const tr = k => (window.I18N ? window.I18N.t(k) : k);
+
+    /* A topbar herdada diz "Barbearia · Revisão" — aqui não há revisão nenhuma */
+    const tbName = document.querySelector('.topbar-title-name');
+    const tbSub  = document.querySelector('.topbar-title-sub');
+    if (tbName) tbName.textContent = 'Corvo';
+    if (tbSub)  tbSub.textContent  = tr('prod.title');
+    document.title = tr('prod.res_title') + ' — Corvo Barbearia';
+
+    $('prc-num').textContent = '#' + (reserva.numero || '—');
+
+    const nomeEl = $('prc-name');
+    if (nomeEl) nomeEl.textContent = reserva.clienteNome || '';
+
+    const lista = $('prc-list');
+    lista.innerHTML = (reserva.produtos || []).map(l => `
+      <li class="prc-item">
+        <span class="prc-item-qtd">${l.quantidade}×</span>
+        <span class="prc-item-name">${l.nome}</span>
+        <span class="prc-item-price">${
+          l.precoTabela ? `<s>${D.fmtPreco(l.precoTabela * l.quantidade)}</s> ` : ''
+        }${D.fmtPreco(l.subtotal)}</span>
+      </li>`).join('');
+
+    $('prc-total').textContent = D.fmtPreco(reserva.total);
+
+    /* Só aparece se houve promoção — reconhecer a poupança fecha bem a compra */
+    if (reserva.poupanca > 0) {
+      const el = $('prc-poupanca');
+      el.textContent = tr('prod.save').replace('{valor}', D.fmtPreco(reserva.poupanca));
+      el.hidden = false;
+    }
+
+    if (reserva.observacoes) {
+      $('prc-obs').textContent = reserva.observacoes;
+      $('prc-obs-block').hidden = false;
+    }
+
+    /* Mensagem de WhatsApp com o número da reserva */
+    const wa = $('prc-wa');
+    if (wa && reserva.numero) {
+      wa.href = 'https://wa.me/5511999999999?text=' +
+        encodeURIComponent(tr('prod.res_num') + ' #' + reserva.numero + ' — ' + (reserva.clienteNome || ''));
+      wa.removeAttribute('data-wa');   /* não deixa o i18n reescrever o texto */
+    }
+
+    $('back-btn').addEventListener('click', () => { window.location.href = 'produtos.html'; });
+    $('prc-new').addEventListener('click', () => {
+      D.ultimaReserva.limpar();
+      window.location.href = 'produtos.html';
+    });
+    $('prc-home').addEventListener('click', () => {
+      D.ultimaReserva.limpar();
+      window.location.href = 'index.html';
+    });
+  }
+
+  if (MODO_PRODUTO) {
+    document.documentElement.classList.add('modo-produto');
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderReservaProduto);
+    } else {
+      renderReservaProduto();
+    }
+    return;
+  }
+
   /* ══ Lê dados do sessionStorage ══ */
   let services = [];
   let barber   = null;

@@ -364,20 +364,192 @@ def deletar_agendamento(agendamento_id):
 # SERVIÇOS
 # ═══════════════════════════════════════════════════════════
 
+def serializar_servico(row):
+    return {
+        'id':          row['id'],
+        'name':        row['nome'],
+        'nome':        row['nome'],
+        'price':       float(row['preco']) if row['preco'] is not None else 0.0,
+        'preco':       float(row['preco']) if row['preco'] is not None else 0.0,
+        'duration':    row['duracao_min'],
+        'duracao_min': row['duracao_min'],
+        'ativo':       bool(row['ativo']),
+    }
+
+
 @app.route('/api/services', methods=['GET'])
 def listar_servicos():
+    include_all = request.args.get('all') == '1'
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        if include_all:
+            cursor.execute(
+                '''SELECT id, nome, preco, duracao_min, ativo
+                   FROM servicos
+                   ORDER BY nome ASC'''
+            )
+        else:
+            cursor.execute(
+                '''SELECT id, nome, preco, duracao_min, ativo
+                   FROM servicos
+                   WHERE ativo = 1
+                   ORDER BY nome ASC'''
+            )
+        rows = cursor.fetchall()
+        return jsonify([serializar_servico(r) for r in rows]), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao listar serviços: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/services', methods=['POST'])
+def criar_servico():
+    data = request.get_json(silent=True) or {}
+
+    nome = (data.get('nome') or '').strip()
+    if not nome:
+        return jsonify({'error': 'O nome é obrigatório.'}), 400
+
+    try:
+        duracao_min = int(data.get('duracao_min', 0))
+        if duracao_min < 1:
+            raise ValueError
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Duração inválida. Informe um número inteiro positivo.'}), 400
+
+    try:
+        preco = float(data.get('preco', 0))
+        if preco < 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Preço inválido.'}), 400
+
+    ativo   = bool(data.get('ativo', True))
+    novo_id = 's' + uuid.uuid4().hex[:12]
+
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            '''SELECT id, nome AS name, preco AS price, duracao_min AS duration, cor AS color
-               FROM servicos
-               WHERE ativo = 1
-               ORDER BY nome ASC'''
+            '''INSERT INTO servicos (id, nome, preco, duracao_min, ativo)
+               VALUES (%s, %s, %s, %s, %s)''',
+            (novo_id, nome, preco, duracao_min, int(ativo))
         )
-        return jsonify(cursor.fetchall()), 200
+        conn.commit()
+        cursor.execute(
+            'SELECT id, nome, preco, duracao_min, ativo FROM servicos WHERE id = %s',
+            (novo_id,)
+        )
+        return jsonify(serializar_servico(cursor.fetchone())), 201
     except Exception as e:
-        return jsonify({'error': f'Erro ao listar serviços: {e}'}), 500
+        conn.rollback()
+        return jsonify({'error': f'Erro ao criar serviço: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/services/<servico_id>', methods=['PUT', 'PATCH'])
+def atualizar_servico(servico_id):
+    data = request.get_json(silent=True) or {}
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id FROM servicos WHERE id = %s', (servico_id,))
+        if not cursor.fetchone():
+            return jsonify({'error': 'Serviço não encontrado.'}), 404
+
+        campos = []
+        params = []
+
+        if 'nome' in data:
+            nome = data['nome'].strip()
+            if not nome:
+                return jsonify({'error': 'O nome não pode ser vazio.'}), 400
+            campos.append('nome = %s')
+            params.append(nome)
+
+        if 'duracao_min' in data:
+            try:
+                duracao = int(data['duracao_min'])
+                if duracao < 1:
+                    raise ValueError
+            except (ValueError, TypeError):
+                return jsonify({'error': 'Duração inválida.'}), 400
+            campos.append('duracao_min = %s')
+            params.append(duracao)
+
+        if 'preco' in data:
+            try:
+                preco = float(data['preco'])
+                if preco < 0:
+                    raise ValueError
+            except (ValueError, TypeError):
+                return jsonify({'error': 'Preço inválido.'}), 400
+            campos.append('preco = %s')
+            params.append(preco)
+
+        if 'ativo' in data:
+            campos.append('ativo = %s')
+            params.append(int(bool(data['ativo'])))
+
+        if not campos:
+            return jsonify({'error': 'Nenhum campo para atualizar.'}), 400
+
+        params.append(servico_id)
+        cursor.execute(
+            f"UPDATE servicos SET {', '.join(campos)} WHERE id = %s",
+            tuple(params)
+        )
+        conn.commit()
+
+        cursor.execute(
+            'SELECT id, nome, preco, duracao_min, ativo FROM servicos WHERE id = %s',
+            (servico_id,)
+        )
+        return jsonify(serializar_servico(cursor.fetchone())), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao atualizar serviço: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/services/<servico_id>/status', methods=['PATCH'])
+def toggle_servico_status(servico_id):
+    data = request.get_json(silent=True) or {}
+
+    if 'ativo' not in data:
+        return jsonify({'error': 'Campo "ativo" é obrigatório.'}), 400
+
+    ativo = int(bool(data['ativo']))
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id FROM servicos WHERE id = %s', (servico_id,))
+        if not cursor.fetchone():
+            return jsonify({'error': 'Serviço não encontrado.'}), 404
+
+        cursor.execute(
+            'UPDATE servicos SET ativo = %s WHERE id = %s',
+            (ativo, servico_id)
+        )
+        conn.commit()
+
+        cursor.execute(
+            'SELECT id, nome, preco, duracao_min, ativo FROM servicos WHERE id = %s',
+            (servico_id,)
+        )
+        return jsonify(serializar_servico(cursor.fetchone())), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao atualizar status: {e}'}), 500
     finally:
         cursor.close()
         conn.close()

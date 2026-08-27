@@ -12,6 +12,17 @@
 <link rel="stylesheet" href="/css/confirmacao.css">
 <link rel="stylesheet" href="/css/auth-confirm.css">
 <link rel="stylesheet" href="/css/profile-btn.css">
+<script>
+  /* Modo "só produto" decidido antes de pintar, para não piscar
+     o fluxo de agendamento durante um frame. */
+  (function () {
+    try {
+      if (new URLSearchParams(location.search).get('modo') === 'produto') {
+        document.documentElement.classList.add('modo-produto');
+      }
+    } catch (_) {}
+  })();
+</script>
 </head>
 <body>
 
@@ -174,6 +185,97 @@
   </div>
 </main>
 
+<!-- ══════════════════════════════════════════════════════════
+     MODO "SÓ PRODUTO" — reserva sem agendamento
+     Mostrado quando o URL traz ?modo=produto
+══════════════════════════════════════════════════════════ -->
+<main class="page-content prod-confirm" id="prod-confirm">
+
+  <div class="prc-hero">
+    <div class="prc-icon" aria-hidden="true">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 10.5l12-5.5 12 5.5v11L16 27 4 21.5z"/>
+        <path d="M4 10.5L16 16l12-5.5M16 16v11"/>
+        <path d="M10 8l12 5.5"/>
+      </svg>
+    </div>
+    <h1 class="prc-title" data-i18n="prod.res_title">Reserva recebida!</h1>
+    <p class="prc-sub" data-i18n="prod.res_sub">Os seus produtos ficam à sua espera no balcão.</p>
+  </div>
+
+  <!-- Número de reserva -->
+  <div class="prc-num">
+    <span class="prc-num-label" data-i18n="prod.res_num">Número de reserva</span>
+    <strong class="prc-num-value" id="prc-num">#RES-000</strong>
+    <span class="prc-num-name" id="prc-name"></span>
+  </div>
+
+  <!-- Produtos -->
+  <section class="prc-block" aria-labelledby="prc-items-title">
+    <p class="prc-block-title" id="prc-items-title" data-i18n="prod.res_items">Produtos reservados</p>
+    <div class="prc-card">
+      <ul class="prc-list" id="prc-list" role="list"></ul>
+      <p class="prc-poupanca" id="prc-poupanca" hidden></p>
+      <div class="prc-total">
+        <span data-i18n="prod.total">Total</span>
+        <strong id="prc-total">R$ 0,00</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- Observações do cliente -->
+  <section class="prc-block" id="prc-obs-block" hidden>
+    <p class="prc-block-title" data-i18n="prod.res_obs">A sua observação</p>
+    <div class="prc-card prc-obs" id="prc-obs"></div>
+  </section>
+
+  <!-- Instruções de retirada -->
+  <section class="prc-block" aria-labelledby="prc-pickup-title">
+    <p class="prc-block-title" id="prc-pickup-title" data-i18n="prod.pickup_title">Como levantar o seu produto</p>
+    <ol class="prc-steps" role="list">
+      <li><span class="prc-step-n">1</span><span data-i18n="prod.pickup_1">Dirija-se à barbearia dentro do horário de funcionamento.</span></li>
+      <li><span class="prc-step-n">2</span><span data-i18n="prod.pickup_2">Apresente o número da reserva ao balcão.</span></li>
+      <li><span class="prc-step-n">3</span><span data-i18n="prod.pickup_3">Pagamento no momento da retirada — sem horário fixo, venha quando quiser.</span></li>
+    </ol>
+
+    <div class="prc-card prc-place">
+      <p class="prc-addr">
+        <strong>Corvo Barbearia</strong><br>
+        Rua Augusta, 1200 — Consolação<br>São Paulo / SP
+      </p>
+      <div class="prc-hours">
+        <p class="prc-hours-title" data-i18n="prod.hours_title">Horário de funcionamento</p>
+        <ul role="list">
+          <li><span data-i18n="foot.week">Segunda a sexta</span><span>9h – 20h</span></li>
+          <li><span data-i18n="day.6">sábado</span><span>8h – 18h</span></li>
+          <li><span data-i18n="day.0">domingo</span><span data-i18n="loc.closedDay">Fechado</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ações -->
+  <div class="prc-actions">
+    <a class="prc-btn prc-btn-primary" id="prc-map" target="_blank" rel="noopener"
+       href="https://www.google.com/maps/dir/?api=1&amp;destination=Rua%20Augusta%201200%2C%20Consola%C3%A7%C3%A3o%2C%20S%C3%A3o%20Paulo">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M13 6.8c0 3.6-5 8-5 8s-5-4.4-5-8a5 5 0 0 1 10 0z"/><circle cx="8" cy="6.6" r="1.8"/>
+      </svg>
+      <span data-i18n="prod.map">Ver no mapa</span>
+    </a>
+    <a class="prc-btn prc-btn-wa" id="prc-wa" target="_blank" rel="noopener" data-wa
+       href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20queria%20marcar%20um%20hor%C3%A1rio%20na%20Corvo">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 1.5a6.4 6.4 0 0 0-5.5 9.7L1.6 14.5l3.4-.9A6.4 6.4 0 1 0 8 1.5zm0 1.2a5.2 5.2 0 1 1-2.7 9.7l-.2-.1-2 .5.5-2-.1-.2A5.2 5.2 0 0 1 8 2.7zm-2 2.4c-.1 0-.3 0-.4.2-.2.2-.6.6-.6 1.4s.6 1.6.7 1.7c.1.1 1.2 1.9 3 2.6 1.4.6 1.7.5 2 .4.4 0 1-.4 1.2-.8.1-.4.1-.8.1-.9 0-.1-.2-.1-.4-.2l-1.2-.6c-.2 0-.3 0-.4.1l-.5.7c-.1.1-.2.1-.4 0-.2-.1-.8-.3-1.5-1-.6-.5-.9-1.1-1-1.3 0-.2 0-.3.1-.4l.3-.4.2-.3v-.4l-.5-1.2c-.1-.3-.3-.3-.4-.3H6z"/>
+      </svg>
+      <span data-i18n="prod.wa">Falar no WhatsApp</span>
+    </a>
+    <button class="prc-btn prc-btn-ghost" id="prc-new" type="button" data-i18n="prod.new_res">Reservar mais produtos</button>
+    <button class="prc-btn prc-btn-ghost" id="prc-home" type="button" data-i18n="prod.home">Voltar ao início</button>
+  </div>
+
+</main>
+
 <!-- ══ BARRA INFERIOR ══ -->
 <div class="confirm-bar" id="confirm-bar">
   <div class="confirm-bar-inner">
@@ -212,6 +314,8 @@
   </div>
 </div>
 
+<script src="/js/i18n.js"></script>
+<script src="/js/produtos-data.js"></script>
 <script src="/js/confirmacao.js" defer></script>
 <script src="/js/profile-btn.js"></script>
 <script src="/js/auth-confirm.js"></script>

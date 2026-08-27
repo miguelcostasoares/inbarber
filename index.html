@@ -173,6 +173,7 @@
   <nav class="nav-links" aria-label="Menu principal">
     <a href="#sobre"       data-i18n="nav.about">Sobre</a>
     <a href="#servicos"    data-i18n="nav.services">Serviços</a>
+    <a href="#produtos"    data-i18n="nav.products">Produtos</a>
     <a href="#equipa"      data-i18n="nav.team">Equipa</a>
     <a href="#galeria"     data-i18n="nav.gallery">Galeria</a>
     <a href="#localizacao" data-i18n="nav.location">Localização</a>
@@ -645,6 +646,40 @@
     <li data-i18n="svc.term2">Cancele até 2h antes, sem custo</li>
     <li data-i18n="svc.term3">Não precisa de conta para marcar</li>
   </ul>
+</section>
+
+<!-- ═══════════════════════════════ PRODUTOS ═══════════════════════════════
+     Vitrine dos produtos em destaque. O conteúdo é desenhado por
+     js/produtos-landing.js a partir de ProdutosData — a secção começa
+     com [hidden] e só aparece se houver stock, para nunca ficar vazia.
+═══════════════════════════════════════════════════════════════════════ -->
+<section class="shop" id="produtos" aria-labelledby="shop-h" hidden>
+
+  <div class="shop-hd reveal">
+    <p class="label-tag" data-i18n="prod.tag">Loja da barbearia</p>
+    <h2 class="section-h" id="shop-h" data-i18n-html="prod.land_h">O ritual continua<br>em <em>casa.</em></h2>
+    <p class="shop-sub" data-i18n="prod.land_sub">
+      Os mesmos produtos que usamos no atendimento. Reserve online e pague no balcão quando vier levantar.
+    </p>
+  </div>
+
+  <div class="shop-showcase" id="shop-showcase"></div>
+
+  <div class="shop-foot-row reveal d1">
+    <a class="shop-all" href="produtos.html">
+      <span data-i18n="prod.land_all">Ver todos os produtos</span>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 8h10M9 4l4 4-4 4"/>
+      </svg>
+    </a>
+    <p class="shop-note">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="1.5" y="3" width="11" height="8" rx="1.5"/><path d="M1.5 6h11"/>
+      </svg>
+      <span data-i18n="prod.land_note">Sem pagamento online — reserva agora, paga no balcão.</span>
+    </p>
+  </div>
+
 </section>
 
 <!-- ═══════════════════════════════ EQUIPA ═══════════════════════════════ -->
@@ -1844,7 +1879,9 @@
   sob IntersectionObserver, só quando o mapa / o gráfico se aproximam.
 -->
 <script src="/js/i18n.js"></script>
+<script src="/js/produtos-data.js"></script>
 <script src="/js/app.js" defer></script>
+<script src="/js/produtos-landing.js" defer></script>
 <script src="/js/auth-confirm.js" defer></script>
 <script src="/js/profile-btn.js" defer></script>
 <script>

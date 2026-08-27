@@ -156,11 +156,14 @@ textarea {
 
 /* ─── 4. SIDEBAR ────────────────────────────────────────── */
 /* Variável de largura recolhida — usada pelo toggle desktop */
-:root { --nav-w-collapsed: 64px; }
+:root {
+  --nav-w-collapsed: 64px;
+}
 
 .sidebar {
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: var(--nav-w);
   height: 100dvh;
   background: var(--bg-2);
@@ -168,7 +171,9 @@ textarea {
   display: flex;
   flex-direction: column;
   z-index: 200;
-  transition: width var(--dur) var(--ease-out), transform var(--dur) var(--ease-drawer);
+  transition:
+    width var(--dur) var(--ease-out),
+    transform var(--dur) var(--ease-drawer);
   will-change: transform;
 }
 
@@ -228,7 +233,9 @@ textarea {
   font-size: 13.5px;
   font-weight: 500;
   color: var(--muted);
-  transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+  transition:
+    background var(--dur) var(--ease-out),
+    color var(--dur) var(--ease-out);
   position: relative;
 }
 
@@ -1336,7 +1343,9 @@ textarea {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Estado vazio */
@@ -1439,7 +1448,7 @@ textarea {
 }
 
 .badge-status::before {
-  content: '';
+  content: "";
   width: 5px;
   height: 5px;
   border-radius: 50%;
@@ -1715,4 +1724,14 @@ textarea {
 .form-select option {
   background: var(--bg-3);
   color: var(--cream);
+}
+
+.servico-duracao-input::-webkit-outer-spin-button,
+.servico-duracao-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.servico-duracao-input {
+  -moz-appearance: textfield;
 }

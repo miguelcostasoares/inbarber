@@ -15,6 +15,12 @@ const EQUIPE_STATE = {
   loading: false,
 };
 
+/* ─── SERVIÇOS: CONFIG ──────────────────────────────────── */
+const SERVICOS_STATE = {
+  servicos: [],
+  loading: false,
+};
+
 const DEFAULTS = {
   nome: "",
   telefone: "",
@@ -363,6 +369,271 @@ function initEquipeListeners() {
     });
 }
 
+/* ─── SERVIÇOS: RENDER ───────────────────────────────────── */
+function formatarPreco(valor) {
+  return Number(valor).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
+}
+
+function formatarDuracao(min) {
+  const m = parseInt(min, 10);
+  if (!m) return '—';
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  const rest = m % 60;
+  return rest ? `${h}h ${rest}min` : `${h}h`;
+}
+
+function renderServicos() {
+  const loading = document.getElementById('servicosLoading');
+  const empty   = document.getElementById('servicosEmpty');
+  const table   = document.getElementById('servicosTable');
+  const tbody   = document.getElementById('servicosTableBody');
+
+  if (SERVICOS_STATE.loading) {
+    loading.hidden = false;
+    empty.hidden   = true;
+    table.hidden   = true;
+    return;
+  }
+
+  loading.hidden = true;
+
+  if (!SERVICOS_STATE.servicos.length) {
+    empty.hidden = false;
+    table.hidden = true;
+    return;
+  }
+
+  empty.hidden = true;
+  table.hidden = false;
+
+  tbody.innerHTML = '';
+
+  SERVICOS_STATE.servicos.forEach((s) => {
+    const ativo = !!s.ativo;
+    const nome  = s.name || s.nome || '—';
+
+    const tr = document.createElement('tr');
+    tr.className = 'equipe-table__tr' + (ativo ? '' : ' equipe-table__tr--inativo');
+    tr.dataset.id = s.id;
+
+    tr.innerHTML = `
+      <td class="equipe-table__td">
+        <span class="equipe-nome-text">${escapeHtml(nome)}</span>
+      </td>
+      <td class="equipe-table__td">${escapeHtml(formatarDuracao(s.duration ?? s.duracao_min))}</td>
+      <td class="equipe-table__td">${escapeHtml(formatarPreco(s.price ?? s.preco ?? 0))}</td>
+      <td class="equipe-table__td">
+        <span class="badge-status ${ativo ? 'badge-status--ativo' : 'badge-status--inativo'}">
+          ${ativo ? 'Ativo' : 'Inativo'}
+        </span>
+      </td>
+      <td class="equipe-table__td equipe-table__td--actions">
+        <div class="equipe-actions">
+          <button
+            class="btn-table"
+            data-action="editar-servico"
+            data-id="${s.id}"
+            type="button"
+            aria-label="Editar ${escapeHtml(nome)}"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M8.5 1.5l2 2L4 10H2V8L8.5 1.5z" stroke="currentColor" stroke-width="1.4"
+                stroke-linejoin="round"/>
+            </svg>
+            Editar
+          </button>
+          <button
+            class="toggle-switch ${ativo ? 'toggle-switch--on' : ''}"
+            data-action="toggle-servico"
+            data-id="${s.id}"
+            data-ativo="${ativo ? '1' : '0'}"
+            type="button"
+            role="switch"
+            aria-checked="${ativo ? 'true' : 'false'}"
+            aria-label="${ativo ? 'Desativar' : 'Ativar'} ${escapeHtml(nome)}"
+          >
+            <span class="toggle-switch__track" aria-hidden="true">
+              <span class="toggle-switch__thumb"></span>
+            </span>
+            <span class="toggle-switch__label">${ativo ? 'Ativo' : 'Inativo'}</span>
+          </button>
+        </div>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+/* ─── SERVIÇOS: LOAD ─────────────────────────────────────── */
+async function loadServicos() {
+  SERVICOS_STATE.loading = true;
+  renderServicos();
+
+  try {
+    const lista = await window.InBarberAPI.listServicesAdmin();
+    SERVICOS_STATE.servicos = lista;
+  } catch (err) {
+    showToast('error', 'Não foi possível carregar os serviços.');
+    SERVICOS_STATE.servicos = [];
+  } finally {
+    SERVICOS_STATE.loading = false;
+    renderServicos();
+  }
+}
+
+/* ─── SERVIÇOS: MODAL ────────────────────────────────────── */
+function openServicoModal(servico = null) {
+  const overlay  = document.getElementById('servicoModalOverlay');
+  const title    = document.getElementById('servicoModalTitle');
+  const idInput  = document.getElementById('servicoModalId');
+  const nomeInput    = document.getElementById('servicoModalNome');
+  const duracaoInput = document.getElementById('servicoModalDuracao');
+  const precoInput   = document.getElementById('servicoModalPreco');
+  const statusSel    = document.getElementById('servicoModalStatus');
+
+  if (servico) {
+    title.textContent      = 'Editar Serviço';
+    idInput.value          = servico.id;
+    nomeInput.value        = servico.name || servico.nome || '';
+    duracaoInput.value     = servico.duration ?? servico.duracao_min ?? '';
+    precoInput.value       = servico.price ?? servico.preco ?? '';
+    statusSel.value        = servico.ativo ? '1' : '0';
+  } else {
+    title.textContent      = 'Novo Serviço';
+    idInput.value          = '';
+    nomeInput.value        = '';
+    duracaoInput.value     = '';
+    precoInput.value       = '';
+    statusSel.value        = '1';
+  }
+
+  overlay.hidden = false;
+  nomeInput.focus();
+}
+
+function closeServicoModal() {
+  document.getElementById('servicoModalOverlay').hidden = true;
+}
+
+async function handleSalvarServico() {
+  const id      = document.getElementById('servicoModalId').value;
+  const nome    = document.getElementById('servicoModalNome').value.trim();
+  const duracao = parseInt(document.getElementById('servicoModalDuracao').value, 10);
+  const preco   = parseFloat(document.getElementById('servicoModalPreco').value);
+  const ativo   = document.getElementById('servicoModalStatus').value === '1';
+
+  if (!nome) {
+    flashInputError('servicoModalNome');
+    showToast('error', 'O nome do serviço é obrigatório.');
+    return;
+  }
+
+  if (!duracao || duracao < 1) {
+    flashInputError('servicoModalDuracao');
+    showToast('error', 'Informe uma duração válida em minutos.');
+    return;
+  }
+
+  if (isNaN(preco) || preco < 0) {
+    flashInputError('servicoModalPreco');
+    showToast('error', 'Informe um preço válido.');
+    return;
+  }
+
+  const btnSalvar = document.getElementById('servicoModalSalvar');
+  btnSalvar.disabled = true;
+
+  try {
+    if (id) {
+      await window.InBarberAPI.updateService(id, { nome, duracao_min: duracao, preco, ativo });
+      showToast('success', 'Serviço atualizado com sucesso!');
+    } else {
+      await window.InBarberAPI.createService({ nome, duracao_min: duracao, preco, ativo });
+      showToast('success', 'Serviço criado com sucesso!');
+    }
+    closeServicoModal();
+    await loadServicos();
+  } catch (err) {
+    showToast('error', err.message || 'Erro ao salvar serviço.');
+  } finally {
+    btnSalvar.disabled = false;
+  }
+}
+
+async function handleToggleServico(id, ativoAtual) {
+  const novoStatus = !ativoAtual;
+  try {
+    await window.InBarberAPI.toggleServiceStatus(id, novoStatus);
+    showToast('success', novoStatus ? 'Serviço ativado.' : 'Serviço desativado.');
+    await loadServicos();
+  } catch (err) {
+    showToast('error', err.message || 'Erro ao alterar status.');
+  }
+}
+
+/* ─── SERVIÇOS: EVENT LISTENERS ─────────────────────────── */
+function initServicosListeners() {
+  document
+    .getElementById('btnNovoServico')
+    ?.addEventListener('click', () => openServicoModal(null));
+
+  document
+    .getElementById('btnNovoServicoEmpty')
+    ?.addEventListener('click', () => openServicoModal(null));
+
+  document
+    .getElementById('servicoModalClose')
+    ?.addEventListener('click', closeServicoModal);
+
+  document
+    .getElementById('servicoModalCancelar')
+    ?.addEventListener('click', closeServicoModal);
+
+  document
+    .getElementById('servicoModalOverlay')
+    ?.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeServicoModal();
+    });
+
+  document.addEventListener('keydown', (e) => {
+    if (
+      e.key === 'Escape' &&
+      !document.getElementById('servicoModalOverlay')?.hidden
+    ) {
+      closeServicoModal();
+    }
+  });
+
+  document
+    .getElementById('servicoModalSalvar')
+    ?.addEventListener('click', handleSalvarServico);
+
+  document
+    .getElementById('servicosTableBody')
+    ?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      const id     = btn.dataset.id;
+
+      if (action === 'editar-servico') {
+        const servico = SERVICOS_STATE.servicos.find((s) => s.id === id);
+        if (servico) openServicoModal(servico);
+      }
+
+      if (action === 'toggle-servico') {
+        const ativoAtual = btn.dataset.ativo === '1';
+        handleToggleServico(id, ativoAtual);
+      }
+    });
+}
+
 /* ─── 4. SIDEBAR ────────────────────────────────────────── */
 function initSidebar() {
   const burger = document.getElementById("burgerBtn");
@@ -452,8 +723,13 @@ function initTabs() {
       if (panel) panel.hidden = false;
 
       // Carrega equipe na primeira visita
-      if (target === "equipe" && !EQUIPE_STATE.barbeiros.length && !EQUIPE_STATE.loading) {
+      if (target === 'equipe' && !EQUIPE_STATE.barbeiros.length && !EQUIPE_STATE.loading) {
         loadEquipe();
+      }
+
+      // Carrega serviços na primeira visita
+      if (target === 'servicos' && !SERVICOS_STATE.servicos.length && !SERVICOS_STATE.loading) {
+        loadServicos();
       }
     });
   });
@@ -705,6 +981,7 @@ function boot() {
   initFormListeners();
   initTabs();
   initEquipeListeners();
+  initServicosListeners();
 
   // Dispara checkDirty uma vez para sincronizar estado inicial dos botões
   checkDirty();

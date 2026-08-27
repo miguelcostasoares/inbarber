@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Produtos — Corvo Barbearia</title>
+<meta name="theme-color" content="#0A0A0A">
+<meta name="description" data-i18n-content="prod.meta_desc"
+      content="Pomadas, óleos e produtos de barbearia da Corvo. Reserve online e levante no balcão.">
+<link rel="icon" href="/assets/favicon.ico" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/produtos.css">
+<link rel="stylesheet" href="/css/auth-confirm.css">
+<link rel="stylesheet" href="/css/profile-btn.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main-content" data-i18n="a11y.skip">Saltar para o conteúdo</a>
+
+<!-- ══ TOPBAR ══ -->
+<header class="topbar">
+  <button class="back-btn" id="back-btn" data-i18n-aria="prod.back_aria" aria-label="Voltar para a página principal">
+    <span class="back-arrow">
+      <svg viewBox="0 0 16 16" fill="none"><polyline points="10,3 5,8 10,13" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <span data-i18n="prod.back">Voltar</span>
+  </button>
+
+  <div class="topbar-title" aria-hidden="true">
+    <span class="topbar-title-name">Corvo</span>
+    <span class="topbar-title-sub" data-i18n="prod.title">Produtos</span>
+  </div>
+
+  <div class="topbar-spacer" aria-hidden="true"></div>
+</header>
+
+<!-- ══ CONTEÚDO ══ -->
+<main class="page-content" id="main-content">
+
+  <div class="page-hd">
+    <p class="label-tag" data-i18n="prod.tag">Loja da barbearia</p>
+    <h1 data-i18n-html="prod.h1">Leve a barbearia<br><em>para casa.</em></h1>
+    <p class="page-hd-hint" data-i18n="prod.sub">
+      Reserve agora e levante no balcão — sem pagamento online, sem prazo de entrega.
+    </p>
+  </div>
+
+  <div class="prod-layout">
+
+    <!-- ─── Coluna do catálogo ─── -->
+    <div class="prod-main">
+
+      <div class="prod-filters" id="prod-filters" role="tablist"
+           data-i18n-aria="prod.filters_aria" aria-label="Filtrar por categoria"></div>
+
+      <!-- Esqueleto enquanto carrega -->
+      <div class="prod-skeleton" id="prod-skeleton" aria-hidden="true">
+        <div class="sk-card"></div><div class="sk-card"></div>
+        <div class="sk-card"></div><div class="sk-card"></div>
+      </div>
+
+      <ul class="prod-grid" id="prod-grid" role="list" hidden></ul>
+
+      <p class="prod-empty" id="prod-empty" hidden data-i18n="prod.empty">
+        Nenhum produto nesta categoria de momento.
+      </p>
+    </div>
+
+    <!-- ─── Carrinho: sidebar no desktop, bottom sheet no telemóvel ─── -->
+    <aside class="cart-panel" id="cart-panel" aria-labelledby="cart-title">
+      <div class="cart-head">
+        <div class="cart-head-txt">
+          <p class="cart-title" id="cart-title" data-i18n="prod.cart">Carrinho</p>
+          <span class="cart-count" id="cart-count">0</span>
+        </div>
+        <button class="cart-close" id="cart-close" type="button"
+                data-i18n-aria="prod.cart_close" aria-label="Fechar carrinho">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M4 4l8 8M12 4l-8 8"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cart-body" id="cart-body">
+        <p class="cart-empty" id="cart-empty" data-i18n="prod.cart_empty">O carrinho está vazio.</p>
+        <ul class="cart-list" id="cart-list" role="list"></ul>
+      </div>
+
+      <div class="cart-foot">
+        <div class="cart-total-row">
+          <span class="cart-total-label" data-i18n="prod.total">Total</span>
+          <span class="cart-total-value" id="cart-total">R$ 0,00</span>
+        </div>
+        <button class="cart-cta" id="cart-cta" type="button" disabled>
+          <span data-i18n="prod.confirm">Confirmar reserva</span>
+          <span class="cart-cta-arrow" aria-hidden="true">→</span>
+        </button>
+        <p class="cart-note">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="1.5" y="3" width="11" height="8" rx="1.5"/><path d="M1.5 6h11"/>
+          </svg>
+          <span data-i18n="prod.cart_note">Pagamento no balcão ao levantar.</span>
+        </p>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<!-- ══ BARRA FLUTUANTE (telemóvel) ══ -->
+<div class="cart-bar" id="cart-bar">
+  <div class="cart-bar-inner">
+    <button class="cart-bar-btn" id="cart-bar-btn" type="button">
+      <span class="cart-bar-meta">
+        <span class="cart-bar-count" id="cart-bar-count">0</span>
+        <span class="cart-bar-label" id="cart-bar-label" data-i18n="prod.cart_items">itens no carrinho</span>
+      </span>
+      <span class="cart-bar-total" id="cart-bar-total">R$ 0,00</span>
+    </button>
+  </div>
+</div>
+
+<!-- Fundo escuro do bottom sheet -->
+<div class="cart-backdrop" id="cart-backdrop" hidden></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL DE RESERVA — dois passos
+       1. dados do cliente
+       2. revisão: produtos, quantidades, subtotais e total
+     A reserva só é criada no passo 2, ao carregar em confirmar.
+══════════════════════════════════════════════════════════ -->
+<div class="prod-modal" id="res-modal" hidden>
+  <div class="prod-modal-backdrop" id="res-modal-backdrop"></div>
+
+  <div class="prod-modal-box" role="dialog" aria-modal="true" aria-labelledby="res-modal-title">
+    <button class="prod-modal-close" id="res-modal-close" type="button"
+            data-i18n-aria="prod.close" aria-label="Fechar">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <path d="M4 4l8 8M12 4l-8 8"/>
+      </svg>
+    </button>
+
+    <!-- Progresso -->
+    <ol class="prod-steps" id="res-steps" aria-hidden="true">
+      <li class="prod-step is-active" data-step="1">
+        <span class="prod-step-n">1</span>
+        <span data-i18n="prod.step1">Dados</span>
+      </li>
+      <li class="prod-step-line"></li>
+      <li class="prod-step" data-step="2">
+        <span class="prod-step-n">2</span>
+        <span data-i18n="prod.step2">Revisão</span>
+      </li>
+    </ol>
+
+    <!-- ─── PASSO 1 — dados ─── -->
+    <section class="prod-pane" id="pane-dados">
+      <p class="prod-modal-tag" data-i18n="prod.modal_tag">Quase lá</p>
+      <h2 class="prod-modal-title" id="res-modal-title" data-i18n="prod.modal_title">Os seus dados</h2>
+      <p class="prod-modal-sub" data-i18n="prod.modal_sub">
+        Só precisamos do nome e de um contacto para guardar a reserva no balcão.
+      </p>
+
+      <form class="prod-form" id="res-form" novalidate>
+        <div class="field" data-field="nome">
+          <label class="field-label" for="f-nome" data-i18n="prod.field_name">Nome</label>
+          <div class="field-box">
+            <svg class="field-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="8" cy="5.5" r="2.8"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/>
+            </svg>
+            <input type="text" id="f-nome" name="nome" autocomplete="name" required
+                   aria-describedby="err-nome" maxlength="60"
+                   data-i18n-placeholder="prod.field_name_ph" placeholder="Como se chama?">
+          </div>
+          <p class="field-err" id="err-nome" role="alert"></p>
+        </div>
+
+        <div class="field" data-field="tel">
+          <label class="field-label" for="f-tel" data-i18n="prod.field_tel">Celular</label>
+          <!-- O seletor de país e a máscara são montados por js/telefone.js -->
+          <div class="field-box" id="tel-box">
+            <input type="tel" id="f-tel" name="tel" autocomplete="tel-national" inputmode="numeric"
+                   required aria-describedby="tel-hint err-tel"
+                   placeholder="(99) 99999-9999">
+          </div>
+          <p class="field-hint" id="tel-hint" data-i18n="prod.tel_hint">Escolha o país e escreva o número. Usamos só para avisar quando o produto estiver separado.</p>
+          <p class="field-err" id="err-tel" role="alert"></p>
+        </div>
+
+        <div class="field" data-field="obs">
+          <label class="field-label" for="f-obs">
+            <span data-i18n="prod.field_obs">Observações</span>
+            <em data-i18n="prod.optional">(opcional)</em>
+          </label>
+          <div class="field-box">
+            <textarea id="f-obs" name="obs" rows="2" maxlength="200"
+                      data-i18n-placeholder="prod.field_obs_ph"
+                      placeholder="Ex.: passo lá na sexta ao final do dia."></textarea>
+          </div>
+          <p class="field-count" id="obs-count">0/200</p>
+        </div>
+
+        <button class="prod-form-submit" id="res-continue" type="submit">
+          <span data-i18n="prod.continue">Continuar</span>
+          <span class="prod-form-arrow" aria-hidden="true">→</span>
+        </button>
+        <p class="prod-form-note" data-i18n="prod.cart_note">Pagamento no balcão ao levantar.</p>
+      </form>
+    </section>
+
+    <!-- ─── PASSO 2 — revisão ─── -->
+    <section class="prod-pane" id="pane-revisao" hidden>
+      <p class="prod-modal-tag" data-i18n="prod.rev_tag">Última confirmação</p>
+      <h2 class="prod-modal-title" data-i18n="prod.rev_title">Confira antes de reservar</h2>
+      <p class="prod-modal-sub" data-i18n="prod.rev_sub">
+        Depois disto o stock fica reservado em seu nome até vir levantar.
+      </p>
+
+      <ul class="rev-list" id="rev-list" role="list"></ul>
+
+      <div class="rev-totais" id="rev-totais"></div>
+
+      <div class="rev-cliente">
+        <div class="rev-cliente-hd">
+          <p class="rev-cliente-title" data-i18n="prod.rev_client">Reserva em nome de</p>
+          <button type="button" class="rev-edit" id="res-edit" data-i18n="prod.rev_edit">Editar</button>
+        </div>
+        <dl id="rev-cliente-dados"></dl>
+      </div>
+
+      <p class="prod-form-error" id="res-error" hidden></p>
+
+      <div class="rev-acoes">
+        <button type="button" class="prod-form-back" id="res-back" data-i18n="prod.back_fix">Voltar e corrigir</button>
+        <button type="button" class="prod-form-submit" id="res-submit">
+          <span data-i18n="prod.confirm">Confirmar reserva</span>
+        </button>
+      </div>
+      <p class="prod-form-note" data-i18n="prod.cart_note">Pagamento no balcão ao levantar.</p>
+    </section>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="prod-toast" id="prod-toast" role="status" aria-live="polite"></div>
+
+<script src="/js/i18n.js"></script>
+<script src="/js/produtos-data.js"></script>
+<script src="/js/telefone.js"></script>
+<script src="/js/produtos.js" defer></script>
+<script src="/js/profile-btn.js"></script>
+</body>
+</html>

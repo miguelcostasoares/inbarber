@@ -238,7 +238,6 @@
             aria-controls="tab-servicos"
             id="btn-tab-servicos"
             data-tab="servicos"
-            disabled
           >
             <svg
               width="15"
@@ -255,7 +254,6 @@
               />
             </svg>
             Serviços
-            <span class="config-tab__badge">Em breve</span>
           </button>
           <button
             class="config-tab"
@@ -757,6 +755,67 @@
       <!-- /tab-equipe -->
 
       <!-- ════════════════════════════════════════════
+         TAB: SERVIÇOS
+      ════════════════════════════════════════════ -->
+      <section
+        class="config-content config-content--equipe"
+        id="tab-servicos"
+        role="tabpanel"
+        aria-labelledby="btn-tab-servicos"
+        hidden
+      >
+        <!-- Cabeçalho da seção -->
+        <div class="equipe-header">
+          <div class="equipe-header__info">
+            <h2 class="equipe-header__title">Serviços</h2>
+            <p class="equipe-header__subtitle">Gerencie os serviços oferecidos pela barbearia.</p>
+          </div>
+          <button class="btn-primary" id="btnNovoServico" type="button">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Novo Serviço
+          </button>
+        </div>
+
+        <!-- Tabela -->
+        <div class="equipe-table-wrap">
+          <!-- Estado de carregamento -->
+          <div class="equipe-loading" id="servicosLoading" aria-live="polite">
+            <div class="equipe-loading__spinner" aria-hidden="true"></div>
+            <span>Carregando serviços…</span>
+          </div>
+
+          <!-- Estado vazio -->
+          <div class="equipe-empty" id="servicosEmpty" hidden>
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <path d="M10 10l8 8-4 9 11-4 4-11-8-8-11 4 0 2zM22 10l8 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+            <p>Nenhum serviço cadastrado ainda.</p>
+            <button class="btn-primary btn-primary--sm" id="btnNovoServicoEmpty" type="button">
+              Adicionar primeiro serviço
+            </button>
+          </div>
+
+          <!-- Tabela real -->
+          <table class="equipe-table" id="servicosTable" hidden aria-label="Lista de serviços">
+            <thead>
+              <tr>
+                <th class="equipe-table__th">Nome</th>
+                <th class="equipe-table__th">Duração</th>
+                <th class="equipe-table__th">Preço</th>
+                <th class="equipe-table__th">Status</th>
+                <th class="equipe-table__th equipe-table__th--actions">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="servicosTableBody">
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <!-- /tab-servicos -->
+
+      <!-- ════════════════════════════════════════════
          MODAL: BARBEIRO (criar / editar)
       ════════════════════════════════════════════ -->
       <div
@@ -863,6 +922,142 @@
         </div>
       </div>
       <!-- /barbeiroModal -->
+
+      <!-- ════════════════════════════════════════════
+         MODAL: SERVIÇO (criar / editar)
+      ════════════════════════════════════════════ -->
+      <div
+        class="modal-overlay"
+        id="servicoModalOverlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="servicoModalTitle"
+        hidden
+      >
+        <div class="modal">
+          <!-- Cabeçalho do modal -->
+          <div class="modal__head">
+            <h3 class="modal__title" id="servicoModalTitle">Novo Serviço</h3>
+            <button
+              class="modal__close"
+              id="servicoModalClose"
+              type="button"
+              aria-label="Fechar modal"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Corpo do modal -->
+          <div class="modal__body">
+            <input type="hidden" id="servicoModalId" />
+
+            <!-- Nome -->
+            <div class="form-group">
+              <label class="form-label" for="servicoModalNome">
+                Nome
+                <span class="form-required" aria-label="Obrigatório">*</span>
+              </label>
+              <div class="form-input-wrap">
+                <div class="form-input-icon" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <path d="M3 3l3 3-1.5 3.5L8 11l3.5-1.5 3-3L11 3 8 6 6 5 3 3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <input
+                  class="form-input form-input--icon"
+                  id="servicoModalNome"
+                  type="text"
+                  placeholder="Ex: Corte de Cabelo"
+                  maxlength="80"
+                  aria-required="true"
+                />
+              </div>
+            </div>
+
+            <!-- Duração -->
+            <div class="form-group">
+              <label class="form-label" for="servicoModalDuracao">
+                Duração
+                <span class="form-required" aria-label="Obrigatório">*</span>
+              </label>
+              <div class="form-input-wrap">
+                <div class="form-input-icon" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.4"/>
+                    <path d="M7.5 4.5v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <input
+                  class="form-input form-input--icon servico-duracao-input"
+                  id="servicoModalDuracao"
+                  type="number"
+                  min="1"
+                  max="480"
+                  placeholder="30"
+                  aria-required="true"
+                  aria-describedby="servicoDuracaoHint"
+                />
+              </div>
+              <p class="form-hint" id="servicoDuracaoHint">Tempo em minutos.</p>
+            </div>
+
+            <!-- Preço -->
+            <div class="form-group">
+              <label class="form-label" for="servicoModalPreco">
+                Preço (R$)
+                <span class="form-required" aria-label="Obrigatório">*</span>
+              </label>
+              <div class="form-input-wrap">
+                <div class="form-input-icon" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <path d="M7.5 1v13M4 4.5C4 3.12 5.12 2 6.5 2h2C9.88 2 11 3.12 11 4.5S9.88 7 8.5 7h-2C5.12 7 4 8.12 4 9.5S5.12 12 6.5 12h2C9.88 12 11 10.88 11 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <input
+                  class="form-input form-input--icon"
+                  id="servicoModalPreco"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="35.00"
+                  aria-required="true"
+                />
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="form-group">
+              <label class="form-label" for="servicoModalStatus">Status</label>
+              <div class="form-select-wrap">
+                <select class="form-input form-select" id="servicoModalStatus">
+                  <option value="1">Ativo</option>
+                  <option value="0">Inativo</option>
+                </select>
+                <div class="form-select-arrow" aria-hidden="true">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rodapé do modal -->
+          <div class="modal__footer">
+            <button class="btn-ghost" id="servicoModalCancelar" type="button">Cancelar</button>
+            <button class="btn-primary" id="servicoModalSalvar" type="button">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- /servicoModal -->
 
     </main>
 

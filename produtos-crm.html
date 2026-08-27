@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Produtos — InBarber</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Styles -->
+    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/produtos-crm.css" />
+  </head>
+
+  <body>
+    <!-- ═══════════════════════════════════════════
+       SIDEBAR NAV
+  ═══════════════════════════════════════════ -->
+    <aside
+      class="sidebar is-collapsed"
+      id="sidebar"
+      role="navigation"
+      aria-label="Menu principal"
+    >
+      <div class="sidebar__brand">
+        <div class="sidebar__logo">
+          <img
+            src="assets/logo_inbarber.png"
+            alt="logo-inbarber"
+            class="sidebar__img-logo"
+          />
+        </div>
+        <span class="sidebar__name">InBarber</span>
+      </div>
+
+      <button
+        class="sidebar__toggle"
+        id="sidebarToggleBtn"
+        aria-label="Expandir menu"
+        aria-expanded="false"
+        aria-controls="sidebar"
+      >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M4 2l4 4-4 4"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+
+      <nav class="sidebar__nav">
+        <ul class="nav-list" role="list">
+          <li>
+            <a href="/dashboard.html" class="nav-item" data-label="Dashboard">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="11"
+                  y="2"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="2"
+                  y="11"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="11"
+                  y="11"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="/agenda-crm.html" class="nav-item" data-label="Agenda">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="2"
+                  y="3"
+                  width="16"
+                  height="15"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path d="M2 8h16" stroke="currentColor" stroke-width="1.5" />
+                <path
+                  d="M7 1v4M13 1v4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Agenda</span>
+            </a>
+          </li>
+          <li>
+            <a href="/clientes.html" class="nav-item" data-label="Clientes">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="10"
+                  cy="7"
+                  r="4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Clientes</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/produtos-crm.html"
+              class="nav-item nav-item--active"
+              aria-current="page"
+              data-label="Produtos"
+            >
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 6h12l-1 10H5L4 6z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M7.5 6V4.5a2.5 2.5 0 0 1 5 0V6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Produtos</span>
+            </a>
+          </li>
+          <li>
+            <a href="/financeiro.html" class="nav-item" data-label="Financeiro">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="16"
+                  height="16"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M6 10h8M6 6h4M6 14h6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Financeiro</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="configuracoes.html"
+              class="nav-item"
+              data-label="Configurações Gerais"
+            >
+              <svg
+                class="nav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+              <span>Configurações</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar__bottom">
+        <div class="sidebar__user">
+          <div class="sidebar__avatar">RC</div>
+          <div class="sidebar__user-info">
+            <span class="sidebar__user-name">Rafael Costa</span>
+            <span class="sidebar__user-role">Proprietário</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Overlay mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+    <!-- ═══════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════ -->
+    <main class="main" id="main">
+      <!-- ── TOPBAR (mobile) ── -->
+      <div class="topbar">
+        <button
+          class="topbar__burger"
+          id="burgerBtn"
+          aria-label="Abrir menu"
+          aria-expanded="false"
+          aria-controls="sidebar"
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar__logo">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 28 28"
+            fill="none"
+            aria-hidden="true"
+          >
+            <rect width="28" height="28" rx="7" fill="var(--gold)" />
+            <path
+              d="M9 7L19 21M19 7L9 21"
+              stroke="#0A0A0A"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            />
+          </svg>
+          InBarber
+        </div>
+        <a
+          href="produtos.html"
+          class="topbar__new-btn"
+          target="_blank"
+          rel="noopener"
+          aria-label="Ver loja"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M4 6h12l-1 10H5L4 6z"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M7.5 6V4.5a2.5 2.5 0 0 1 5 0V6"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            />
+          </svg>
+        </a>
+      </div>
+
+      <!-- ── HEADER ── -->
+      <header class="dash-header">
+        <div class="dash-header__left">
+          <p class="dash-header__greeting">Produtos</p>
+          <p class="dash-header__date">Catálogo, stock e reservas de balcão</p>
+        </div>
+
+        <div class="dash-header__right">
+          <span class="prod-mode" id="prodMode" hidden></span>
+          <button
+            class="prod-refresh"
+            id="prodRefresh"
+            aria-label="Atualizar dados de produtos"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+              <path
+                d="M13.5 2v3h-3"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Atualizar
+          </button>
+          <a
+            href="produtos.html"
+            class="btn-primary"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M4 6h12l-1 10H5L4 6z"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M7.5 6V4.5a2.5 2.5 0 0 1 5 0V6"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+            Ver loja
+          </a>
+        </div>
+      </header>
+
+      <!-- Aviso: servidor em baixo / erro -->
+      <div class="prod-banner" id="prodBanner" role="status" hidden></div>
+
+      <!-- ── KPIs ── -->
+      <section class="kpi-grid prod-kpis" aria-label="Indicadores de produtos">
+        <article class="kpi-card">
+          <div class="kpi-card__head">
+            <span class="kpi-card__label">Receita Reservada</span>
+            <div class="kpi-card__icon kpi-card__icon--gold">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M10 6v4l3 3"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-card__value" id="prodKpiPendente">—</div>
+          <div class="kpi-card__meta">
+            <span class="kpi-card__meta-detail" id="prodKpiPendenteMeta"
+              >à espera de entrega</span
+            >
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card__head">
+            <span class="kpi-card__label">Vendas Confirmadas</span>
+            <div class="kpi-card__icon kpi-card__icon--green">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="8"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M6.5 10.5l2.5 2.5 4.5-5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-card__value" id="prodKpiVendido">—</div>
+          <div class="kpi-card__meta">
+            <span class="kpi-card__meta-detail" id="prodKpiVendidoMeta"
+              >produtos entregues</span
+            >
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card__head">
+            <span class="kpi-card__label">Unidades Reservadas</span>
+            <div class="kpi-card__icon kpi-card__icon--blue">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 6.5L10 3l7 3.5V14L10 17.5 3 14V6.5z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M3 6.5L10 10l7-3.5M10 10v7.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-card__value" id="prodKpiUnidades">—</div>
+          <div class="kpi-card__meta">
+            <span class="kpi-card__meta-detail" id="prodKpiUnidadesMeta"
+              >presas em reservas</span
+            >
+          </div>
+        </article>
+
+        <article class="kpi-card kpi-card--alert">
+          <div class="kpi-card__head">
+            <span class="kpi-card__label">Stock Crítico</span>
+            <div class="kpi-card__icon kpi-card__icon--red">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 17l1.5-9h11L17 17H3z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M7 8V6a3 3 0 0 1 6 0v2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-card__value" id="prodKpiStock">—</div>
+          <div class="kpi-card__meta">
+            <span class="kpi-card__meta-detail" id="prodKpiStockMeta"
+              >produtos a repor</span
+            >
+          </div>
+        </article>
+      </section>
+
+      <div class="prod-layout">
+        <!-- ── Coluna principal ── -->
+        <div class="prod-layout__main">
+          <!-- Tabs -->
+          <div
+            class="prod-tabs"
+            role="tablist"
+            aria-label="Secções de produtos"
+          >
+            <button
+              class="prod-tab prod-tab--active"
+              role="tab"
+              aria-selected="true"
+              data-prod-tab="reservas"
+              id="prodTabReservas"
+              aria-controls="prodPanelReservas"
+            >
+              Reservas
+              <span class="prod-tab__count" id="prodTabReservasCount">0</span>
+            </button>
+            <button
+              class="prod-tab"
+              role="tab"
+              aria-selected="false"
+              data-prod-tab="catalogo"
+              id="prodTabCatalogo"
+              aria-controls="prodPanelCatalogo"
+            >
+              Catálogo
+              <span class="prod-tab__count" id="prodTabCatalogoCount">0</span>
+            </button>
+          </div>
+
+          <!-- Painel: Reservas -->
+          <div
+            class="prod-panel"
+            id="prodPanelReservas"
+            role="tabpanel"
+            aria-labelledby="prodTabReservas"
+          >
+            <div class="prod-toolbar">
+              <div
+                class="prod-pills"
+                role="group"
+                aria-label="Filtrar reservas por estado"
+              >
+                <button class="prod-pill prod-pill--active" data-estado="">
+                  Todas
+                </button>
+                <button class="prod-pill" data-estado="reservado">
+                  Reservadas
+                </button>
+                <button class="prod-pill" data-estado="confirmado">
+                  Entregues
+                </button>
+                <button class="prod-pill" data-estado="libertado">
+                  Libertadas
+                </button>
+              </div>
+              <div class="prod-search">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="7"
+                    cy="7"
+                    r="4.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M10.5 10.5L14 14"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <input
+                  type="search"
+                  id="prodBuscaReservas"
+                  placeholder="Cliente ou nº da reserva"
+                  aria-label="Procurar reservas"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+            <div class="prod-list" id="prodReservasList"></div>
+          </div>
+
+          <!-- Painel: Catálogo -->
+          <div
+            class="prod-panel"
+            id="prodPanelCatalogo"
+            role="tabpanel"
+            aria-labelledby="prodTabCatalogo"
+            hidden
+          >
+            <div class="prod-toolbar">
+              <div
+                class="prod-pills"
+                id="prodCategorias"
+                role="group"
+                aria-label="Filtrar catálogo por categoria"
+              ></div>
+              <div class="prod-search">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="7"
+                    cy="7"
+                    r="4.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M10.5 10.5L14 14"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <input
+                  type="search"
+                  id="prodBuscaProdutos"
+                  placeholder="Nome do produto"
+                  aria-label="Procurar produtos"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+            <div class="prod-table" id="prodCatalogoList"></div>
+          </div>
+        </div>
+
+        <!-- ── Coluna lateral ── -->
+        <aside
+          class="prod-layout__side"
+          aria-label="Stock e produtos mais reservados"
+        >
+          <section class="prod-aside-card" id="prodStockCard">
+            <div class="prod-aside-card__head">
+              <div class="prod-aside-card__icon prod-aside-card__icon--red">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 17l1.5-9h11L17 17H3z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M7 8V6a3 3 0 0 1 6 0v2"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+              <h2 class="prod-aside-card__title">Repor stock</h2>
+              <span class="prod-aside-card__badge" id="prodStockBadge">0</span>
+            </div>
+            <ul class="prod-aside-list" id="prodStockList" role="list"></ul>
+          </section>
+
+          <section class="prod-aside-card">
+            <div class="prod-aside-card__head">
+              <div class="prod-aside-card__icon prod-aside-card__icon--gold">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 16V9M8 16V4M13 16v-5M18 16V7"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+              <h2 class="prod-aside-card__title">Mais reservados</h2>
+            </div>
+            <p class="prod-aside-card__hint">unidades reservadas + entregues</p>
+            <div class="prod-top__list" id="prodTopList"></div>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════
+       MODAL: EDITAR PRODUTO
+  ═══════════════════════════════════════════ -->
+    <div
+      class="modal-overlay"
+      id="prodModalOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="prodModalTitle"
+      hidden
+    >
+      <div class="modal">
+        <div class="modal__header">
+          <h2 class="modal__title" id="prodModalTitle">Editar Produto</h2>
+          <button class="modal__close" id="prodModalClose" aria-label="Fechar">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M2 2l12 12M14 2L2 14"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="modal__body">
+          <p
+            class="prod-modal__error"
+            id="prodModalError"
+            role="alert"
+            hidden
+          ></p>
+
+          <div class="form-group">
+            <label class="form-label" for="prodFieldNome">Nome</label>
+            <input
+              class="form-input"
+              id="prodFieldNome"
+              type="text"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prodFieldDescricao">Descrição</label>
+            <input
+              class="form-input"
+              id="prodFieldDescricao"
+              type="text"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="prodFieldPreco"
+                >Preço de tabela (R$)</label
+              >
+              <input
+                class="form-input"
+                id="prodFieldPreco"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prodFieldPromo"
+                >Preço promocional</label
+              >
+              <input
+                class="form-input"
+                id="prodFieldPromo"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                placeholder="vazio = sem promoção"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="prodFieldStock">Stock total</label>
+              <input
+                class="form-input"
+                id="prodFieldStock"
+                type="number"
+                min="0"
+                step="1"
+                inputmode="numeric"
+              />
+              <span class="form-hint" id="prodFieldStockHint"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prodFieldCategoria"
+                >Categoria</label
+              >
+              <select
+                class="form-input form-select"
+                id="prodFieldCategoria"
+              ></select>
+            </div>
+          </div>
+
+          <div class="prod-modal__switches">
+            <label class="prod-switch">
+              <input type="checkbox" id="prodFieldDestaque" />
+              <span class="prod-switch__track" aria-hidden="true"
+                ><span class="prod-switch__thumb"></span
+              ></span>
+              <span class="prod-switch__label">Em destaque na vitrine</span>
+            </label>
+            <label class="prod-switch">
+              <input type="checkbox" id="prodFieldAtivo" />
+              <span class="prod-switch__track" aria-hidden="true"
+                ><span class="prod-switch__thumb"></span
+              ></span>
+              <span class="prod-switch__label">Visível na loja</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn-ghost" id="prodModalCancel">Cancelar</button>
+          <button class="btn-primary" id="prodModalSave">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts: API → camada de dados → UI -->
+    <script src="js/api.js"></script>
+    <script src="js/produtos-data.js"></script>
+    <script src="js/produtos-crm.js"></script>
+  </body>
+</html>

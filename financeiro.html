@@ -1,7 +1,6 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Financeiro — InBarber</title>
@@ -10,106 +9,260 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
-        rel="stylesheet" />
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="css/financeiro.css">
+    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/financeiro.css" />
+  </head>
 
-</head>
-
-<body>
-
+  <body>
     <!-- ═══════════════════════════════════════════
        SIDEBAR NAV
   ═══════════════════════════════════════════ -->
-    <aside class="sidebar is-collapsed" id="sidebar" role="navigation" aria-label="Menu principal">
-
-        <div class="sidebar__brand">
-            <div class="sidebar__logo">
-                <img src="assets/logo_inbarber.png" alt="logo-inbarber" class="sidebar__img-logo">
-            </div>
-            <span class="sidebar__name">InBarber</span>
+    <aside
+      class="sidebar is-collapsed"
+      id="sidebar"
+      role="navigation"
+      aria-label="Menu principal"
+    >
+      <div class="sidebar__brand">
+        <div class="sidebar__logo">
+          <img
+            src="assets/logo_inbarber.png"
+            alt="logo-inbarber"
+            class="sidebar__img-logo"
+          />
         </div>
+        <span class="sidebar__name">InBarber</span>
+      </div>
 
-        <button class="sidebar__toggle" id="sidebarToggleBtn" aria-label="Expandir menu" aria-expanded="false"
-            aria-controls="sidebar">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                    stroke-linejoin="round" />
-            </svg>
-        </button>
+      <button
+        class="sidebar__toggle"
+        id="sidebarToggleBtn"
+        aria-label="Expandir menu"
+        aria-expanded="false"
+        aria-controls="sidebar"
+      >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M4 2l4 4-4 4"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
 
-        <nav class="sidebar__nav">
-            <ul class="nav-list" role="list">
-                <li>
-                    <a href="/dashboard.html" class="nav-item" data-label="Dashboard">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
-                            <rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
-                            <rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
-                            <rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor"
-                                stroke-width="1.5" />
-                        </svg>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/agenda-crm.html" class="nav-item" data-label="Agenda">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.5" />
-                            <path d="M2 8h16" stroke="currentColor" stroke-width="1.5" />
-                            <path d="M7 1v4M13 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                        <span>Agenda</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/clientes.html" class="nav-item" data-label="Clientes">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.5" />
-                            <path d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5"
-                                stroke-linecap="round" />
-                        </svg>
-                        <span>Clientes</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/financeiro.html" class="nav-item nav-item--active" aria-current="page"
-                        data-label="Financeiro">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5" />
-                            <path d="M6 10h8M6 6h4M6 14h6" stroke="currentColor" stroke-width="1.5"
-                                stroke-linecap="round" />
-                        </svg>
-                        <span>Financeiro</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="configuracoes.html" class="nav-item" data-label="Configurações Gerais">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5" />
-                            <path
-                                d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"
-                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                        <span>Configurações</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+      <nav class="sidebar__nav">
+        <ul class="nav-list" role="list">
+          <li>
+            <a href="/dashboard.html" class="nav-item" data-label="Dashboard">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="11"
+                  y="2"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="2"
+                  y="11"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="11"
+                  y="11"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="/agenda-crm.html" class="nav-item" data-label="Agenda">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="2"
+                  y="3"
+                  width="16"
+                  height="15"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path d="M2 8h16" stroke="currentColor" stroke-width="1.5" />
+                <path
+                  d="M7 1v4M13 1v4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Agenda</span>
+            </a>
+          </li>
+          <li>
+            <a href="/clientes.html" class="nav-item" data-label="Clientes">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="10"
+                  cy="7"
+                  r="4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Clientes</span>
+            </a>
+          </li>
+          <li>
+            <a href="/produtos-crm.html" class="nav-item" data-label="Produtos">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 6h12l-1 10H5L4 6z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M7.5 6V4.5a2.5 2.5 0 0 1 5 0V6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Produtos</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/financeiro.html"
+              class="nav-item nav-item--active"
+              aria-current="page"
+              data-label="Financeiro"
+            >
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="16"
+                  height="16"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M6 10h8M6 6h4M6 14h6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Financeiro</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="configuracoes.html"
+              class="nav-item"
+              data-label="Configurações Gerais"
+            >
+              <svg
+                class="nav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+              <span>Configurações</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
 
-        <div class="sidebar__bottom">
-            <div class="sidebar__user">
-                <div class="sidebar__avatar">RC</div>
-                <div class="sidebar__user-info">
-                    <span class="sidebar__user-name">Rafael Costa</span>
-                    <span class="sidebar__user-role">Proprietário</span>
-                </div>
-            </div>
+      <div class="sidebar__bottom">
+        <div class="sidebar__user">
+          <div class="sidebar__avatar">RC</div>
+          <div class="sidebar__user-info">
+            <span class="sidebar__user-name">Rafael Costa</span>
+            <span class="sidebar__user-role">Proprietário</span>
+          </div>
         </div>
+      </div>
     </aside>
 
     <!-- Overlay mobile -->
@@ -119,576 +272,942 @@
        MAIN CONTENT
   ═══════════════════════════════════════════ -->
     <main class="main" id="main">
-
-        <!-- Topbar mobile -->
-        <div class="topbar">
-            <button class="topbar__burger" id="burgerBtn" aria-label="Abrir menu" aria-expanded="false"
-                aria-controls="sidebar">
-                <span></span><span></span><span></span>
-            </button>
-            <div class="topbar__logo">
-                <svg width="22" height="22" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                    <rect width="28" height="28" rx="7" fill="var(--gold)" />
-                    <path d="M9 7L19 21M19 7L9 21" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
-                </svg>
-                InBarber
-            </div>
-            <div style="width:36px"></div>
+      <!-- Topbar mobile -->
+      <div class="topbar">
+        <button
+          class="topbar__burger"
+          id="burgerBtn"
+          aria-label="Abrir menu"
+          aria-expanded="false"
+          aria-controls="sidebar"
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar__logo">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 28 28"
+            fill="none"
+            aria-hidden="true"
+          >
+            <rect width="28" height="28" rx="7" fill="var(--gold)" />
+            <path
+              d="M9 7L19 21M19 7L9 21"
+              stroke="#fff"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            />
+          </svg>
+          InBarber
         </div>
+        <div style="width: 36px"></div>
+      </div>
 
-        <!-- ════════════════════════════════════════════
+      <!-- ════════════════════════════════════════════
          PAGE HEADER
     ════════════════════════════════════════════ -->
-        <header class="page-header">
-            <div class="page-header__top">
-                <div>
-                    <h1 class="page-header__title">Financeiro</h1>
-                    <p class="page-header__subtitle" id="finHeaderDate">Carregando...</p>
-                </div>
-                <button class="btn-primary-lg" id="exportBtn">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                        <path d="M2 9v3h10V9M7 1v7M4.5 5.5L7 8l2.5-2.5" stroke="currentColor" stroke-width="1.8"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    Exportar
-                </button>
-            </div>
+      <header class="page-header">
+        <div class="page-header__top">
+          <div>
+            <h1 class="page-header__title">Financeiro</h1>
+            <p class="page-header__subtitle" id="finHeaderDate">
+              Carregando...
+            </p>
+          </div>
+          <button class="btn-primary-lg" id="exportBtn">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M2 9v3h10V9M7 1v7M4.5 5.5L7 8l2.5-2.5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Exportar
+          </button>
+        </div>
 
-            <!-- Sub-abas pill -->
-            <div class="fin-tabs" role="tablist" aria-label="Seções do financeiro">
-                <button class="fin-tab fin-tab--active" role="tab" aria-selected="true" data-fin="visao-geral"
-                    id="tab-visao-geral">
-                    <span class="fin-tab__dot"></span>
-                    Visão Geral
-                </button>
-                <button class="fin-tab" role="tab" aria-selected="false" data-fin="metas" id="tab-metas">
-                    <span class="fin-tab__dot"></span>
-                    Metas & Comissões
-                </button>
-                <button class="fin-tab" role="tab" aria-selected="false" data-fin="saidas" id="tab-saidas">
-                    <span class="fin-tab__dot"></span>
-                    Saídas
-                </button>
-            </div>
-        </header>
+        <!-- Sub-abas pill -->
+        <div class="fin-tabs" role="tablist" aria-label="Seções do financeiro">
+          <button
+            class="fin-tab fin-tab--active"
+            role="tab"
+            aria-selected="true"
+            data-fin="visao-geral"
+            id="tab-visao-geral"
+          >
+            <span class="fin-tab__dot"></span>
+            Visão Geral
+          </button>
+          <button
+            class="fin-tab"
+            role="tab"
+            aria-selected="false"
+            data-fin="metas"
+            id="tab-metas"
+          >
+            <span class="fin-tab__dot"></span>
+            Metas & Comissões
+          </button>
+          <button
+            class="fin-tab"
+            role="tab"
+            aria-selected="false"
+            data-fin="saidas"
+            id="tab-saidas"
+          >
+            <span class="fin-tab__dot"></span>
+            Saídas
+          </button>
+        </div>
+      </header>
 
-        <!-- ════════════════════════════════════════════
+      <!-- ════════════════════════════════════════════
          PANEL: VISÃO GERAL
     ════════════════════════════════════════════ -->
-        <section class="fin-panel" id="fin-visao-geral" role="tabpanel" aria-labelledby="tab-visao-geral">
-
-            <!-- ── KPIs ── -->
-            <div class="kpi-grid">
-
-                <!-- Faturamento Total -->
-                <div class="kpi-card kpi-card--blue">
-                    <div class="kpi-card__header">
-                        <span class="kpi-card__label">Faturamento Total</span>
-                        <div class="kpi-card__icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor"
-                                    stroke-width="1.5" />
-                                <path d="M8 6v4M6 8h4" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="kpi-card__value" id="kpiFaturamentoTotal">R$ 0</div>
-                    <div class="kpi-card__meta">
-                        <span class="kpi-card__trend kpi-card__trend--up" id="kpiFaturamentoTrend">
-                            ↑ 0%
-                        </span>
-                        <span>vs. mês anterior</span>
-                    </div>
-                </div>
-
-                <!-- Faturamento Líquido -->
-                <div class="kpi-card kpi-card--green">
-                    <div class="kpi-card__header">
-                        <span class="kpi-card__label">Faturamento Líquido</span>
-                        <div class="kpi-card__icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
-                                <path d="M8 5v1.5M8 9.5V11M6.5 7h2a.5.5 0 0 1 0 1H7a.5.5 0 0 0 0 1h2"
-                                    stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="kpi-card__value" id="kpiFaturamentoLiquido">R$ 0</div>
-                    <div class="kpi-card__meta">
-                        <span class="kpi-card__trend kpi-card__trend--up" id="kpiLiquidoTrend">
-                            ↑ 0%
-                        </span>
-                        <span>após saídas deduzidas</span>
-                    </div>
-                </div>
-
-                <!-- Total de Cortes -->
-                <div class="kpi-card kpi-card--purple">
-                    <div class="kpi-card__header">
-                        <span class="kpi-card__label">Cortes Realizados</span>
-                        <div class="kpi-card__icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                <path d="M4 4c0 0 2-1 4-1s4 1 4 1" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" />
-                                <path d="M3 8c0 2.5 2.2 4.5 5 4.5S13 10.5 13 8" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" />
-                                <path d="M5 6c1 1 5 1 6 0" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="kpi-card__value" id="kpiCortes">0</div>
-                    <div class="kpi-card__meta">
-                        <span class="kpi-card__trend kpi-card__trend--up" id="kpiCortesTrend">
-                            ↑ 0%
-                        </span>
-                        <span>vs. mês anterior</span>
-                    </div>
-                </div>
-
+      <section
+        class="fin-panel"
+        id="fin-visao-geral"
+        role="tabpanel"
+        aria-labelledby="tab-visao-geral"
+      >
+        <!-- ── KPIs ── -->
+        <div class="kpi-grid">
+          <!-- Faturamento Total -->
+          <div class="kpi-card kpi-card--blue">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Faturamento Total</span>
+              <div class="kpi-card__icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="1"
+                    y="3"
+                    width="14"
+                    height="10"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M8 6v4M6 8h4"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
             </div>
-
-            <!-- ── Conferência de Caixa ── -->
-            <div class="caixa-section">
-
-                <!-- Donut -->
-                <div class="caixa-donut-col">
-                    <div class="caixa-donut-wrap">
-                        <canvas id="donutChart"></canvas>
-                        <div class="caixa-donut-center">
-                            <div class="caixa-donut-center__value" id="donutCenterValue">R$ 0</div>
-                            <div class="caixa-donut-center__label">Total</div>
-                        </div>
-                    </div>
-                    <div class="caixa-legend" id="caixaLegend"></div>
-                </div>
-
-                <!-- Payment method cards -->
-                <div class="caixa-cards-wrap">
-                    <div class="caixa-cards-header">
-                        <div>
-                            <div class="caixa-cards-title">Conferência de Caixa</div>
-                            <div class="caixa-cards-sub">Entradas por forma de pagamento — mês atual</div>
-                        </div>
-                        <div class="caixa-total-badge">
-                            <span class="caixa-total-badge__label">Total Recebido</span>
-                            <span class="caixa-total-badge__value" id="caixaTotalRecebido">R$ 0</span>
-                        </div>
-                    </div>
-                    <div class="caixa-payment-grid" id="caixaPaymentGrid">
-                        <!-- Gerado via JS -->
-                    </div>
-                </div>
-
+            <div class="kpi-card__value" id="kpiFaturamentoTotal">R$ 0</div>
+            <div class="kpi-card__meta">
+              <span
+                class="kpi-card__trend kpi-card__trend--up"
+                id="kpiFaturamentoTrend"
+              >
+                ↑ 0%
+              </span>
+              <span>vs. mês anterior</span>
             </div>
+          </div>
 
-            <!-- ── Análise de Desempenho ── -->
-            <div class="desempenho-section">
-
-                <!-- Gráfico de linha: evolução faturamento -->
-                <div class="chart-card">
-                    <div class="chart-card__header">
-                        <div>
-                            <div class="chart-card__title">Evolução do Faturamento</div>
-                            <div class="chart-card__sub">Receita acumulada por período</div>
-                        </div>
-                        <div class="chart-filter-pills" role="group" aria-label="Filtro de período">
-                            <button class="chart-pill" data-period="dia">Dia</button>
-                            <button class="chart-pill chart-pill--active" data-period="semana">Semana</button>
-                            <button class="chart-pill" data-period="mes">Mês</button>
-                        </div>
-                    </div>
-                    <div class="chart-canvas-wrap">
-                        <canvas id="lineChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Gráfico de barras: faturamento por barbeiro -->
-                <div class="chart-card">
-                    <div class="chart-card__header">
-                        <div>
-                            <div class="chart-card__title">Faturamento por Barbeiro</div>
-                            <div class="chart-card__sub">Receita individual — mês atual</div>
-                        </div>
-                    </div>
-                    <!-- Fotos dos barbeiros (acima das barras) -->
-                    <div class="barber-photo-labels" id="barberPhotoLabels"></div>
-                    <div class="barbers-chart-wrap">
-                        <canvas id="barChart"></canvas>
-                    </div>
-                </div>
-
+          <!-- Faturamento Líquido -->
+          <div class="kpi-card kpi-card--green">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Faturamento Líquido</span>
+              <div class="kpi-card__icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="6"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M8 5v1.5M8 9.5V11M6.5 7h2a.5.5 0 0 1 0 1H7a.5.5 0 0 0 0 1h2"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
             </div>
+            <div class="kpi-card__value" id="kpiFaturamentoLiquido">R$ 0</div>
+            <div class="kpi-card__meta">
+              <span
+                class="kpi-card__trend kpi-card__trend--up"
+                id="kpiLiquidoTrend"
+              >
+                ↑ 0%
+              </span>
+              <span>após saídas deduzidas</span>
+            </div>
+          </div>
 
-        </section>
+          <!-- Total de Cortes -->
+          <div class="kpi-card kpi-card--purple">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Cortes Realizados</span>
+              <div class="kpi-card__icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 4c0 0 2-1 4-1s4 1 4 1"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M3 8c0 2.5 2.2 4.5 5 4.5S13 10.5 13 8"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M5 6c1 1 5 1 6 0"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-card__value" id="kpiCortes">0</div>
+            <div class="kpi-card__meta">
+              <span
+                class="kpi-card__trend kpi-card__trend--up"
+                id="kpiCortesTrend"
+              >
+                ↑ 0%
+              </span>
+              <span>vs. mês anterior</span>
+            </div>
+          </div>
+        </div>
 
-        <!-- ════════════════════════════════════════════
+        <!-- ── Conferência de Caixa ── -->
+        <div class="caixa-section">
+          <!-- Donut -->
+          <div class="caixa-donut-col">
+            <div class="caixa-donut-wrap">
+              <canvas id="donutChart"></canvas>
+              <div class="caixa-donut-center">
+                <div class="caixa-donut-center__value" id="donutCenterValue">
+                  R$ 0
+                </div>
+                <div class="caixa-donut-center__label">Total</div>
+              </div>
+            </div>
+            <div class="caixa-legend" id="caixaLegend"></div>
+          </div>
+
+          <!-- Payment method cards -->
+          <div class="caixa-cards-wrap">
+            <div class="caixa-cards-header">
+              <div>
+                <div class="caixa-cards-title">Conferência de Caixa</div>
+                <div class="caixa-cards-sub">
+                  Entradas por forma de pagamento — mês atual
+                </div>
+              </div>
+              <div class="caixa-total-badge">
+                <span class="caixa-total-badge__label">Total Recebido</span>
+                <span class="caixa-total-badge__value" id="caixaTotalRecebido"
+                  >R$ 0</span
+                >
+              </div>
+            </div>
+            <div class="caixa-payment-grid" id="caixaPaymentGrid">
+              <!-- Gerado via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Análise de Desempenho ── -->
+        <div class="desempenho-section">
+          <!-- Gráfico de linha: evolução faturamento -->
+          <div class="chart-card">
+            <div class="chart-card__header">
+              <div>
+                <div class="chart-card__title">Evolução do Faturamento</div>
+                <div class="chart-card__sub">Receita acumulada por período</div>
+              </div>
+              <div
+                class="chart-filter-pills"
+                role="group"
+                aria-label="Filtro de período"
+              >
+                <button class="chart-pill" data-period="dia">Dia</button>
+                <button
+                  class="chart-pill chart-pill--active"
+                  data-period="semana"
+                >
+                  Semana
+                </button>
+                <button class="chart-pill" data-period="mes">Mês</button>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap">
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico de barras: faturamento por barbeiro -->
+          <div class="chart-card">
+            <div class="chart-card__header">
+              <div>
+                <div class="chart-card__title">Faturamento por Barbeiro</div>
+                <div class="chart-card__sub">
+                  Receita individual — mês atual
+                </div>
+              </div>
+            </div>
+            <!-- Fotos dos barbeiros (acima das barras) -->
+            <div class="barber-photo-labels" id="barberPhotoLabels"></div>
+            <div class="barbers-chart-wrap">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
          PANEL: METAS & COMISSÕES
     ════════════════════════════════════════════ -->
-        <section class="fin-panel fin-panel--hidden" id="fin-metas" role="tabpanel" aria-labelledby="tab-metas">
-
-            <!-- ── KPIs de Metas ── -->
-            <div class="kpi-grid metas-kpi-grid">
-
-                <!-- Meta Total da Barbearia -->
-                <div class="kpi-card kpi-card--blue">
-                    <div class="kpi-card__header">
-                        <span class="kpi-card__label">Meta Total da Barbearia</span>
-                        <div class="kpi-card__icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
-                                <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5" />
-                                <path d="M8 2v2M8 12v2M2 8h2M12 8h2" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="kpi-card__value" id="metaTotalValor">R$ 28.000</div>
-                    <div class="kpi-card__meta">
-                        <span class="kpi-card__trend kpi-card__trend--up" id="metaTotalRealizado">R$ 24.000 realizados</span>
-                    </div>
-                    <div class="meta-kpi-progress-wrap">
-                        <div class="meta-kpi-progress-bar">
-                            <div class="meta-kpi-progress-fill meta-kpi-progress-fill--blue" id="metaTotalBarFill"
-                                style="width: 85.7%"></div>
-                        </div>
-                        <span class="meta-kpi-pct" id="metaTotalPct">85,7%</span>
-                    </div>
-                </div>
-
-                <!-- Status por Barbeiro -->
-                <div class="kpi-card kpi-card--gold metas-kpi-barbers">
-                    <div class="kpi-card__header">
-                        <span class="kpi-card__label">Status por Barbeiro</span>
-                        <div class="kpi-card__icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                <circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5" />
-                                <path d="M2 14c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" />
-                                <circle cx="12" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5" />
-                                <path d="M12 9c1.1 0 2.1.4 2.9 1" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="barber-progress-list" id="barberProgressList">
-                        <!-- Gerado via JS -->
-                    </div>
-                </div>
-
-                <!-- Comissão Total a Pagar -->
-                <div class="kpi-card kpi-card--green">
-                    <div class="kpi-card__header">
-                        <span class="kpi-card__label">Comissão Total a Pagar</span>
-                        <div class="kpi-card__icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor"
-                                    stroke-width="1.5" />
-                                <path d="M8 6v4M6 8h4" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="kpi-card__value" id="comissaoTotalValor">R$ 0</div>
-                    <div class="kpi-card__meta">
-                        <span style="color: var(--muted);">referente ao mês atual</span>
-                    </div>
-                </div>
-
+      <section
+        class="fin-panel fin-panel--hidden"
+        id="fin-metas"
+        role="tabpanel"
+        aria-labelledby="tab-metas"
+      >
+        <!-- ── KPIs de Metas ── -->
+        <div class="kpi-grid metas-kpi-grid">
+          <!-- Meta Total da Barbearia -->
+          <div class="kpi-card kpi-card--blue">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Meta Total da Barbearia</span>
+              <div class="kpi-card__icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="6"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="2.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M8 2v2M8 12v2M2 8h2M12 8h2"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
             </div>
-
-            <!-- ── Seção de Metas ── -->
-            <div class="metas-section-card">
-                <div class="metas-section-header">
-                    <div>
-                        <div class="metas-section-title">Metas Individuais</div>
-                        <div class="metas-section-sub">Clique na meta para editar diretamente</div>
-                    </div>
-                    <span class="metas-periodo-badge">Agosto 2025</span>
-                </div>
-
-                <div class="metas-table-wrap">
-                    <table class="metas-table" id="metasTable">
-                        <thead>
-                            <tr>
-                                <th>Barbeiro</th>
-                                <th>Valor Gerado</th>
-                                <th>Meta Individual (R$)</th>
-                                <th>% Atingido</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="metasTableBody">
-                            <!-- Gerado via JS -->
-                        </tbody>
-                    </table>
-                </div>
+            <div class="kpi-card__value" id="metaTotalValor">R$ 28.000</div>
+            <div class="kpi-card__meta">
+              <span
+                class="kpi-card__trend kpi-card__trend--up"
+                id="metaTotalRealizado"
+                >R$ 24.000 realizados</span
+              >
             </div>
-
-            <!-- ── Seção de Comissões ── -->
-            <div class="metas-section-card">
-                <div class="metas-section-header">
-                    <div>
-                        <div class="metas-section-title">Comissões</div>
-                        <div class="metas-section-sub">Clique na % de comissão para editar diretamente</div>
-                    </div>
-                    <span class="metas-periodo-badge">Agosto 2025</span>
-                </div>
-
-                <div class="metas-table-wrap">
-                    <table class="metas-table" id="comissoesTable">
-                        <thead>
-                            <tr>
-                                <th>Barbeiro</th>
-                                <th>Faturamento Gerado</th>
-                                <th>% de Comissão</th>
-                                <th>Valor da Comissão</th>
-                            </tr>
-                        </thead>
-                        <tbody id="comissoesTableBody">
-                            <!-- Gerado via JS -->
-                        </tbody>
-                    </table>
-                </div>
+            <div class="meta-kpi-progress-wrap">
+              <div class="meta-kpi-progress-bar">
+                <div
+                  class="meta-kpi-progress-fill meta-kpi-progress-fill--blue"
+                  id="metaTotalBarFill"
+                  style="width: 85.7%"
+                ></div>
+              </div>
+              <span class="meta-kpi-pct" id="metaTotalPct">85,7%</span>
             </div>
+          </div>
 
-        </section>
+          <!-- Status por Barbeiro -->
+          <div class="kpi-card kpi-card--gold metas-kpi-barbers">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Status por Barbeiro</span>
+              <div class="kpi-card__icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="6"
+                    cy="5"
+                    r="2.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M2 14c0-2.21 1.79-4 4-4s4 1.79 4 4"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                  <circle
+                    cx="12"
+                    cy="5"
+                    r="2.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M12 9c1.1 0 2.1.4 2.9 1"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="barber-progress-list" id="barberProgressList">
+              <!-- Gerado via JS -->
+            </div>
+          </div>
 
-        <!-- ════════════════════════════════════════════
+          <!-- Comissão Total a Pagar -->
+          <div class="kpi-card kpi-card--green">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Comissão Total a Pagar</span>
+              <div class="kpi-card__icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="1"
+                    y="3"
+                    width="14"
+                    height="10"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M8 6v4M6 8h4"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="kpi-card__value" id="comissaoTotalValor">R$ 0</div>
+            <div class="kpi-card__meta">
+              <span style="color: var(--muted)">referente ao mês atual</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Seção de Metas ── -->
+        <div class="metas-section-card">
+          <div class="metas-section-header">
+            <div>
+              <div class="metas-section-title">Metas Individuais</div>
+              <div class="metas-section-sub">
+                Clique na meta para editar diretamente
+              </div>
+            </div>
+            <span class="metas-periodo-badge">Agosto 2025</span>
+          </div>
+
+          <div class="metas-table-wrap">
+            <table class="metas-table" id="metasTable">
+              <thead>
+                <tr>
+                  <th>Barbeiro</th>
+                  <th>Valor Gerado</th>
+                  <th>Meta Individual (R$)</th>
+                  <th>% Atingido</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="metasTableBody">
+                <!-- Gerado via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Seção de Comissões ── -->
+        <div class="metas-section-card">
+          <div class="metas-section-header">
+            <div>
+              <div class="metas-section-title">Comissões</div>
+              <div class="metas-section-sub">
+                Clique na % de comissão para editar diretamente
+              </div>
+            </div>
+            <span class="metas-periodo-badge">Agosto 2025</span>
+          </div>
+
+          <div class="metas-table-wrap">
+            <table class="metas-table" id="comissoesTable">
+              <thead>
+                <tr>
+                  <th>Barbeiro</th>
+                  <th>Faturamento Gerado</th>
+                  <th>% de Comissão</th>
+                  <th>Valor da Comissão</th>
+                </tr>
+              </thead>
+              <tbody id="comissoesTableBody">
+                <!-- Gerado via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
          PANEL: SAÍDAS
     ════════════════════════════════════════════ -->
-        <section class="fin-panel fin-panel--hidden" id="fin-saidas" role="tabpanel" aria-labelledby="tab-saidas">
-
-            <!-- ── KPIs Saídas ── -->
-            <div class="kpi-grid saidas-kpi-grid">
-
-                <!-- Total de Saídas -->
-                <div class="kpi-card kpi-card--red">
-                    <div class="kpi-card__header">
-                        <span class="kpi-card__label">Total de Saídas no Período</span>
-                        <div class="kpi-card__icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                <path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="kpi-card__value" id="kpiSaidasTotal">R$ 0</div>
-                    <div class="kpi-card__meta">
-                        <span class="kpi-card__trend kpi-card__trend--down" id="kpiSaidasTrend">↑ 0%</span>
-                        <span>vs. período anterior</span>
-                    </div>
-                </div>
-
-                <!-- Maior Categoria -->
-                <div class="kpi-card kpi-card--orange">
-                    <div class="kpi-card__header">
-                        <span class="kpi-card__label">Maior Categoria de Gasto</span>
-                        <div class="kpi-card__icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                <path d="M2 12h12M4 8h2v4H4zM7 5h2v7H7zM10 2h2v10h-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="kpi-card__value" id="kpiMaiorCategoria">—</div>
-                    <div class="kpi-card__meta">
-                        <span class="kpi-card__trend kpi-card__trend--down" id="kpiMaiorCategoriaVal">R$ 0</span>
-                        <span>no período selecionado</span>
-                    </div>
-                </div>
-
-                <!-- Por Forma de Pagamento (card largo) -->
-                <div class="kpi-card kpi-card--blue saidas-pgto-card">
-                    <div class="kpi-card__header">
-                        <span class="kpi-card__label">Por Forma de Pagamento</span>
-                        <div class="kpi-card__icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                                <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5" />
-                                <path d="M1 7h14" stroke="currentColor" stroke-width="1.5" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="saidas-pgto-body">
-                        <div class="saidas-pgto-donut-wrap">
-                            <canvas id="saidasPgtoChart"></canvas>
-                            <div class="saidas-pgto-donut-center">
-                                <div class="saidas-pgto-donut-total" id="saidasPgtoTotal">R$ 0</div>
-                                <div class="saidas-pgto-donut-label">Total</div>
-                            </div>
-                        </div>
-                        <div class="saidas-pgto-list" id="saidasPgtoList">
-                            <!-- Gerado via JS -->
-                        </div>
-                    </div>
-                </div>
-
+      <section
+        class="fin-panel fin-panel--hidden"
+        id="fin-saidas"
+        role="tabpanel"
+        aria-labelledby="tab-saidas"
+      >
+        <!-- ── KPIs Saídas ── -->
+        <div class="kpi-grid saidas-kpi-grid">
+          <!-- Total de Saídas -->
+          <div class="kpi-card kpi-card--red">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Total de Saídas no Período</span>
+              <div class="kpi-card__icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M8 3v10M3 8l5 5 5-5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
             </div>
-
-            <!-- ── Filtros + Botão ── -->
-            <div class="saidas-toolbar">
-                <div class="saidas-filters">
-                    <select class="saidas-select" id="saidasFiltroCategoria" aria-label="Filtrar por categoria">
-                        <option value="">Todas as categorias</option>
-                        <option value="Aluguel">Aluguel</option>
-                        <option value="Produtos">Produtos</option>
-                        <option value="Manutenção">Manutenção</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Utilidades">Utilidades</option>
-                        <option value="Pessoal">Pessoal</option>
-                        <option value="Equipamentos">Equipamentos</option>
-                        <option value="Outros">Outros</option>
-                    </select>
-                    <select class="saidas-select" id="saidasFiltroPgto" aria-label="Filtrar por forma de pagamento">
-                        <option value="">Todas as formas</option>
-                        <option value="PIX">PIX</option>
-                        <option value="Cartão">Cartão</option>
-                        <option value="Dinheiro">Dinheiro</option>
-                        <option value="Boleto">Boleto</option>
-                        <option value="Transferência">Transferência</option>
-                    </select>
-                    <select class="saidas-select" id="saidasFiltroPeriodo" aria-label="Filtrar por período">
-                        <option value="mes">Este mês</option>
-                        <option value="dia">Hoje</option>
-                        <option value="semana">Esta semana</option>
-                        <option value="trimestre">Trimestre</option>
-                        <option value="semestre">Semestre</option>
-                        <option value="ano">Este ano</option>
-                    </select>
-                </div>
-                <button class="btn-primary-lg" id="btnNovaSaida">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                        <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                    </svg>
-                    Nova Saída
-                </button>
+            <div class="kpi-card__value" id="kpiSaidasTotal">R$ 0</div>
+            <div class="kpi-card__meta">
+              <span
+                class="kpi-card__trend kpi-card__trend--down"
+                id="kpiSaidasTrend"
+                >↑ 0%</span
+              >
+              <span>vs. período anterior</span>
             </div>
+          </div>
 
-            <!-- ── Tabela de Saídas ── -->
-            <div class="metas-section-card">
-                <div class="metas-section-header">
-                    <div>
-                        <div class="metas-section-title">Listagem de Saídas</div>
-                        <div class="metas-section-sub" id="saidasTableSub">Carregando...</div>
-                    </div>
-                    <span class="metas-periodo-badge" id="saidasPeriodoBadge">Este mês</span>
-                </div>
-                <div class="metas-table-wrap">
-                    <table class="metas-table saidas-table" id="saidasTable">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Descrição</th>
-                                <th>Categoria</th>
-                                <th>Valor</th>
-                                <th>Forma de Pagamento</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="saidasTableBody">
-                            <!-- Gerado via JS -->
-                        </tbody>
-                    </table>
-                </div>
+          <!-- Maior Categoria -->
+          <div class="kpi-card kpi-card--orange">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Maior Categoria de Gasto</span>
+              <div class="kpi-card__icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2 12h12M4 8h2v4H4zM7 5h2v7H7zM10 2h2v10h-2z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
             </div>
-
-        </section>
-
-        <!-- ── Modal: Nova / Editar Saída ── -->
-        <div class="saidas-modal-overlay" id="saidasModalOverlay" aria-hidden="true">
-            <div class="saidas-modal" role="dialog" aria-modal="true" aria-labelledby="saidasModalTitle">
-                <div class="saidas-modal__header">
-                    <h2 class="saidas-modal__title" id="saidasModalTitle">Nova Saída</h2>
-                    <button class="saidas-modal__close" id="saidasModalClose" aria-label="Fechar modal">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="saidas-modal__body">
-                    <input type="hidden" id="saidasModalId" />
-                    <div class="saidas-form-row">
-                        <div class="saidas-form-group">
-                            <label class="saidas-form-label" for="saidasModalDesc">Descrição</label>
-                            <input class="saidas-form-input" type="text" id="saidasModalDesc" placeholder="Ex: Aluguel do espaço" />
-                        </div>
-                        <div class="saidas-form-group saidas-form-group--sm">
-                            <label class="saidas-form-label" for="saidasModalData">Data</label>
-                            <input class="saidas-form-input" type="date" id="saidasModalData" />
-                        </div>
-                    </div>
-                    <div class="saidas-form-row">
-                        <div class="saidas-form-group">
-                            <label class="saidas-form-label" for="saidasModalCategoria">Categoria</label>
-                            <select class="saidas-form-input" id="saidasModalCategoria">
-                                <option value="">Selecionar...</option>
-                                <option value="Aluguel">Aluguel</option>
-                                <option value="Produtos">Produtos</option>
-                                <option value="Manutenção">Manutenção</option>
-                                <option value="Marketing">Marketing</option>
-                                <option value="Utilidades">Utilidades</option>
-                                <option value="Pessoal">Pessoal</option>
-                                <option value="Equipamentos">Equipamentos</option>
-                                <option value="Outros">Outros</option>
-                            </select>
-                        </div>
-                        <div class="saidas-form-group saidas-form-group--sm">
-                            <label class="saidas-form-label" for="saidasModalValor">Valor (R$)</label>
-                            <input class="saidas-form-input" type="text" id="saidasModalValor" placeholder="0,00" inputmode="decimal" />
-                        </div>
-                    </div>
-                    <div class="saidas-form-row">
-                        <div class="saidas-form-group">
-                            <label class="saidas-form-label" for="saidasModalPgto">Forma de Pagamento</label>
-                            <select class="saidas-form-input" id="saidasModalPgto">
-                                <option value="">Selecionar...</option>
-                                <option value="PIX">PIX</option>
-                                <option value="Cartão">Cartão</option>
-                                <option value="Dinheiro">Dinheiro</option>
-                                <option value="Boleto">Boleto</option>
-                                <option value="Transferência">Transferência</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="saidas-modal__footer">
-                    <button class="btn-ghost" id="saidasModalCancel">Cancelar</button>
-                    <button class="btn-primary-lg" id="saidasModalSave">Salvar</button>
-                </div>
+            <div class="kpi-card__value" id="kpiMaiorCategoria">—</div>
+            <div class="kpi-card__meta">
+              <span
+                class="kpi-card__trend kpi-card__trend--down"
+                id="kpiMaiorCategoriaVal"
+                >R$ 0</span
+              >
+              <span>no período selecionado</span>
             </div>
+          </div>
+
+          <!-- Por Forma de Pagamento (card largo) -->
+          <div class="kpi-card kpi-card--blue saidas-pgto-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">Por Forma de Pagamento</span>
+              <div class="kpi-card__icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="1"
+                    y="3"
+                    width="14"
+                    height="10"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path d="M1 7h14" stroke="currentColor" stroke-width="1.5" />
+                </svg>
+              </div>
+            </div>
+            <div class="saidas-pgto-body">
+              <div class="saidas-pgto-donut-wrap">
+                <canvas id="saidasPgtoChart"></canvas>
+                <div class="saidas-pgto-donut-center">
+                  <div class="saidas-pgto-donut-total" id="saidasPgtoTotal">
+                    R$ 0
+                  </div>
+                  <div class="saidas-pgto-donut-label">Total</div>
+                </div>
+              </div>
+              <div class="saidas-pgto-list" id="saidasPgtoList">
+                <!-- Gerado via JS -->
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- ── Modal: Confirmar Exclusão ── -->
-        <div class="saidas-modal-overlay" id="saidasDeleteOverlay" aria-hidden="true">
-            <div class="saidas-modal saidas-modal--sm" role="dialog" aria-modal="true" aria-labelledby="saidasDeleteTitle">
-                <div class="saidas-modal__header">
-                    <h2 class="saidas-modal__title" id="saidasDeleteTitle">Excluir Saída</h2>
-                    <button class="saidas-modal__close" id="saidasDeleteClose" aria-label="Fechar">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="saidas-modal__body">
-                    <p class="saidas-delete-msg">Tem certeza que deseja excluir a saída <strong id="saidasDeleteDesc"></strong>? Essa ação não pode ser desfeita.</p>
-                </div>
-                <div class="saidas-modal__footer">
-                    <button class="btn-ghost" id="saidasDeleteCancel">Cancelar</button>
-                    <button class="btn-primary-lg saidas-btn-delete" id="saidasDeleteConfirm">Excluir</button>
-                </div>
-            </div>
+        <!-- ── Filtros + Botão ── -->
+        <div class="saidas-toolbar">
+          <div class="saidas-filters">
+            <select
+              class="saidas-select"
+              id="saidasFiltroCategoria"
+              aria-label="Filtrar por categoria"
+            >
+              <option value="">Todas as categorias</option>
+              <option value="Aluguel">Aluguel</option>
+              <option value="Produtos">Produtos</option>
+              <option value="Manutenção">Manutenção</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Utilidades">Utilidades</option>
+              <option value="Pessoal">Pessoal</option>
+              <option value="Equipamentos">Equipamentos</option>
+              <option value="Outros">Outros</option>
+            </select>
+            <select
+              class="saidas-select"
+              id="saidasFiltroPgto"
+              aria-label="Filtrar por forma de pagamento"
+            >
+              <option value="">Todas as formas</option>
+              <option value="PIX">PIX</option>
+              <option value="Cartão">Cartão</option>
+              <option value="Dinheiro">Dinheiro</option>
+              <option value="Boleto">Boleto</option>
+              <option value="Transferência">Transferência</option>
+            </select>
+            <select
+              class="saidas-select"
+              id="saidasFiltroPeriodo"
+              aria-label="Filtrar por período"
+            >
+              <option value="mes">Este mês</option>
+              <option value="dia">Hoje</option>
+              <option value="semana">Esta semana</option>
+              <option value="trimestre">Trimestre</option>
+              <option value="semestre">Semestre</option>
+              <option value="ano">Este ano</option>
+            </select>
+          </div>
+          <button class="btn-primary-lg" id="btnNovaSaida">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M7 2v10M2 7h10"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            Nova Saída
+          </button>
         </div>
 
+        <!-- ── Tabela de Saídas ── -->
+        <div class="metas-section-card">
+          <div class="metas-section-header">
+            <div>
+              <div class="metas-section-title">Listagem de Saídas</div>
+              <div class="metas-section-sub" id="saidasTableSub">
+                Carregando...
+              </div>
+            </div>
+            <span class="metas-periodo-badge" id="saidasPeriodoBadge"
+              >Este mês</span
+            >
+          </div>
+          <div class="metas-table-wrap">
+            <table class="metas-table saidas-table" id="saidasTable">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Valor</th>
+                  <th>Forma de Pagamento</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="saidasTableBody">
+                <!-- Gerado via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Modal: Nova / Editar Saída ── -->
+      <div
+        class="saidas-modal-overlay"
+        id="saidasModalOverlay"
+        aria-hidden="true"
+      >
+        <div
+          class="saidas-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="saidasModalTitle"
+        >
+          <div class="saidas-modal__header">
+            <h2 class="saidas-modal__title" id="saidasModalTitle">
+              Nova Saída
+            </h2>
+            <button
+              class="saidas-modal__close"
+              id="saidasModalClose"
+              aria-label="Fechar modal"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 2l10 10M12 2L2 12"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="saidas-modal__body">
+            <input type="hidden" id="saidasModalId" />
+            <div class="saidas-form-row">
+              <div class="saidas-form-group">
+                <label class="saidas-form-label" for="saidasModalDesc"
+                  >Descrição</label
+                >
+                <input
+                  class="saidas-form-input"
+                  type="text"
+                  id="saidasModalDesc"
+                  placeholder="Ex: Aluguel do espaço"
+                />
+              </div>
+              <div class="saidas-form-group saidas-form-group--sm">
+                <label class="saidas-form-label" for="saidasModalData"
+                  >Data</label
+                >
+                <input
+                  class="saidas-form-input"
+                  type="date"
+                  id="saidasModalData"
+                />
+              </div>
+            </div>
+            <div class="saidas-form-row">
+              <div class="saidas-form-group">
+                <label class="saidas-form-label" for="saidasModalCategoria"
+                  >Categoria</label
+                >
+                <select class="saidas-form-input" id="saidasModalCategoria">
+                  <option value="">Selecionar...</option>
+                  <option value="Aluguel">Aluguel</option>
+                  <option value="Produtos">Produtos</option>
+                  <option value="Manutenção">Manutenção</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Utilidades">Utilidades</option>
+                  <option value="Pessoal">Pessoal</option>
+                  <option value="Equipamentos">Equipamentos</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+              <div class="saidas-form-group saidas-form-group--sm">
+                <label class="saidas-form-label" for="saidasModalValor"
+                  >Valor (R$)</label
+                >
+                <input
+                  class="saidas-form-input"
+                  type="text"
+                  id="saidasModalValor"
+                  placeholder="0,00"
+                  inputmode="decimal"
+                />
+              </div>
+            </div>
+            <div class="saidas-form-row">
+              <div class="saidas-form-group">
+                <label class="saidas-form-label" for="saidasModalPgto"
+                  >Forma de Pagamento</label
+                >
+                <select class="saidas-form-input" id="saidasModalPgto">
+                  <option value="">Selecionar...</option>
+                  <option value="PIX">PIX</option>
+                  <option value="Cartão">Cartão</option>
+                  <option value="Dinheiro">Dinheiro</option>
+                  <option value="Boleto">Boleto</option>
+                  <option value="Transferência">Transferência</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="saidas-modal__footer">
+            <button class="btn-ghost" id="saidasModalCancel">Cancelar</button>
+            <button class="btn-primary-lg" id="saidasModalSave">Salvar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Modal: Confirmar Exclusão ── -->
+      <div
+        class="saidas-modal-overlay"
+        id="saidasDeleteOverlay"
+        aria-hidden="true"
+      >
+        <div
+          class="saidas-modal saidas-modal--sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="saidasDeleteTitle"
+        >
+          <div class="saidas-modal__header">
+            <h2 class="saidas-modal__title" id="saidasDeleteTitle">
+              Excluir Saída
+            </h2>
+            <button
+              class="saidas-modal__close"
+              id="saidasDeleteClose"
+              aria-label="Fechar"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 2l10 10M12 2L2 12"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="saidas-modal__body">
+            <p class="saidas-delete-msg">
+              Tem certeza que deseja excluir a saída
+              <strong id="saidasDeleteDesc"></strong>? Essa ação não pode ser
+              desfeita.
+            </p>
+          </div>
+          <div class="saidas-modal__footer">
+            <button class="btn-ghost" id="saidasDeleteCancel">Cancelar</button>
+            <button
+              class="btn-primary-lg saidas-btn-delete"
+              id="saidasDeleteConfirm"
+            >
+              Excluir
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- External Tooltip -->
-    <div class="chart-tooltip" id="chartTooltip" role="tooltip" aria-hidden="true">
-        <div class="chart-tooltip__inner" id="chartTooltipInner"></div>
+    <div
+      class="chart-tooltip"
+      id="chartTooltip"
+      role="tooltip"
+      aria-hidden="true"
+    >
+      <div class="chart-tooltip__inner" id="chartTooltipInner"></div>
     </div>
 
     <!-- Toast container -->
-    <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+    <div
+      class="toast-container"
+      id="toastContainer"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
 
     <script src="js/financeiro.js"></script>
-</body>
-
+  </body>
 </html>

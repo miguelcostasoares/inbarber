@@ -1741,29 +1741,7 @@ textarea {
   display: block;
 }
 
-.pref-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.pref-header__title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--white);
-  letter-spacing: -0.01em;
-}
-
-.pref-header__subtitle {
-  font-size: 12.5px;
-  color: var(--muted);
-  margin-top: 3px;
-  line-height: 1.5;
-}
-
-/* Estado de carregamento (reutiliza spinner da equipe) */
+/* Estado de carregamento */
 .pref-loading {
   display: flex;
   align-items: center;
@@ -1776,34 +1754,145 @@ textarea {
   border-radius: var(--r-lg);
 }
 
-/* Corpo das preferências */
-.pref-body {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  animation: cfFadeUp 380ms var(--ease-out) both;
+/* Layout geral: sidebar + main */
+.pref-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  align-items: start;
+  animation: cfFadeUp 420ms 60ms var(--ease-out) both;
 }
 
-/* Card de bloco (Horário / Almoço) */
-.pref-card {
+@media (max-width: 1000px) {
+  .pref-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Coluna esquerda: sidebar ── */
+.pref-sidebar {
+  background: var(--bg-2);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-lg);
+  padding: 28px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: sticky;
+  top: 24px;
+}
+
+.pref-sidebar__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gold-bg);
+  border: 1px solid rgba(0, 71, 255, 0.2);
+  color: var(--gold-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.pref-sidebar__title {
+  font-family: var(--ff-d);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.pref-sidebar__desc {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.pref-sidebar__divider {
+  width: 100%;
+  height: 1px;
+  background: var(--divider);
+  margin: 20px 0;
+}
+
+/* Lista de resumo */
+.pref-sidebar__summary {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.pref-summary-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pref-summary-item__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pref-summary-item__value {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cream-2);
+}
+
+/* Botão salvar na sidebar */
+.pref-sidebar__save {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ── Coluna direita: cards de configuração ── */
+.pref-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Card genérico de formulário */
+.pref-form-card {
   background: var(--bg-2);
   border: 1px solid var(--divider);
   border-radius: var(--r-lg);
   overflow: hidden;
 }
 
-.pref-card__head {
+.pref-form-card__head {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  padding: 22px 24px 20px;
+  gap: 12px;
+  padding: 20px 24px 18px;
   border-bottom: 1px solid var(--divider);
 }
 
-.pref-card__head-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--r-md);
+.pref-form-card__head--between {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pref-form-card__head-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pref-form-card__head-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
   background: var(--gold-bg);
   border: 1px solid rgba(0, 71, 255, 0.18);
   color: var(--gold-lt);
@@ -1814,39 +1903,47 @@ textarea {
   margin-top: 1px;
 }
 
-.pref-card__title {
-  font-size: 14px;
+.pref-form-card__title {
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--white);
   letter-spacing: -0.01em;
 }
 
-.pref-card__subtitle {
+.pref-form-card__subtitle {
   font-size: 12px;
   color: var(--muted);
   margin-top: 3px;
   line-height: 1.5;
 }
 
-.pref-card__head-toggle {
-  margin-left: auto;
-  flex-shrink: 0;
-  padding-top: 2px;
+/* Cabeçalho das colunas da grade de dias */
+.pref-dias-header {
+  display: grid;
+  grid-template-columns: 148px 1fr 1fr;
+  gap: 12px;
+  padding: 8px 24px;
+  background: var(--bg-3);
+  border-bottom: 1px solid var(--divider);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 /* Grade de dias da semana */
 .pref-dias {
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .pref-dia-row {
   display: grid;
-  grid-template-columns: 130px auto 1fr;
+  grid-template-columns: 148px 1fr 1fr;
   align-items: center;
-  gap: 16px;
-  padding: 14px 24px;
+  gap: 12px;
+  padding: 11px 24px;
   border-bottom: 1px solid var(--divider);
   transition: background var(--dur);
 }
@@ -1856,11 +1953,11 @@ textarea {
 }
 
 .pref-dia-row:hover {
-  background: var(--bg-3);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.pref-dia-row--fechado .pref-horarios {
-  opacity: 0.35;
+.pref-dia-row--fechado .pref-dia-input-wrap {
+  opacity: 0.28;
   pointer-events: none;
 }
 
@@ -1872,80 +1969,107 @@ textarea {
 }
 
 .pref-dia-name {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--cream);
-  min-width: 80px;
 }
 
 .pref-dia-row--fechado .pref-dia-name {
   color: var(--muted);
 }
 
-/* Horários de abertura e fechamento */
-.pref-horarios {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* Input de horário individual do dia */
+.pref-dia-input-wrap {
   transition: opacity var(--dur);
 }
 
-.pref-time-sep {
-  font-size: 12px;
-  color: var(--muted);
-  flex-shrink: 0;
-  user-select: none;
-}
-
 .pref-time-input {
-  width: 110px;
-  padding: 8px 10px 8px 36px;
-  font-size: 13.5px;
+  width: 100%;
+  max-width: 130px;
+  padding: 8px 10px 8px 34px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   color-scheme: dark;
 }
 
 /* Bloco almoço — horários internos */
 .pref-almoco-horarios {
-  padding: 20px 24px 24px;
+  padding: 22px 24px 24px;
   animation: cfFadeUp 260ms var(--ease-out) both;
 }
 
-.pref-time-row {
+.pref-almoco-row {
   display: flex;
   align-items: flex-end;
   gap: 12px;
 }
 
-.pref-time-row .pref-time-sep {
-  padding-bottom: 11px;
+.pref-almoco-row .form-group {
+  flex: 1;
+  max-width: 180px;
 }
 
-@media (max-width: 640px) {
-  .pref-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.pref-almoco-sep {
+  color: var(--muted);
+  padding-bottom: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
 
-  .pref-header .btn-primary {
-    align-self: flex-start;
+.pref-almoco-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.pref-almoco-hint svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--muted);
+}
+
+@media (max-width: 1100px) {
+  .pref-sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .pref-dias-header {
+    display: none;
   }
 
   .pref-dia-row {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 14px 16px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 8px 12px;
+    padding: 12px 16px;
   }
 
-  .pref-horarios {
-    padding-left: 0;
+  .pref-dia-label {
+    grid-column: 1 / -1;
   }
 
   .pref-time-input {
-    width: 100px;
+    max-width: 100%;
   }
 
-  .pref-time-row {
+  .pref-almoco-row {
     flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .pref-almoco-sep {
+    display: none;
+  }
+
+  .pref-almoco-row .form-group {
+    max-width: 100%;
+    flex: 1 1 140px;
   }
 }

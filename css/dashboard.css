@@ -402,6 +402,9 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.7);
   z-index: 150; opacity: 0;
+  /* Invisível mas ainda por cima da página: sem isto, no telemóvel
+     o overlay apanhava todos os cliques do dashboard. */
+  pointer-events: none;
   transition: opacity var(--dur) var(--ease-out);
 }
 

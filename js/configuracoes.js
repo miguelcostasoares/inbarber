@@ -21,6 +21,42 @@ const SERVICOS_STATE = {
   loading: false,
 };
 
+/* ─── PRODUTOS: CONFIG ──────────────────────────────────── */
+const PRODUTOS_STATE = {
+  produtos: [],
+  loading: false,
+  categoria: "todos",
+  busca: "",
+};
+
+const PRODUTO_CATEGORIAS = [
+  { id: "todos", label: "Todas as categorias" },
+  { id: "pomadas", label: "Pomadas" },
+  { id: "cabelo", label: "Cabelo" },
+  { id: "barba", label: "Barba" },
+  { id: "acessorios", label: "Acessórios" },
+];
+
+// Disponível <= isto aparece marcado como stock crítico na tabela.
+const PRODUTO_STOCK_BAIXO = 5;
+
+/* Onde os produtos moram.
+   Se a página carregar js/produtos-data.js, usa a camada de dados
+   (que traz o plano B do mock quando o Flask está em baixo); caso
+   contrário fala direto com a API, que já está carregada aqui. */
+const PRODUTOS_FONTE = {
+  listar() {
+    return window.ProdutosData
+      ? window.ProdutosData.listarTodos()
+      : window.InBarberAPI.listProducts();
+  },
+  atualizar(id, dados) {
+    return window.ProdutosData
+      ? window.ProdutosData.atualizar(id, dados)
+      : window.InBarberAPI.updateProduct(id, dados);
+  },
+};
+
 const DEFAULTS = {
   nome: "",
   telefone: "",
@@ -119,7 +155,6 @@ function renderEquipe() {
     return;
   }
 
-  empty.hidden = false;
   empty.hidden = true;
   table.hidden = false;
 
@@ -634,6 +669,476 @@ function initServicosListeners() {
     });
 }
 
+/* ═══════════════════════════════════════════════════════════
+   PRODUTOS — tab de catálogo
+   Back-end: GET /api/products e PATCH /api/products/:id.
+
+   Não há POST de produtos: o catálogo nasce do schema_produtos.sql,
+   por isso aqui só se edita o que já existe (preço, promoção,
+   stock, destaque e visibilidade na loja). É de propósito que não
+   há botão "Novo Produto".
+═══════════════════════════════════════════════════════════ */
+
+/* ─── PRODUTOS: UTILS ───────────────────────────────────── */
+
+/** Nível do stock disponível: ok | baixo | rutura */
+function nivelStockProduto(p) {
+  if (!p.disponivel) return "rutura";
+  return p.disponivel <= PRODUTO_STOCK_BAIXO ? "baixo" : "ok";
+}
+
+const CORES_STOCK = {
+  ok: "inherit",
+  baixo: "var(--orange, #ff9c40)",
+  rutura: "var(--red, #ff4d6a)",
+};
+
+/** Aplica os filtros da barra (categoria + busca) sobre o catálogo. */
+function produtosFiltrados() {
+  const termo = PRODUTOS_STATE.busca.trim().toLowerCase();
+
+  return PRODUTOS_STATE.produtos.filter((p) => {
+    if (PRODUTOS_STATE.categoria !== "todos" && p.categoria !== PRODUTOS_STATE.categoria) {
+      return false;
+    }
+    if (!termo) return true;
+    return (
+      (p.nome || "").toLowerCase().includes(termo) ||
+      (p.id || "").toLowerCase().includes(termo)
+    );
+  });
+}
+
+/* ─── PRODUTOS: RENDER ──────────────────────────────────── */
+function renderProdutos() {
+  const loading = document.getElementById("produtosLoading");
+  const empty   = document.getElementById("produtosEmpty");
+  const table   = document.getElementById("produtosTable");
+  const tbody   = document.getElementById("produtosTableBody");
+
+  if (!tbody) return;
+
+  if (PRODUTOS_STATE.loading) {
+    if (loading) loading.hidden = false;
+    if (empty) empty.hidden = true;
+    if (table) table.hidden = true;
+    return;
+  }
+
+  if (loading) loading.hidden = true;
+
+  const lista = produtosFiltrados();
+
+  if (!lista.length) {
+    if (empty) {
+      empty.hidden = false;
+      // Distingue "catálogo vazio" de "filtro sem resultados".
+      const msg = empty.querySelector("[data-empty-msg]");
+      if (msg) {
+        msg.textContent = PRODUTOS_STATE.produtos.length
+          ? "Nenhum produto com estes filtros."
+          : "Nenhum produto no catálogo.";
+      }
+    }
+    if (table) table.hidden = true;
+    return;
+  }
+
+  if (empty) empty.hidden = true;
+  if (table) table.hidden = false;
+
+  tbody.innerHTML = "";
+
+  lista.forEach((p) => {
+    const ativo = !!p.ativo;
+    const nome  = p.nome || "—";
+    const nivel = nivelStockProduto(p);
+    const img   = p.img || `assets/produtos/${p.id}.jpg`;
+
+    const tr = document.createElement("tr");
+    tr.className = "equipe-table__tr" + (ativo ? "" : " equipe-table__tr--inativo");
+    tr.dataset.id = p.id;
+
+    tr.innerHTML = `
+      <td class="equipe-table__td">
+        <div class="equipe-cell-nome">
+          <div class="equipe-avatar">
+            <img
+              src="${escapeHtml(img)}"
+              alt=""
+              loading="lazy"
+              onerror="this.remove()"
+              style="width:100%;height:100%;object-fit:cover;border-radius:inherit"
+            />
+          </div>
+          <span>
+            <span class="equipe-nome-text">${escapeHtml(nome)}</span>
+            <span style="display:block;font-size:11px;opacity:.6">
+              ${escapeHtml(p.categoria || "—")} · ${escapeHtml(p.id)}${p.destaque ? " · ★ destaque" : ""}
+            </span>
+          </span>
+        </div>
+      </td>
+
+      <td class="equipe-table__td">
+        <span class="equipe-nome-text">${escapeHtml(formatarPreco(p.precoFinal ?? p.preco ?? 0))}</span>
+        ${
+          p.emPromocao
+            ? `<span style="display:block;font-size:11px;opacity:.6">
+                 <s>${escapeHtml(formatarPreco(p.preco))}</s>
+                 <span style="color:var(--green, #00d68f);font-weight:600">−${p.descontoPct}%</span>
+               </span>`
+            : ""
+        }
+      </td>
+
+      <td class="equipe-table__td">
+        <span style="font-weight:600;color:${CORES_STOCK[nivel]}">${p.disponivel}</span>
+        <span style="opacity:.6">/${p.stock}</span>
+        <span style="display:block;font-size:11px;opacity:.6">
+          ${p.reservado ? `${p.reservado} reservada${p.reservado === 1 ? "" : "s"}` : "nada reservado"}
+        </span>
+      </td>
+
+      <td class="equipe-table__td">
+        <span class="badge-status ${ativo ? "badge-status--ativo" : "badge-status--inativo"}">
+          ${ativo ? "Ativo" : "Inativo"}
+        </span>
+      </td>
+
+      <td class="equipe-table__td equipe-table__td--actions">
+        <div class="equipe-actions">
+          <button
+            class="btn-table"
+            data-action="stock-produto"
+            data-delta="-1"
+            data-id="${p.id}"
+            type="button"
+            aria-label="Reduzir stock de ${escapeHtml(nome)}"
+            ${p.stock <= p.reservado ? "disabled" : ""}
+          >−</button>
+          <button
+            class="btn-table"
+            data-action="stock-produto"
+            data-delta="1"
+            data-id="${p.id}"
+            type="button"
+            aria-label="Aumentar stock de ${escapeHtml(nome)}"
+          >+</button>
+          <button
+            class="btn-table"
+            data-action="editar-produto"
+            data-id="${p.id}"
+            type="button"
+            aria-label="Editar ${escapeHtml(nome)}"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M8.5 1.5l2 2L4 10H2V8L8.5 1.5z" stroke="currentColor" stroke-width="1.4"
+                stroke-linejoin="round"/>
+            </svg>
+            Editar
+          </button>
+          <button
+            class="toggle-switch ${ativo ? "toggle-switch--on" : ""}"
+            data-action="toggle-produto"
+            data-id="${p.id}"
+            data-ativo="${ativo ? "1" : "0"}"
+            type="button"
+            role="switch"
+            aria-checked="${ativo ? "true" : "false"}"
+            aria-label="${ativo ? "Ocultar" : "Mostrar"} ${escapeHtml(nome)} na loja"
+          >
+            <span class="toggle-switch__track" aria-hidden="true">
+              <span class="toggle-switch__thumb"></span>
+            </span>
+            <span class="toggle-switch__label">${ativo ? "Na loja" : "Oculto"}</span>
+          </button>
+        </div>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+/* ─── PRODUTOS: LOAD ────────────────────────────────────── */
+async function loadProdutos() {
+  PRODUTOS_STATE.loading = true;
+  renderProdutos();
+
+  try {
+    PRODUTOS_STATE.produtos = await PRODUTOS_FONTE.listar();
+  } catch (err) {
+    // Plano B: se js/produtos-data.js estiver carregado, mostra o mock
+    // em vez de uma tabela vazia — e diz que são dados de demonstração.
+    const mock = window.ProdutosData && window.ProdutosData._mock;
+    if (mock) {
+      try {
+        PRODUTOS_STATE.produtos = await mock.listarTodos();
+        showToast("info", "Servidor indisponível — a mostrar produtos de demonstração.");
+      } catch (_) {
+        PRODUTOS_STATE.produtos = [];
+        showToast("error", "Não foi possível carregar os produtos.");
+      }
+    } else {
+      PRODUTOS_STATE.produtos = [];
+      showToast("error", "Não foi possível carregar os produtos.");
+    }
+  } finally {
+    PRODUTOS_STATE.loading = false;
+    renderProdutos();
+  }
+}
+
+/* ─── PRODUTOS: MODAL ───────────────────────────────────── */
+function openProdutoModal(produto) {
+  if (!produto) return;
+
+  const overlay = document.getElementById("produtoModalOverlay");
+  if (!overlay) return;
+
+  document.getElementById("produtoModalTitle").textContent = "Editar Produto";
+  document.getElementById("produtoModalId").value        = produto.id;
+  document.getElementById("produtoModalNome").value      = produto.nome || "";
+  document.getElementById("produtoModalDescricao").value = produto.descricao || "";
+  document.getElementById("produtoModalPreco").value     = Number(produto.preco ?? 0).toFixed(2);
+  document.getElementById("produtoModalPromo").value =
+    produto.precoPromo != null ? Number(produto.precoPromo).toFixed(2) : "";
+  document.getElementById("produtoModalStock").value    = produto.stock ?? 0;
+  document.getElementById("produtoModalDestaque").value = produto.destaque ? "1" : "0";
+  document.getElementById("produtoModalStatus").value   = produto.ativo ? "1" : "0";
+
+  // O stock não pode descer abaixo do que já está reservado — o
+  // servidor recusa com 409, e aqui o utilizador vê isso antes.
+  const hint = document.getElementById("produtoModalStockHint");
+  if (hint) {
+    hint.textContent = produto.reservado
+      ? `${produto.reservado} unidade(s) reservada(s) — o stock não pode ficar abaixo disso.`
+      : "Nada reservado neste momento.";
+  }
+
+  const categoriaSel = document.getElementById("produtoModalCategoria");
+  if (categoriaSel) {
+    categoriaSel.innerHTML = PRODUTO_CATEGORIAS.filter((c) => c.id !== "todos")
+      .map(
+        (c) =>
+          `<option value="${c.id}"${c.id === produto.categoria ? " selected" : ""}>${c.label}</option>`
+      )
+      .join("");
+  }
+
+  overlay.hidden = false;
+  document.getElementById("produtoModalNome").focus();
+}
+
+function closeProdutoModal() {
+  const overlay = document.getElementById("produtoModalOverlay");
+  if (overlay) overlay.hidden = true;
+}
+
+async function handleSalvarProduto() {
+  const id       = document.getElementById("produtoModalId").value;
+  const nome     = document.getElementById("produtoModalNome").value.trim();
+  const desc     = document.getElementById("produtoModalDescricao").value.trim();
+  const preco    = parseFloat(document.getElementById("produtoModalPreco").value);
+  const promoRaw = document.getElementById("produtoModalPromo").value.trim();
+  const stock    = parseInt(document.getElementById("produtoModalStock").value, 10);
+  const destaque = document.getElementById("produtoModalDestaque").value === "1";
+  const ativo    = document.getElementById("produtoModalStatus").value === "1";
+  const categoria = document.getElementById("produtoModalCategoria").value;
+
+  const promo = promoRaw === "" ? null : parseFloat(promoRaw);
+  const atual = PRODUTOS_STATE.produtos.find((p) => p.id === id);
+
+  if (!nome) {
+    flashInputError("produtoModalNome");
+    showToast("error", "O nome do produto é obrigatório.");
+    return;
+  }
+
+  if (isNaN(preco) || preco < 0) {
+    flashInputError("produtoModalPreco");
+    showToast("error", "Informe um preço de tabela válido.");
+    return;
+  }
+
+  if (promo !== null && (isNaN(promo) || promo <= 0)) {
+    flashInputError("produtoModalPromo");
+    showToast("error", "Informe um preço promocional válido ou deixe o campo vazio.");
+    return;
+  }
+
+  if (promo !== null && promo >= preco) {
+    flashInputError("produtoModalPromo");
+    showToast("error", "A promoção tem de ser menor que o preço de tabela.");
+    return;
+  }
+
+  if (isNaN(stock) || stock < 0) {
+    flashInputError("produtoModalStock");
+    showToast("error", "Informe um stock válido.");
+    return;
+  }
+
+  if (atual && stock < atual.reservado) {
+    flashInputError("produtoModalStock");
+    showToast(
+      "error",
+      `Já há ${atual.reservado} unidade(s) reservada(s): o stock não pode ficar abaixo disso.`
+    );
+    return;
+  }
+
+  const btnSalvar = document.getElementById("produtoModalSalvar");
+  btnSalvar.disabled = true;
+
+  try {
+    await PRODUTOS_FONTE.atualizar(id, {
+      nome,
+      descricao: desc,
+      preco,
+      precoPromo: promo,
+      stock,
+      categoria,
+      destaque,
+      ativo,
+    });
+    showToast("success", "Produto atualizado com sucesso!");
+    closeProdutoModal();
+    await loadProdutos();
+  } catch (err) {
+    showToast("error", err.message || "Erro ao salvar produto.");
+  } finally {
+    btnSalvar.disabled = false;
+  }
+}
+
+async function handleToggleProduto(id, ativoAtual) {
+  const novoStatus = !ativoAtual;
+  try {
+    await PRODUTOS_FONTE.atualizar(id, { ativo: novoStatus });
+    showToast("success", novoStatus ? "Produto visível na loja." : "Produto oculto na loja.");
+    await loadProdutos();
+  } catch (err) {
+    showToast("error", err.message || "Erro ao alterar status.");
+  }
+}
+
+/** Ajuste rápido de stock a partir da tabela (+1 / −1). */
+async function handleStockProduto(id, delta) {
+  const produto = PRODUTOS_STATE.produtos.find((p) => p.id === id);
+  if (!produto) return;
+
+  const novo = produto.stock + delta;
+  if (novo < 0) return;
+
+  if (novo < produto.reservado) {
+    showToast(
+      "error",
+      `Já há ${produto.reservado} unidade(s) reservada(s): o stock não pode ficar abaixo disso.`
+    );
+    return;
+  }
+
+  try {
+    const atualizado = await PRODUTOS_FONTE.atualizar(id, { stock: novo });
+    // Troca só a linha mexida, para a tabela não piscar toda.
+    PRODUTOS_STATE.produtos = PRODUTOS_STATE.produtos.map((p) =>
+      p.id === id ? atualizado : p
+    );
+    renderProdutos();
+  } catch (err) {
+    showToast("error", err.message || "Erro ao atualizar o stock.");
+  }
+}
+
+/* ─── PRODUTOS: EVENT LISTENERS ─────────────────────────── */
+function initProdutosListeners() {
+  // Recarregar
+  document
+    .getElementById("btnRecarregarProdutos")
+    ?.addEventListener("click", () => loadProdutos());
+
+  // Filtro por categoria
+  const filtro = document.getElementById("produtosFiltroCategoria");
+  if (filtro) {
+    filtro.innerHTML = PRODUTO_CATEGORIAS.map(
+      (c) => `<option value="${c.id}">${c.label}</option>`
+    ).join("");
+
+    filtro.addEventListener("change", (e) => {
+      PRODUTOS_STATE.categoria = e.target.value;
+      renderProdutos();
+    });
+  }
+
+  // Busca por nome
+  let buscaTimer;
+  document
+    .getElementById("produtosBusca")
+    ?.addEventListener("input", (e) => {
+      const valor = e.target.value;
+      clearTimeout(buscaTimer);
+      buscaTimer = setTimeout(() => {
+        PRODUTOS_STATE.busca = valor;
+        renderProdutos();
+      }, 180);
+    });
+
+  // Modal
+  document
+    .getElementById("produtoModalClose")
+    ?.addEventListener("click", closeProdutoModal);
+
+  document
+    .getElementById("produtoModalCancelar")
+    ?.addEventListener("click", closeProdutoModal);
+
+  document
+    .getElementById("produtoModalOverlay")
+    ?.addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeProdutoModal();
+    });
+
+  document.addEventListener("keydown", (e) => {
+    if (
+      e.key === "Escape" &&
+      !document.getElementById("produtoModalOverlay")?.hidden
+    ) {
+      closeProdutoModal();
+    }
+  });
+
+  document
+    .getElementById("produtoModalSalvar")
+    ?.addEventListener("click", handleSalvarProduto);
+
+  // Delegação de eventos na tabela
+  document
+    .getElementById("produtosTableBody")
+    ?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      const id     = btn.dataset.id;
+
+      if (action === "editar-produto") {
+        const produto = PRODUTOS_STATE.produtos.find((p) => p.id === id);
+        if (produto) openProdutoModal(produto);
+      }
+
+      if (action === "toggle-produto") {
+        const ativoAtual = btn.dataset.ativo === "1";
+        handleToggleProduto(id, ativoAtual);
+      }
+
+      if (action === "stock-produto") {
+        handleStockProduto(id, Number(btn.dataset.delta));
+      }
+    });
+}
+
 /* ─── 4. SIDEBAR ────────────────────────────────────────── */
 function initSidebar() {
   const burger = document.getElementById("burgerBtn");
@@ -730,6 +1235,11 @@ function initTabs() {
       // Carrega serviços na primeira visita
       if (target === 'servicos' && !SERVICOS_STATE.servicos.length && !SERVICOS_STATE.loading) {
         loadServicos();
+      }
+
+      // Carrega produtos na primeira visita
+      if (target === 'produtos' && !PRODUTOS_STATE.produtos.length && !PRODUTOS_STATE.loading) {
+        loadProdutos();
       }
 
       // Carrega preferências na primeira visita
@@ -1041,7 +1551,7 @@ function initPrefDias(horarios) {
         <span class="pref-dia-name">${label}</span>
       </div>
 
-      <div class="pref-horarios">
+      <div class="pref-dia-input-wrap">
         <div class="form-input-wrap">
           <div class="form-input-icon" aria-hidden="true">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -1058,7 +1568,9 @@ function initPrefDias(horarios) {
             ${aberto ? '' : 'tabindex="-1"'}
           />
         </div>
-        <span class="pref-time-sep" aria-hidden="true">→</span>
+      </div>
+
+      <div class="pref-dia-input-wrap">
         <div class="form-input-wrap">
           <div class="form-input-icon" aria-hidden="true">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -1076,12 +1588,34 @@ function initPrefDias(horarios) {
           />
         </div>
       </div>
-
-      <div></div>
     `;
 
     container.appendChild(row);
   });
+
+  updatePrefSummary();
+}
+
+/* ─── 15b. PREFERÊNCIAS: RESUMO DA SIDEBAR ──────────────── */
+function updatePrefSummary() {
+  const diasAbertosEl = document.getElementById('summaryDiasAbertos');
+  const almocoEl      = document.getElementById('summaryAlmoco');
+
+  if (diasAbertosEl) {
+    const total = document.querySelectorAll('.pref-dia-row:not(.pref-dia-row--fechado)').length;
+    diasAbertosEl.textContent = total > 0 ? `${total} de 7` : 'Nenhum';
+  }
+
+  if (almocoEl) {
+    const ativo = document.getElementById('toggleAlmoco')?.classList.contains('toggle-switch--on');
+    if (ativo) {
+      const ini = document.getElementById('almocoInicio')?.value || '12:00';
+      const fim = document.getElementById('almocoFim')?.value    || '13:00';
+      almocoEl.textContent = `${ini} – ${fim}`;
+    } else {
+      almocoEl.textContent = 'Inativo';
+    }
+  }
 }
 
 /* ─── 16. PREFERÊNCIAS: TOGGLE DIA ──────────────────────── */
@@ -1106,6 +1640,8 @@ function toggleDia(key) {
   inputs.forEach((inp) => {
     inp.setAttribute('tabindex', novoOpen ? '0' : '-1');
   });
+
+  updatePrefSummary();
 }
 
 /* ─── 17. PREFERÊNCIAS: TOGGLE ALMOÇO ───────────────────── */
@@ -1122,6 +1658,8 @@ function syncAlmocoUI(ativo) {
   if (labelEl) labelEl.textContent = ativo ? 'Ativo' : 'Inativo';
 
   horarios.hidden = !ativo;
+
+  updatePrefSummary();
 }
 
 /* ─── 18. PREFERÊNCIAS: LER FORMULÁRIO ──────────────────── */
@@ -1240,6 +1778,15 @@ function initPreferenciasListeners() {
       syncAlmocoUI(ativo);
     });
 
+  // Atualiza resumo ao mudar horários de almoço
+  document
+    .getElementById('almocoInicio')
+    ?.addEventListener('change', updatePrefSummary);
+
+  document
+    .getElementById('almocoFim')
+    ?.addEventListener('change', updatePrefSummary);
+
   // Delegação: toggles de dia dentro de #prefDias
   document
     .getElementById('prefDias')
@@ -1262,6 +1809,7 @@ function boot() {
   initTabs();
   initEquipeListeners();
   initServicosListeners();
+  initProdutosListeners();
   initPreferenciasListeners();
 
   // Dispara checkDirty uma vez para sincronizar estado inicial dos botões

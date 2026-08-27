@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="css/configuracoes.css" />
   </head>
 
@@ -20,91 +20,246 @@
     <!-- ═══════════════════════════════════════════
        SIDEBAR NAV
   ═══════════════════════════════════════════ -->
-    <aside class="sidebar is-collapsed" id="sidebar" role="navigation" aria-label="Menu principal">
-
-        <div class="sidebar__brand">
-            <div class="sidebar__logo">
-                <img src="assets/logo_inbarber.png" alt="logo-inbarber" class="sidebar__img-logo">
-            </div>
-            <span class="sidebar__name">InBarber</span>
+    <aside
+      class="sidebar is-collapsed"
+      id="sidebar"
+      role="navigation"
+      aria-label="Menu principal"
+    >
+      <div class="sidebar__brand">
+        <div class="sidebar__logo">
+          <img
+            src="assets/logo_inbarber.png"
+            alt="logo-inbarber"
+            class="sidebar__img-logo"
+          />
         </div>
+        <span class="sidebar__name">InBarber</span>
+      </div>
 
-        <button class="sidebar__toggle" id="sidebarToggleBtn" aria-label="Expandir menu" aria-expanded="false"
-            aria-controls="sidebar">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                    stroke-linejoin="round" />
-            </svg>
-        </button>
+      <button
+        class="sidebar__toggle"
+        id="sidebarToggleBtn"
+        aria-label="Expandir menu"
+        aria-expanded="false"
+        aria-controls="sidebar"
+      >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M4 2l4 4-4 4"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
 
-        <nav class="sidebar__nav">
-            <ul class="nav-list" role="list">
-                <li>
-                    <a href="/dashboard.html" class="nav-item" data-label="Dashboard">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
-                            <rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
-                            <rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" />
-                            <rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor"
-                                stroke-width="1.5" />
-                        </svg>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/agenda-crm.html" class="nav-item" data-label="Agenda">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <rect x="2" y="3" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.5" />
-                            <path d="M2 8h16" stroke="currentColor" stroke-width="1.5" />
-                            <path d="M7 1v4M13 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                        <span>Agenda</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/clientes.html" class="nav-item" data-label="Clientes">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.5" />
-                            <path d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5"
-                                stroke-linecap="round" />
-                        </svg>
-                        <span>Clientes</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/financeiro.html" class="nav-item" aria-current="page"
-                        data-label="Financeiro">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5" />
-                            <path d="M6 10h8M6 6h4M6 14h6" stroke="currentColor" stroke-width="1.5"
-                                stroke-linecap="round" />
-                        </svg>
-                        <span>Financeiro</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="configuracoes.html" class="nav-item nav-item--active" data-label="Configurações Gerais">
-                        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                            <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5" />
-                            <path
-                                d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"
-                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                        <span>Configurações</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+      <nav class="sidebar__nav">
+        <ul class="nav-list" role="list">
+          <li>
+            <a href="/dashboard.html" class="nav-item" data-label="Dashboard">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="11"
+                  y="2"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="2"
+                  y="11"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <rect
+                  x="11"
+                  y="11"
+                  width="7"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="/agenda-crm.html" class="nav-item" data-label="Agenda">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="2"
+                  y="3"
+                  width="16"
+                  height="15"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path d="M2 8h16" stroke="currentColor" stroke-width="1.5" />
+                <path
+                  d="M7 1v4M13 1v4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Agenda</span>
+            </a>
+          </li>
+          <li>
+            <a href="/clientes.html" class="nav-item" data-label="Clientes">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="10"
+                  cy="7"
+                  r="4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Clientes</span>
+            </a>
+          </li>
+          <li>
+            <a href="/produtos-crm.html" class="nav-item" data-label="Produtos">
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 6h12l-1 10H5L4 6z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M7.5 6V4.5a2.5 2.5 0 0 1 5 0V6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Produtos</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/financeiro.html"
+              class="nav-item"
+              aria-current="page"
+              data-label="Financeiro"
+            >
+              <svg
+                class="nav-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="16"
+                  height="16"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M6 10h8M6 6h4M6 14h6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>Financeiro</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="configuracoes.html"
+              class="nav-item nav-item--active"
+              data-label="Configurações Gerais"
+            >
+              <svg
+                class="nav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+              <span>Configurações</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
 
-        <div class="sidebar__bottom">
-            <div class="sidebar__user">
-                <div class="sidebar__avatar">RC</div>
-                <div class="sidebar__user-info">
-                    <span class="sidebar__user-name">Rafael Costa</span>
-                    <span class="sidebar__user-role">Proprietário</span>
-                </div>
-            </div>
+      <div class="sidebar__bottom">
+        <div class="sidebar__user">
+          <div class="sidebar__avatar">RC</div>
+          <div class="sidebar__user-info">
+            <span class="sidebar__user-name">Rafael Costa</span>
+            <span class="sidebar__user-role">Proprietário</span>
+          </div>
         </div>
+      </div>
     </aside>
 
     <!-- Overlay mobile -->
@@ -704,11 +859,24 @@
         <div class="equipe-header">
           <div class="equipe-header__info">
             <h2 class="equipe-header__title">Equipe</h2>
-            <p class="equipe-header__subtitle">Gerencie os barbeiros ativos e inativos da barbearia.</p>
+            <p class="equipe-header__subtitle">
+              Gerencie os barbeiros ativos e inativos da barbearia.
+            </p>
           </div>
           <button class="btn-primary" id="btnNovoBarbeiro" type="button">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M7 2v10M2 7h10"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
             </svg>
             Novo Barbeiro
           </button>
@@ -724,29 +892,62 @@
 
           <!-- Estado vazio -->
           <div class="equipe-empty" id="equipeEmpty" hidden>
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-              <circle cx="15" cy="14" r="6" stroke="currentColor" stroke-width="1.8"/>
-              <circle cx="27" cy="14" r="6" stroke="currentColor" stroke-width="1.8"/>
-              <path d="M4 34c0-6.627 4.925-12 11-12M18 34c0-6.627 4.925-12 11-12M36 34c0-6.627-4.925-12-11-12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="15"
+                cy="14"
+                r="6"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+              <circle
+                cx="27"
+                cy="14"
+                r="6"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+              <path
+                d="M4 34c0-6.627 4.925-12 11-12M18 34c0-6.627 4.925-12 11-12M36 34c0-6.627-4.925-12-11-12"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
             </svg>
             <p>Nenhum barbeiro cadastrado ainda.</p>
-            <button class="btn-primary btn-primary--sm" id="btnNovoBarbeiroEmpty" type="button">
+            <button
+              class="btn-primary btn-primary--sm"
+              id="btnNovoBarbeiroEmpty"
+              type="button"
+            >
               Adicionar primeiro barbeiro
             </button>
           </div>
 
           <!-- Tabela real -->
-          <table class="equipe-table" id="equipeTable" hidden aria-label="Lista de barbeiros">
+          <table
+            class="equipe-table"
+            id="equipeTable"
+            hidden
+            aria-label="Lista de barbeiros"
+          >
             <thead>
               <tr>
                 <th class="equipe-table__th">Nome</th>
                 <th class="equipe-table__th">Telefone</th>
                 <th class="equipe-table__th">Status</th>
-                <th class="equipe-table__th equipe-table__th--actions">Ações</th>
+                <th class="equipe-table__th equipe-table__th--actions">
+                  Ações
+                </th>
               </tr>
             </thead>
-            <tbody id="equipeTableBody">
-            </tbody>
+            <tbody id="equipeTableBody"></tbody>
           </table>
         </div>
       </section>
@@ -766,11 +967,24 @@
         <div class="equipe-header">
           <div class="equipe-header__info">
             <h2 class="equipe-header__title">Serviços</h2>
-            <p class="equipe-header__subtitle">Gerencie os serviços oferecidos pela barbearia.</p>
+            <p class="equipe-header__subtitle">
+              Gerencie os serviços oferecidos pela barbearia.
+            </p>
           </div>
           <button class="btn-primary" id="btnNovoServico" type="button">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M7 2v10M2 7h10"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
             </svg>
             Novo Serviço
           </button>
@@ -786,28 +1000,50 @@
 
           <!-- Estado vazio -->
           <div class="equipe-empty" id="servicosEmpty" hidden>
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-              <path d="M10 10l8 8-4 9 11-4 4-11-8-8-11 4 0 2zM22 10l8 8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 10l8 8-4 9 11-4 4-11-8-8-11 4 0 2zM22 10l8 8"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+                stroke-linecap="round"
+              />
             </svg>
             <p>Nenhum serviço cadastrado ainda.</p>
-            <button class="btn-primary btn-primary--sm" id="btnNovoServicoEmpty" type="button">
+            <button
+              class="btn-primary btn-primary--sm"
+              id="btnNovoServicoEmpty"
+              type="button"
+            >
               Adicionar primeiro serviço
             </button>
           </div>
 
           <!-- Tabela real -->
-          <table class="equipe-table" id="servicosTable" hidden aria-label="Lista de serviços">
+          <table
+            class="equipe-table"
+            id="servicosTable"
+            hidden
+            aria-label="Lista de serviços"
+          >
             <thead>
               <tr>
                 <th class="equipe-table__th">Nome</th>
                 <th class="equipe-table__th">Duração</th>
                 <th class="equipe-table__th">Preço</th>
                 <th class="equipe-table__th">Status</th>
-                <th class="equipe-table__th equipe-table__th--actions">Ações</th>
+                <th class="equipe-table__th equipe-table__th--actions">
+                  Ações
+                </th>
               </tr>
             </thead>
-            <tbody id="servicosTableBody">
-            </tbody>
+            <tbody id="servicosTableBody"></tbody>
           </table>
         </div>
       </section>
@@ -823,63 +1059,154 @@
         aria-labelledby="btn-tab-preferencias"
         hidden
       >
-        <!-- Cabeçalho da seção -->
-        <div class="pref-header">
-          <div class="pref-header__info">
-            <h2 class="pref-header__title">Preferências da Agenda</h2>
-            <p class="pref-header__subtitle">Configure o horário de funcionamento e o bloqueio de almoço.</p>
-          </div>
-          <button class="btn-primary" id="btnSalvarPreferencias" type="button">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Salvar Preferências
-          </button>
-        </div>
-
         <!-- Estado de carregamento -->
         <div class="pref-loading" id="prefLoading" aria-live="polite">
           <div class="equipe-loading__spinner" aria-hidden="true"></div>
           <span>Carregando preferências…</span>
         </div>
 
-        <!-- Conteúdo (oculto durante carregamento) -->
-        <div class="pref-body" id="prefBody" hidden>
+        <!-- Corpo: layout de duas colunas -->
+        <div class="pref-layout" id="prefBody" hidden>
+          <!-- ── Coluna esquerda: resumo / ação ── -->
+          <aside class="pref-sidebar">
+            <div class="pref-sidebar__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="8"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                />
+                <path
+                  d="M11 6.5v4.8l2.8 2.8"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <h2 class="pref-sidebar__title">Preferências</h2>
+            <p class="pref-sidebar__desc">
+              Configure os dias e horários em que a barbearia está aberta e o
+              intervalo de almoço para a agenda.
+            </p>
 
-          <!-- ── BLOCO: Horário de Funcionamento ── -->
-          <div class="pref-card">
-            <div class="pref-card__head">
-              <div class="pref-card__head-icon" aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                  <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.4"/>
-                  <path d="M7.5 4v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+            <div class="pref-sidebar__divider"></div>
+
+            <ul
+              class="pref-sidebar__summary"
+              id="prefSummary"
+              aria-label="Resumo das configurações"
+            >
+              <li class="pref-summary-item">
+                <span class="pref-summary-item__label">Dias abertos</span>
+                <span class="pref-summary-item__value" id="summaryDiasAbertos"
+                  >—</span
+                >
+              </li>
+              <li class="pref-summary-item">
+                <span class="pref-summary-item__label">Almoço</span>
+                <span class="pref-summary-item__value" id="summaryAlmoco"
+                  >Inativo</span
+                >
+              </li>
+            </ul>
+
+            <div class="pref-sidebar__divider"></div>
+
+            <button
+              class="btn-primary pref-sidebar__save"
+              id="btnSalvarPreferencias"
+              type="button"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 7l3.5 3.5L12 3"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Salvar Preferências
+            </button>
+          </aside>
+
+          <!-- ── Coluna direita: cards de configuração ── -->
+          <div class="pref-main">
+            <!-- CARD: Horário de Funcionamento -->
+            <div class="pref-form-card">
+              <div class="pref-form-card__head">
+                <div class="pref-form-card__head-icon" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <circle
+                      cx="7"
+                      cy="7"
+                      r="5.5"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                    />
+                    <path
+                      d="M7 4v3.2l2 2"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="pref-form-card__title">
+                    Horário de Funcionamento
+                  </h3>
+                  <p class="pref-form-card__subtitle">
+                    Ative os dias e defina a abertura e o fechamento.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 class="pref-card__title">Horário de Funcionamento</h3>
-                <p class="pref-card__subtitle">Defina os horários de abertura e fechamento para cada dia da semana.</p>
+
+              <!-- Cabeçalho das colunas -->
+              <div class="pref-dias-header" aria-hidden="true">
+                <span>Dia</span>
+                <span>Abertura</span>
+                <span>Fechamento</span>
               </div>
+
+              <!-- Linhas geradas via JS -->
+              <div class="pref-dias" id="prefDias"></div>
             </div>
 
-            <div class="pref-dias" id="prefDias">
-              <!-- Gerado via JS: initPrefDias() -->
-            </div>
-          </div>
-
-          <!-- ── BLOCO: Bloqueio de Almoço ── -->
-          <div class="pref-card">
-            <div class="pref-card__head">
-              <div class="pref-card__head-icon" aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                  <path d="M5 1v4M10 1v4M3 6h9M4 13h7a1 1 0 001-1V5H3v7a1 1 0 001 1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <h3 class="pref-card__title">Bloqueio de Almoço</h3>
-                <p class="pref-card__subtitle">Bloqueia automaticamente um intervalo de almoço em todos os dias abertos.</p>
-              </div>
-              <!-- Toggle alinhado à direita do cabeçalho -->
-              <div class="pref-card__head-toggle">
+            <!-- CARD: Bloqueio de Almoço -->
+            <div class="pref-form-card">
+              <div class="pref-form-card__head pref-form-card__head--between">
+                <div class="pref-form-card__head-left">
+                  <div class="pref-form-card__head-icon" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path
+                        d="M4.5 1v3.5M9.5 1v3.5M2.5 5.5h9M3.5 12h7a1 1 0 001-1V4.5h-9V11a1 1 0 001 1z"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="pref-form-card__title">Bloqueio de Almoço</h3>
+                    <p class="pref-form-card__subtitle">
+                      Reserva automaticamente um intervalo em todos os dias
+                      abertos.
+                    </p>
+                  </div>
+                </div>
                 <button
                   class="toggle-switch"
                   id="toggleAlmoco"
@@ -895,51 +1222,124 @@
                   <span class="toggle-switch__label">Inativo</span>
                 </button>
               </div>
-            </div>
 
-            <div class="pref-almoco-horarios" id="prefAlmocoHorarios" hidden>
-              <div class="pref-time-row">
-                <div class="form-group">
-                  <label class="form-label" for="almocoInicio">Início</label>
-                  <div class="form-input-wrap">
-                    <div class="form-input-icon" aria-hidden="true">
-                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                        <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/>
-                        <path d="M6.5 4v2.8l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-                      </svg>
+              <div class="pref-almoco-horarios" id="prefAlmocoHorarios" hidden>
+                <div class="pref-almoco-row">
+                  <div class="form-group">
+                    <label class="form-label" for="almocoInicio"
+                      >Início do intervalo</label
+                    >
+                    <div class="form-input-wrap">
+                      <div class="form-input-icon" aria-hidden="true">
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 13 13"
+                          fill="none"
+                        >
+                          <circle
+                            cx="6.5"
+                            cy="6.5"
+                            r="5"
+                            stroke="currentColor"
+                            stroke-width="1.3"
+                          />
+                          <path
+                            d="M6.5 4v2.8l1.5 1.5"
+                            stroke="currentColor"
+                            stroke-width="1.3"
+                            stroke-linecap="round"
+                          />
+                        </svg>
+                      </div>
+                      <input
+                        class="form-input form-input--icon pref-time-input"
+                        id="almocoInicio"
+                        type="time"
+                        value="12:00"
+                      />
                     </div>
-                    <input
-                      class="form-input form-input--icon pref-time-input"
-                      id="almocoInicio"
-                      type="time"
-                      value="12:00"
-                    />
+                  </div>
+
+                  <div class="pref-almoco-sep" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path
+                        d="M3 8h10M9 4l4 4-4 4"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="almocoFim"
+                      >Fim do intervalo</label
+                    >
+                    <div class="form-input-wrap">
+                      <div class="form-input-icon" aria-hidden="true">
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 13 13"
+                          fill="none"
+                        >
+                          <circle
+                            cx="6.5"
+                            cy="6.5"
+                            r="5"
+                            stroke="currentColor"
+                            stroke-width="1.3"
+                          />
+                          <path
+                            d="M6.5 4v2.8l1.5 1.5"
+                            stroke="currentColor"
+                            stroke-width="1.3"
+                            stroke-linecap="round"
+                          />
+                        </svg>
+                      </div>
+                      <input
+                        class="form-input form-input--icon pref-time-input"
+                        id="almocoFim"
+                        type="time"
+                        value="13:00"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div class="pref-time-sep" aria-hidden="true">→</div>
-                <div class="form-group">
-                  <label class="form-label" for="almocoFim">Fim</label>
-                  <div class="form-input-wrap">
-                    <div class="form-input-icon" aria-hidden="true">
-                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                        <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/>
-                        <path d="M6.5 4v2.8l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-                      </svg>
-                    </div>
-                    <input
-                      class="form-input form-input--icon pref-time-input"
-                      id="almocoFim"
-                      type="time"
-                      value="13:00"
+
+                <p class="pref-almoco-hint">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      cx="6"
+                      cy="6"
+                      r="5"
+                      stroke="currentColor"
+                      stroke-width="1.3"
                     />
-                  </div>
-                </div>
+                    <path
+                      d="M6 5.5v3M6 4h.01"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  O bloqueio é aplicado a todos os dias marcados como abertos.
+                </p>
               </div>
             </div>
           </div>
-
+          <!-- /pref-main -->
         </div>
-        <!-- /pref-body -->
+        <!-- /pref-layout -->
       </section>
       <!-- /tab-preferencias -->
 
@@ -964,8 +1364,19 @@
               type="button"
               aria-label="Fechar modal"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 2l10 10M12 2L2 12"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
               </svg>
             </button>
           </div>
@@ -983,8 +1394,19 @@
               <div class="form-input-wrap">
                 <div class="form-input-icon" aria-hidden="true">
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/>
-                    <path d="M2 14c0-3.314 2.462-6 5.5-6S13 10.686 13 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                    <circle
+                      cx="7.5"
+                      cy="5"
+                      r="3"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                    />
+                    <path
+                      d="M2 14c0-3.314 2.462-6 5.5-6S13 10.686 13 14"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 </div>
                 <input
@@ -1007,7 +1429,12 @@
               <div class="form-input-wrap">
                 <div class="form-input-icon" aria-hidden="true">
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <path d="M2.5 2.5c0 5.523 4.477 10 10 10v-3l-2.5-.5-1 1.5C7 9 4.5 6.5 3.5 4.5L5 3.5 4.5 1H2.5v1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                    <path
+                      d="M2.5 2.5c0 5.523 4.477 10 10 10v-3l-2.5-.5-1 1.5C7 9 4.5 6.5 3.5 4.5L5 3.5 4.5 1H2.5v1.5z"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </div>
                 <input
@@ -1030,7 +1457,13 @@
                 </select>
                 <div class="form-select-arrow" aria-hidden="true">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M3 4.5l3 3 3-3"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </div>
               </div>
@@ -1039,10 +1472,24 @@
 
           <!-- Rodapé do modal -->
           <div class="modal__footer">
-            <button class="btn-ghost" id="barbeiroModalCancelar" type="button">Cancelar</button>
+            <button class="btn-ghost" id="barbeiroModalCancelar" type="button">
+              Cancelar
+            </button>
             <button class="btn-primary" id="barbeiroModalSalvar" type="button">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 7l3.5 3.5L12 3"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
               Salvar
             </button>
@@ -1072,8 +1519,19 @@
               type="button"
               aria-label="Fechar modal"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 2l10 10M12 2L2 12"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
               </svg>
             </button>
           </div>
@@ -1091,7 +1549,12 @@
               <div class="form-input-wrap">
                 <div class="form-input-icon" aria-hidden="true">
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <path d="M3 3l3 3-1.5 3.5L8 11l3.5-1.5 3-3L11 3 8 6 6 5 3 3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                    <path
+                      d="M3 3l3 3-1.5 3.5L8 11l3.5-1.5 3-3L11 3 8 6 6 5 3 3z"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </div>
                 <input
@@ -1114,8 +1577,20 @@
               <div class="form-input-wrap">
                 <div class="form-input-icon" aria-hidden="true">
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.4"/>
-                    <path d="M7.5 4.5v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle
+                      cx="7.5"
+                      cy="7.5"
+                      r="5.5"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                    />
+                    <path
+                      d="M7.5 4.5v3.5l2 2"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </div>
                 <input
@@ -1141,7 +1616,12 @@
               <div class="form-input-wrap">
                 <div class="form-input-icon" aria-hidden="true">
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <path d="M7.5 1v13M4 4.5C4 3.12 5.12 2 6.5 2h2C9.88 2 11 3.12 11 4.5S9.88 7 8.5 7h-2C5.12 7 4 8.12 4 9.5S5.12 12 6.5 12h2C9.88 12 11 10.88 11 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                    <path
+                      d="M7.5 1v13M4 4.5C4 3.12 5.12 2 6.5 2h2C9.88 2 11 3.12 11 4.5S9.88 7 8.5 7h-2C5.12 7 4 8.12 4 9.5S5.12 12 6.5 12h2C9.88 12 11 10.88 11 9.5"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 </div>
                 <input
@@ -1166,7 +1646,13 @@
                 </select>
                 <div class="form-select-arrow" aria-hidden="true">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M3 4.5l3 3 3-3"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </div>
               </div>
@@ -1175,10 +1661,24 @@
 
           <!-- Rodapé do modal -->
           <div class="modal__footer">
-            <button class="btn-ghost" id="servicoModalCancelar" type="button">Cancelar</button>
+            <button class="btn-ghost" id="servicoModalCancelar" type="button">
+              Cancelar
+            </button>
             <button class="btn-primary" id="servicoModalSalvar" type="button">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 7l3.5 3.5L12 3"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
               Salvar
             </button>
@@ -1186,7 +1686,6 @@
         </div>
       </div>
       <!-- /servicoModal -->
-
     </main>
 
     <!-- ═══════════════════════════════════════════

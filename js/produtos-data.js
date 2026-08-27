@@ -186,13 +186,34 @@
     return (window.I18N && window.I18N.lang) || 'pt';
   };
 
-  /* Devolve uma cópia do produto com stock efetivo e textos no idioma ativo */
+  /* Devolve uma cópia do produto com stock efetivo e textos no idioma ativo.
+
+     'ajustes' guarda o que o CRM/dashboard mudou por cima do catálogo
+     base: stock e reservado, mas também preço, promoção, destaque e
+     ativo (ver mock.atualizar). Só as chaves presentes no ajuste
+     sobrepõem o catálogo — o resto continua a vir de CATALOGO. */
   function hidratar(base, ajustes) {
     var aj    = ajustes[base.id] || {};
     var stock = typeof aj.stock === 'number' ? aj.stock : base.stock;
     var res   = typeof aj.reservado === 'number' ? aj.reservado : base.reservado;
     var l     = lang();
     var trad  = (l !== 'pt' && base.i18n && base.i18n[l]) || null;
+
+    /* Campos editáveis: o ajuste ganha ao catálogo quando existe.
+       'precoPromo' aceita null (tirar de promoção), por isso o teste
+       é pela presença da chave e não pelo valor. */
+    base = {
+      id: base.id,
+      nome:       'nome'       in aj ? aj.nome       : base.nome,
+      descricao:  'descricao'  in aj ? aj.descricao  : base.descricao,
+      preco:      'preco'      in aj ? aj.preco      : base.preco,
+      precoPromo: 'precoPromo' in aj ? aj.precoPromo : base.precoPromo,
+      categoria:  'categoria'  in aj ? aj.categoria  : base.categoria,
+      destaque:   'destaque'   in aj ? aj.destaque   : base.destaque,
+      ativo:      'ativo'      in aj ? aj.ativo      : base.ativo,
+      img: base.img,
+      i18n: base.i18n
+    };
 
     /* Promoção: 'preco' é sempre o de tabela e 'precoFinal' é o que se
        cobra. Toda a UI mostra precoFinal e só risca 'preco' quando há
@@ -234,6 +255,15 @@
     return prefixo + Math.random().toString(36).slice(2, 10);
   }
 
+  /* Erro com o mesmo formato dos de js/api.js (.status + .data), para
+     que a UI trate mock e API exatamente da mesma maneira. */
+  function erro(mensagem, status) {
+    var e = new Error(mensagem);
+    e.status = status || 400;
+    e.data = { error: mensagem };
+    return e;
+  }
+
   /* Aplica um delta a stock/reservado de um produto */
   function mexerStock(produtoId, deltaStock, deltaReservado) {
     var ajustes = readAjustes();
@@ -261,6 +291,55 @@
     obter: function (id) {
       var p = catalogoHidratado().filter(function (x) { return x.id === id; })[0];
       return p ? Promise.resolve(p) : Promise.reject(new Error('Produto não encontrado'));
+    },
+
+    /* CRM/dashboard: preço, promoção, stock, destaque e ativo.
+       Espelha o PATCH /api/products/:id do back-end, incluindo as
+       duas recusas — promoção >= preço de tabela e stock abaixo do
+       que já está reservado. */
+    atualizar: function (id, dados) {
+      dados = dados || {};
+      var base = CATALOGO.filter(function (p) { return p.id === id; })[0];
+      if (!base) return Promise.reject(erro('Produto não encontrado.', 404));
+
+      var ajustes = readAjustes();
+      var aj = ajustes[id] || {};
+      var atual = hidratar(base, ajustes);
+
+      var precoFinal  = 'preco'      in dados ? Number(dados.preco)      : atual.preco;
+      var promoFinal  = 'precoPromo' in dados
+        ? (dados.precoPromo === null || dados.precoPromo === '' ? null : Number(dados.precoPromo))
+        : atual.precoPromo;
+      var stockFinal  = 'stock'      in dados ? parseInt(dados.stock, 10) : atual.stock;
+
+      if (isNaN(precoFinal) || precoFinal < 0)   return Promise.reject(erro('Preço inválido.', 400));
+      if (promoFinal !== null && (isNaN(promoFinal) || promoFinal <= 0)) {
+        return Promise.reject(erro('Preço promocional inválido.', 400));
+      }
+      if (promoFinal !== null && promoFinal >= precoFinal) {
+        return Promise.reject(erro('O preço promocional tem de ser menor que o preço de tabela.', 400));
+      }
+      if (isNaN(stockFinal) || stockFinal < 0)   return Promise.reject(erro('Stock inválido.', 400));
+      if (stockFinal < atual.reservado) {
+        return Promise.reject(erro(
+          'Já há ' + atual.reservado + ' unidade(s) reservada(s): o stock não pode ficar abaixo disso.', 409
+        ));
+      }
+
+      aj.preco      = precoFinal;
+      aj.precoPromo = promoFinal;
+      aj.stock      = stockFinal;
+      aj.reservado  = atual.reservado;
+      if ('destaque'  in dados) aj.destaque  = !!dados.destaque;
+      if ('ativo'     in dados) aj.ativo     = !!dados.ativo;
+      if ('nome'      in dados) aj.nome      = String(dados.nome || '').trim() || atual.nome;
+      if ('descricao' in dados) aj.descricao = String(dados.descricao || '').trim();
+      if ('categoria' in dados) aj.categoria = String(dados.categoria || '').trim() || atual.categoria;
+
+      ajustes[id] = aj;
+      writeAjustes(ajustes);
+
+      return Promise.resolve(hidratar(base, ajustes));
     },
 
     criarReserva: function (dados) {
@@ -388,6 +467,7 @@
     listar:           function ()      { return API().listProducts({ disponivel: true }).then(traduzirLista); },
     listarTodos:      function ()      { return API().listProducts().then(traduzirLista); },
     obter:            function (id)    { return API().getProduct(id).then(traduzir); },
+    atualizar:        function (id, d) { return API().updateProduct(id, d).then(traduzir); },
     criarReserva:     function (dados) { return API().createProductReservation(dados); },
     listarReservas:   function (e)     { return API().listProductReservations(e ? { estado: e } : {}); },
     obterReserva:     function (id)    { return API().getProductReservation(id); },
@@ -506,6 +586,7 @@
     listar:           impl.listar,
     listarTodos:      impl.listarTodos,
     obter:            impl.obter,
+    atualizar:        impl.atualizar,
     listarDestaques:  function () {
       return impl.listar().then(function (ps) {
         return ps.filter(function (p) { return p.destaque; });
@@ -546,6 +627,12 @@
 
     carrinho: carrinho,
     ultimaReserva: ultimaReserva,
+
+    /* Implementação mock exposta de propósito: com MODO='api', é o
+       plano B do dashboard quando o Flask está em baixo — mostra
+       dados de demonstração em vez de uma secção vazia, sem que
+       nenhum ecrã precise de saber onde os dados moram. */
+    _mock: mock,
 
     fmtPreco: fmtPreco,
     nivelStock: nivelStock,

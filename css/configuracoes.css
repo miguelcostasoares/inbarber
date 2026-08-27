@@ -1735,3 +1735,217 @@ textarea {
 .servico-duracao-input {
   -moz-appearance: textfield;
 }
+
+/* ─── 19. SEÇÃO PREFERÊNCIAS ────────────────────────────── */
+.config-content--preferencias {
+  display: block;
+}
+
+.pref-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.pref-header__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.01em;
+}
+
+.pref-header__subtitle {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+/* Estado de carregamento (reutiliza spinner da equipe) */
+.pref-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 28px;
+  color: var(--muted);
+  font-size: 13.5px;
+  background: var(--bg-2);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-lg);
+}
+
+/* Corpo das preferências */
+.pref-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: cfFadeUp 380ms var(--ease-out) both;
+}
+
+/* Card de bloco (Horário / Almoço) */
+.pref-card {
+  background: var(--bg-2);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.pref-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px 24px 20px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.pref-card__head-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-md);
+  background: var(--gold-bg);
+  border: 1px solid rgba(0, 71, 255, 0.18);
+  color: var(--gold-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.pref-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.01em;
+}
+
+.pref-card__subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.pref-card__head-toggle {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* Grade de dias da semana */
+.pref-dias {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pref-dia-row {
+  display: grid;
+  grid-template-columns: 130px auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--divider);
+  transition: background var(--dur);
+}
+
+.pref-dia-row:last-child {
+  border-bottom: none;
+}
+
+.pref-dia-row:hover {
+  background: var(--bg-3);
+}
+
+.pref-dia-row--fechado .pref-horarios {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Nome + toggle do dia */
+.pref-dia-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pref-dia-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cream);
+  min-width: 80px;
+}
+
+.pref-dia-row--fechado .pref-dia-name {
+  color: var(--muted);
+}
+
+/* Horários de abertura e fechamento */
+.pref-horarios {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: opacity var(--dur);
+}
+
+.pref-time-sep {
+  font-size: 12px;
+  color: var(--muted);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.pref-time-input {
+  width: 110px;
+  padding: 8px 10px 8px 36px;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  color-scheme: dark;
+}
+
+/* Bloco almoço — horários internos */
+.pref-almoco-horarios {
+  padding: 20px 24px 24px;
+  animation: cfFadeUp 260ms var(--ease-out) both;
+}
+
+.pref-time-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.pref-time-row .pref-time-sep {
+  padding-bottom: 11px;
+}
+
+@media (max-width: 640px) {
+  .pref-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pref-header .btn-primary {
+    align-self: flex-start;
+  }
+
+  .pref-dia-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .pref-horarios {
+    padding-left: 0;
+  }
+
+  .pref-time-input {
+    width: 100px;
+  }
+
+  .pref-time-row {
+    flex-wrap: wrap;
+  }
+}

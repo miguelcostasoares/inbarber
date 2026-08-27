@@ -347,7 +347,11 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 
 .tab-panel { display: flex; flex-direction: column; gap: 1rem; }
 .tab-panel--hidden { display: none; }
-.tab-panel > * { animation: fadeUp 0.35s var(--ease-out) both; }
+/* 'backwards' e não 'both': com 'both' o transform da animação ficava
+   colado ao cartão para sempre, e um elemento com transform abre um
+   contexto de empilhamento próprio — a lista de países do telemóvel
+   ficava presa lá dentro e o cartão seguinte pintava-lhe por cima. */
+.tab-panel > * { animation: fadeUp 0.35s var(--ease-out) backwards; }
 .tab-panel > *:nth-child(2) { animation-delay: 0.05s; }
 .tab-panel > *:nth-child(3) { animation-delay: 0.10s; }
 .tab-panel > *:nth-child(4) { animation-delay: 0.15s; }
@@ -362,14 +366,26 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 /* ════════════════════════════════════════
    CARTÕES DE SECÇÃO
 ════════════════════════════════════════ */
+/* Sem overflow:hidden — a lista de países do telemóvel tem de poder
+   sair do cartão. As pontas arredondadas passam a ser dadas ao primeiro
+   e ao último filho, para o fundo das linhas não escapar aos cantos. */
 .card {
   background: var(--bg-2);
   border: 1px solid var(--divider);
   border-radius: var(--r-lg);
-  overflow: hidden;
   transition: border-color 200ms ease-out;
 }
 .card:hover { border-color: rgba(255,255,255,0.09); }
+
+.card > :first-child { border-top-left-radius: var(--r-lg);    border-top-right-radius: var(--r-lg); }
+.card > :last-child  { border-bottom-left-radius: var(--r-lg); border-bottom-right-radius: var(--r-lg); }
+
+/* Quando o rodapé do histórico está escondido, quem fecha o cartão é a
+   última compra da lista. */
+.card:has(#buy-foot[hidden]) .buy-item:last-child,
+.card:has(#buy-foot[hidden]) .buy-item:last-child .buy-hd {
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+}
 
 .card-hd {
   display: flex; align-items: flex-start; justify-content: space-between;
@@ -515,6 +531,312 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 .affix-btn .icon-off { display: none; }
 .affix-btn.is-visible .icon-on  { display: none; }
 .affix-btn.is-visible .icon-off { display: block; }
+
+/* ════════════════════════════════════════
+   CAMPO DE TELEMÓVEL COM PAÍS
+   O componente é o mesmo do modal de produtos
+   (js/telefone.js). Aqui veste-se de .form-input.
+════════════════════════════════════════ */
+.form-tel {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  background: var(--bg-3);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-md);
+  transition: border-color 180ms ease-out, box-shadow 180ms ease-out, background 180ms ease-out;
+}
+.form-tel:hover { border-color: rgba(255,255,255,0.12); }
+.form-tel:focus-within {
+  border-color: var(--gold-dim);
+  background: var(--bg-4);
+  box-shadow: 0 0 0 3px rgba(0,71,255,0.10);
+}
+.form-tel.is-invalid {
+  border-color: var(--red-border);
+  box-shadow: 0 0 0 3px rgba(224,84,84,0.08);
+}
+
+.form-tel-input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 11px 13px 11px 0;
+  font-size: 13.5px;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+}
+.form-tel-input::placeholder { color: var(--muted); }
+
+.tel-pais {
+  display: flex; align-items: center; gap: 7px;
+  align-self: stretch;
+  padding: 0 10px 0 12px;
+  margin-right: 10px;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--divider);
+  color: var(--cream-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 140ms ease-out, background 140ms ease-out;
+}
+.tel-pais:hover { color: var(--cream); background: rgba(255,255,255,0.03); }
+.tel-pais:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+.tel-cc {
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--cream-2);
+}
+.tel-chev {
+  width: 11px; height: 11px;
+  opacity: 0.6;
+  transition: transform 200ms var(--ease-out);
+}
+.tel-pais[aria-expanded="true"] .tel-chev { transform: rotate(180deg); }
+
+.flag {
+  width: 21px; height: 15px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset;
+  display: block;
+}
+
+.tel-drop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  width: min(320px, 100%);
+  background: var(--bg-3);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--r-md);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.6);
+  overflow: hidden;
+  animation: dropIn 180ms var(--ease-out) both;
+}
+.tel-drop[hidden] { display: none; }
+.tel-drop.is-up { top: auto; bottom: calc(100% + 6px); }
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.tel-busca-box {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--divider);
+  background: var(--bg-4);
+}
+.tel-busca-box svg { width: 14px; height: 14px; color: var(--muted); flex-shrink: 0; }
+.tel-busca {
+  flex: 1; min-width: 0;
+  background: none; border: none; outline: none;
+  font-size: 13px; color: var(--cream);
+  padding: 2px 0;
+}
+
+.tel-lista {
+  max-height: 232px;
+  overflow-y: auto;
+  padding: 4px;
+  scrollbar-width: thin;
+}
+.tel-opcao {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 9px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 120ms ease-out;
+}
+.tel-opcao.is-marked { background: rgba(255,255,255,0.06); }
+.tel-opcao.is-sel    { background: var(--gold-bg); }
+.tel-opcao-nome {
+  flex: 1; min-width: 0;
+  font-size: 13px; color: var(--cream);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tel-opcao-cc {
+  font-size: 12px; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.tel-vazio { padding: 14px 12px; font-size: 12px; color: var(--muted); text-align: center; }
+
+/* ════════════════════════════════════════
+   HISTÓRICO DE COMPRAS
+════════════════════════════════════════ */
+.buy-spent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.buy-spent[hidden] { display: none; }
+.buy-spent-num {
+  font-family: var(--ff-d);
+  font-style: normal;
+  font-size: 1.05rem;
+  color: var(--gold-lt);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.buy-spent-label {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 1.4px; text-transform: uppercase;
+  color: var(--muted);
+}
+
+.buy-item { border-bottom: 1px solid var(--divider); }
+.buy-item:last-child { border-bottom: none; }
+.buy-item[hidden] { display: none; }
+
+/* O cabeçalho é uma .row para herdar os paddings responsivos */
+.buy-hd { cursor: pointer; border-bottom: none; }
+.buy-item.is-open .buy-hd { border-bottom: 1px solid var(--divider); }
+.buy-hd .row-icon { color: var(--gold-lt); }
+.buy-item.is-open .buy-hd { background: rgba(255,255,255,0.02); }
+.buy-item.is-open .row-icon { background: var(--gold-bg); }
+
+.buy-when {
+  display: flex; align-items: center; gap: 6px;
+  flex-wrap: wrap;
+}
+.buy-num {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.buy-total {
+  font-size: 13px;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.buy-state {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.buy-state--done { background: var(--green-bg);  border-color: rgba(76,175,121,0.25); color: var(--green); }
+.buy-state--hold { background: var(--orange-bg); border-color: rgba(224,146,74,0.25);  color: var(--orange); }
+.buy-state--off  { background: var(--red-bg);    border-color: var(--red-border);      color: var(--red); }
+
+.buy-chev {
+  width: 13px; height: 13px;
+  color: var(--muted);
+  stroke: currentColor; fill: none;
+  stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+  flex-shrink: 0;
+  transition: transform 220ms var(--ease-out), color 160ms ease-out;
+}
+.buy-item.is-open .buy-chev { transform: rotate(180deg); color: var(--gold-lt); }
+
+.buy-body {
+  padding: 0 1.25rem 1.1rem;
+  animation: fadeUp 240ms var(--ease-out) both;
+}
+.buy-body[hidden] { display: none; }
+
+.buy-lines {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--divider);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--bg-3);
+}
+.buy-line {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--divider);
+  font-size: 12.5px;
+}
+.buy-line:last-child { border-bottom: none; }
+.buy-q {
+  min-width: 26px;
+  font-size: 11.5px; font-weight: 700;
+  color: var(--gold-lt);
+  font-variant-numeric: tabular-nums;
+}
+.buy-n { flex: 1; min-width: 0; color: var(--cream-2); }
+.buy-p {
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.buy-sum {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed var(--divider);
+}
+.buy-sum-line {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.buy-sum-line strong { color: var(--cream); font-weight: 600; }
+.buy-sum-line--save { color: var(--green); }
+
+.buy-meta {
+  margin-top: 0.55rem;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.buy-actions { display: flex; gap: 8px; margin-top: 0.85rem; flex-wrap: wrap; }
+.buy-actions .btn { flex: 1; min-width: 150px; justify-content: center; }
+
+.buy-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 2.25rem 1.25rem 2.5rem;
+  text-align: center;
+}
+.buy-empty[hidden] { display: none; }
+.buy-empty p { font-size: 13px; color: var(--muted); max-width: 30ch; }
+.buy-empty-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px;
+  border-radius: var(--r-full);
+  background: var(--bg-3);
+  color: var(--muted);
+}
+.buy-empty-icon svg {
+  width: 22px; height: 22px;
+  stroke: currentColor; fill: none;
+  stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Em ecrãs estreitos o cabeçalho passa a duas linhas: identificação em
+   cima, preço e estado por baixo, alinhados com o texto. */
+@media (max-width: 560px) {
+  .buy-hd { flex-wrap: wrap; row-gap: 9px; }
+  .buy-hd .row-icon { order: 1; }
+  .buy-hd .row-text { order: 2; flex: 1 1 auto; }
+  .buy-chev  { order: 3; }
+  .buy-total { order: 4; margin-left: 47px; }
+  .buy-state { order: 5; }
+  .buy-when  { display: block; }
+  .buy-num   { white-space: nowrap; }
+}
 
 /* ── Medidor de força ── */
 .strength { display: flex; flex-direction: column; gap: 6px; }
@@ -816,7 +1138,13 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 
 /* Modo "texto grande" ativado pelo utilizador */
 body.text-lg .row-text strong,
+body.text-lg .form-tel-input,
+body.text-lg .buy-total,
 body.text-lg .form-input          { font-size: 15px; }
+body.text-lg .buy-line,
+body.text-lg .buy-sum-line        { font-size: 13.5px; }
+body.text-lg .buy-meta,
+body.text-lg .buy-empty p         { font-size: 12.5px; }
 body.text-lg .row-text small,
 body.text-lg .card-sub,
 body.text-lg .form-hint,
@@ -858,6 +1186,7 @@ body.no-motion *, body.no-motion *::before, body.no-motion *::after {
   .acct-stat-label { font-size: 10px; }
 
   .card-hd, .card-body, .card-foot, .row { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .buy-body { padding-left: 1.5rem; padding-right: 1.5rem; }
   .page-hd { margin-bottom: 2rem; }
   .page-hd h1 { font-size: clamp(2.4rem, 5vw, 3rem); }
   .page-hd-hint { font-size: 14px; max-width: 46ch; }
@@ -985,6 +1314,7 @@ body.no-motion *, body.no-motion *::before, body.no-motion *::after {
   .card-hd { padding: 1.25rem 1.6rem 1rem; }
   .card-body { padding: 1.35rem 1.6rem; gap: 1.15rem; }
   .card-foot, .row { padding-left: 1.6rem; padding-right: 1.6rem; }
+  .buy-body { padding-left: 1.6rem; padding-right: 1.6rem; }
   .row { padding-top: 1rem; padding-bottom: 1rem; }
   .card:hover { border-color: rgba(255,255,255,0.11); }
 

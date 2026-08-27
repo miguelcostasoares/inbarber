@@ -32,6 +32,15 @@
       'f.email_hint': 'Enviamos as confirmações de reserva para este endereço.',
       'f.email_err': 'Escreva um email válido.',
       'f.phone': 'Telemóvel', 'f.birth': 'Data de nascimento',
+      'f.name_err': 'Indique o seu nome.',
+      'f.name_err_digits': 'O nome não pode ter números.',
+      'f.name_err_chars': 'Esse carácter não é válido num nome.',
+      'f.name_err_short': 'O nome está demasiado curto.',
+      'f.last_err': 'Indique o seu sobrenome.',
+      'f.phone_err': 'Indique um contacto válido.',
+      'f.phone_err_short': 'Número incompleto para o país escolhido.',
+      'f.birth_err': 'Verifique a data de nascimento.',
+      'tel.country': 'País', 'tel.search': 'Procurar país', 'tel.nofind': 'Nenhum país encontrado.',
       'acc.saved_note': 'Guardado no seu dispositivo.',
       'acc.booking': 'Preferências de reserva',
       'acc.booking_sub': 'Preenchemos as próximas reservas com estas escolhas.',
@@ -42,6 +51,20 @@
       'acc.activity': 'Atividade', 'acc.activity_sub': 'As suas reservas, de relance.',
       'acc.history': 'Histórico de agendamentos', 'acc.history_sub': 'Ver e repetir reservas anteriores',
       'acc.new': 'Marcar novo horário', 'acc.new_sub': 'Começa com as suas preferências preenchidas',
+
+      'buy.title': 'Histórico de compras',
+      'buy.sub': 'Produtos reservados na loja e levantados no balcão.',
+      'buy.spent': 'Total gasto',
+      'buy.empty': 'Ainda não comprou nenhum produto.',
+      'buy.empty_cta': 'Ver a loja',
+      'buy.more': 'Ver todas', 'buy.less': 'Ver menos',
+      'buy.note_one': '1 compra no histórico', 'buy.note_many': '{n} compras no histórico',
+      'buy.items_one': '1 produto', 'buy.items_many': '{n} produtos',
+      'buy.order': 'Reserva',
+      'buy.state_done': 'Levantado', 'buy.state_hold': 'Por levantar', 'buy.state_off': 'Cancelada',
+      'buy.total': 'Total', 'buy.save': 'Poupou', 'buy.obs': 'Observações',
+      'buy.again': 'Comprar outra vez', 'buy.shop': 'Ver a loja',
+      'toast.cart': 'Produtos postos no carrinho.',
 
       'pref.region': 'Idioma e formato', 'pref.region_sub': 'Aplica-se de imediato a todo o site.',
       'pref.language': 'Idioma',
@@ -74,7 +97,6 @@
       'sec.revoke': 'Terminar', 'sec.revoke_all': 'Terminar as outras',
       'sec.sessions_note': 'Não reconhece um dispositivo? Termine e mude a senha.',
       'sec.privacy': 'Privacidade e dados',
-      'sec.export': 'Descarregar os meus dados', 'sec.export_sub': 'Reservas, faturas e preferências em JSON',
       'sec.terms': 'Termos e política de privacidade', 'sec.terms_sub': 'Atualizado em janeiro de 2026',
 
       'danger.title': 'Zona de risco', 'danger.sub': 'Estas ações não se desfazem.',
@@ -92,10 +114,10 @@
       'toast.pref': 'Preferência guardada.',
       'toast.pass': 'Senha atualizada. As outras sessões foram terminadas.',
       'toast.pass_err': 'Verifique os campos assinalados.',
+      'toast.form_err': 'Verifique os campos assinalados.',
       'toast.avatar': 'Foto de perfil atualizada.',
       'toast.session': 'Sessão terminada.',
       'toast.sessions_all': 'As outras sessões foram terminadas.',
-      'toast.export': 'Ficheiro pronto — a descarregar.',
       'toast.logout': 'Sessão terminada. Até breve.',
       'toast.deleted': 'Pedido de eliminação registado.'
     },
@@ -116,6 +138,15 @@
       'f.email_hint': 'We send booking confirmations to this address.',
       'f.email_err': 'Enter a valid email.',
       'f.phone': 'Mobile', 'f.birth': 'Date of birth',
+      'f.name_err': 'Please enter your first name.',
+      'f.name_err_digits': 'A name cannot contain numbers.',
+      'f.name_err_chars': 'That character is not valid in a name.',
+      'f.name_err_short': 'That name is too short.',
+      'f.last_err': 'Please enter your last name.',
+      'f.phone_err': 'Please enter a valid phone number.',
+      'f.phone_err_short': 'Number is incomplete for the country you picked.',
+      'f.birth_err': 'Check the date of birth.',
+      'tel.country': 'Country', 'tel.search': 'Search country', 'tel.nofind': 'No country found.',
       'acc.saved_note': 'Saved on your device.',
       'acc.booking': 'Booking preferences',
       'acc.booking_sub': 'We pre-fill your next booking with these.',
@@ -126,6 +157,20 @@
       'acc.activity': 'Activity', 'acc.activity_sub': 'Your bookings at a glance.',
       'acc.history': 'Booking history', 'acc.history_sub': 'View and rebook past visits',
       'acc.new': 'Book a new slot', 'acc.new_sub': 'Starts with your preferences filled in',
+
+      'buy.title': 'Purchase history',
+      'buy.sub': 'Products reserved in the shop and picked up at the counter.',
+      'buy.spent': 'Total spent',
+      'buy.empty': "You haven't bought any products yet.",
+      'buy.empty_cta': 'Go to the shop',
+      'buy.more': 'See all', 'buy.less': 'See less',
+      'buy.note_one': '1 purchase on record', 'buy.note_many': '{n} purchases on record',
+      'buy.items_one': '1 product', 'buy.items_many': '{n} products',
+      'buy.order': 'Order',
+      'buy.state_done': 'Picked up', 'buy.state_hold': 'Awaiting pickup', 'buy.state_off': 'Cancelled',
+      'buy.total': 'Total', 'buy.save': 'You saved', 'buy.obs': 'Notes',
+      'buy.again': 'Buy again', 'buy.shop': 'Go to the shop',
+      'toast.cart': 'Products added to your cart.',
 
       'pref.region': 'Language and format', 'pref.region_sub': 'Applies across the site right away.',
       'pref.language': 'Language',
@@ -158,7 +203,6 @@
       'sec.revoke': 'Sign out', 'sec.revoke_all': 'Sign out others',
       'sec.sessions_note': "Don't recognise a device? Sign it out and change your password.",
       'sec.privacy': 'Privacy and data',
-      'sec.export': 'Download my data', 'sec.export_sub': 'Bookings, invoices and preferences as JSON',
       'sec.terms': 'Terms and privacy policy', 'sec.terms_sub': 'Updated January 2026',
 
       'danger.title': 'Danger zone', 'danger.sub': 'These actions cannot be undone.',
@@ -176,10 +220,10 @@
       'toast.pref': 'Preference saved.',
       'toast.pass': 'Password updated. Other sessions were signed out.',
       'toast.pass_err': 'Check the highlighted fields.',
+      'toast.form_err': 'Check the highlighted fields.',
       'toast.avatar': 'Profile photo updated.',
       'toast.session': 'Session signed out.',
       'toast.sessions_all': 'Other sessions were signed out.',
-      'toast.export': 'File ready — downloading.',
       'toast.logout': 'Signed out. See you soon.',
       'toast.deleted': 'Deletion request registered.'
     },
@@ -200,6 +244,15 @@
       'f.email_hint': 'Enviamos las confirmaciones a esta dirección.',
       'f.email_err': 'Escribe un email válido.',
       'f.phone': 'Móvil', 'f.birth': 'Fecha de nacimiento',
+      'f.name_err': 'Indica tu nombre.',
+      'f.name_err_digits': 'El nombre no puede llevar números.',
+      'f.name_err_chars': 'Ese carácter no es válido en un nombre.',
+      'f.name_err_short': 'El nombre es demasiado corto.',
+      'f.last_err': 'Indica tu apellido.',
+      'f.phone_err': 'Indica un teléfono válido.',
+      'f.phone_err_short': 'Número incompleto para el país elegido.',
+      'f.birth_err': 'Revisa la fecha de nacimiento.',
+      'tel.country': 'País', 'tel.search': 'Buscar país', 'tel.nofind': 'No se encontró ningún país.',
       'acc.saved_note': 'Guardado en tu dispositivo.',
       'acc.booking': 'Preferencias de reserva',
       'acc.booking_sub': 'Rellenamos tus próximas reservas con esto.',
@@ -210,6 +263,20 @@
       'acc.activity': 'Actividad', 'acc.activity_sub': 'Tus reservas de un vistazo.',
       'acc.history': 'Historial de reservas', 'acc.history_sub': 'Ver y repetir visitas anteriores',
       'acc.new': 'Reservar nuevo horario', 'acc.new_sub': 'Empieza con tus preferencias rellenadas',
+
+      'buy.title': 'Historial de compras',
+      'buy.sub': 'Productos reservados en la tienda y recogidos en el mostrador.',
+      'buy.spent': 'Total gastado',
+      'buy.empty': 'Todavía no has comprado ningún producto.',
+      'buy.empty_cta': 'Ver la tienda',
+      'buy.more': 'Ver todas', 'buy.less': 'Ver menos',
+      'buy.note_one': '1 compra en el historial', 'buy.note_many': '{n} compras en el historial',
+      'buy.items_one': '1 producto', 'buy.items_many': '{n} productos',
+      'buy.order': 'Reserva',
+      'buy.state_done': 'Recogido', 'buy.state_hold': 'Pendiente de recoger', 'buy.state_off': 'Cancelada',
+      'buy.total': 'Total', 'buy.save': 'Ahorraste', 'buy.obs': 'Observaciones',
+      'buy.again': 'Comprar otra vez', 'buy.shop': 'Ver la tienda',
+      'toast.cart': 'Productos añadidos al carrito.',
 
       'pref.region': 'Idioma y formato', 'pref.region_sub': 'Se aplica al instante en todo el sitio.',
       'pref.language': 'Idioma',
@@ -242,7 +309,6 @@
       'sec.revoke': 'Cerrar', 'sec.revoke_all': 'Cerrar las demás',
       'sec.sessions_note': '¿No reconoces un dispositivo? Ciérralo y cambia la contraseña.',
       'sec.privacy': 'Privacidad y datos',
-      'sec.export': 'Descargar mis datos', 'sec.export_sub': 'Reservas, facturas y preferencias en JSON',
       'sec.terms': 'Términos y política de privacidad', 'sec.terms_sub': 'Actualizado en enero de 2026',
 
       'danger.title': 'Zona de riesgo', 'danger.sub': 'Estas acciones no se deshacen.',
@@ -260,17 +326,36 @@
       'toast.pref': 'Preferencia guardada.',
       'toast.pass': 'Contraseña actualizada. Se cerraron las demás sesiones.',
       'toast.pass_err': 'Revisa los campos marcados.',
+      'toast.form_err': 'Revisa los campos marcados.',
       'toast.avatar': 'Foto de perfil actualizada.',
       'toast.session': 'Sesión cerrada.',
       'toast.sessions_all': 'Se cerraron las demás sesiones.',
-      'toast.export': 'Archivo listo — descargando.',
       'toast.logout': 'Sesión cerrada. Hasta pronto.',
       'toast.deleted': 'Solicitud de eliminación registrada.'
     }
   };
 
   var currentLang = localStorage.getItem(KEY_LANG) || 'pt';
-  function t(key) { return (i18n[currentLang] && i18n[currentLang][key]) || i18n.pt[key] || key; }
+  function t(key, vars) {
+    var s = (i18n[currentLang] && i18n[currentLang][key]) || i18n.pt[key] || key;
+    if (vars) Object.keys(vars).forEach(function (k) { s = s.split('{' + k + '}').join(vars[k]); });
+    return s;
+  }
+
+  /* js/telefone.js vai buscar as suas etiquetas ao window.I18N global.
+     A landing carrega js/i18n.js; o perfil tem dicionário próprio, por
+     isso damos-lhe aqui uma ponte com as chaves que ele usa. */
+  if (!window.I18N) {
+    var PONTE = {
+      'prod.tel_country': 'tel.country',
+      'prod.tel_search':  'tel.search',
+      'prod.tel_nofind':  'tel.nofind'
+    };
+    window.I18N = {
+      get lang() { return currentLang; },
+      t: function (k) { return t(PONTE[k] || k); }
+    };
+  }
 
   function applyLang(lang, announce) {
     currentLang = i18n[lang] ? lang : 'pt';
@@ -293,6 +378,12 @@
 
     var del = $('#delete-confirm');
     if (del) { del.placeholder = t('danger.word'); checkDeleteWord(); }
+
+    /* O componente de telefone e o histórico têm texto gerado em JS:
+       não têm data-i18n, por isso pedimos-lhes que se repintem. */
+    if (telefone) telefone.repintar();
+    revalidar();
+    renderCompras();
 
     updateStrength();
     if (announce) toast(t('toast.lang'), 'ok');
@@ -398,26 +489,181 @@
 
   /* ════════════════════════════════════════
      4. DADOS PESSOAIS
+
+     Cada caixa só aceita o que faz sentido: o nome recusa dígitos na
+     hora, o email tem de ser um email e o telemóvel usa o mesmo
+     componente de bandeiras do modal de pagamento dos produtos.
   ════════════════════════════════════════ */
   var FIELDS = ['f-first', 'f-last', 'f-email', 'f-phone', 'f-birth'];
   var saved = {};
+  var telefone = null;
 
   function readForm() {
     var out = {};
     FIELDS.forEach(function (id) { var el = document.getElementById(id); if (el) out[id] = el.value; });
+    out.pais = telefone ? telefone.pais().iso : (saved.pais || 'PT');
+    out.e164 = telefone ? telefone.e164() : (saved.e164 || '');
     return out;
   }
 
   function writeForm(data) {
     FIELDS.forEach(function (id) {
+      if (id === 'f-phone') return;                 /* tratado pelo componente */
       var el = document.getElementById(id);
       if (el && typeof data[id] === 'string') el.value = data[id];
     });
+    if (telefone) reporTelefone(data);
+  }
+
+  /* Repõe país + número sem roubar o foco. Aceita o formato novo
+     (pais + e164) e o antigo, em que só havia a string 'f-phone'. */
+  function reporTelefone(data) {
+    var e164 = data && data.e164;
+    if (e164 && String(e164).replace(/\D/g, '').length > 4) {
+      telefone.definir(e164);
+      return;
+    }
+    if (data && data.pais) telefone.definirPais(data.pais, true);
+    var local = data && data['f-phone'];
+    if (local) telefone.definir(local);
+    else telefone.definir('');
   }
 
   function isDirty() {
     var now = readForm();
+    if (now.pais !== saved.pais) return true;
     return FIELDS.some(function (id) { return now[id] !== saved[id]; });
+  }
+
+  /* ── Erros de campo ──────────────────────────────────────────
+     Um sítio só para acender e apagar o aviso de cada caixa. */
+  function marcarErro(input, alvoErro, mensagem) {
+    var err = typeof alvoErro === 'string' ? $(alvoErro) : alvoErro;
+    if (input) input.setAttribute('aria-invalid', mensagem ? 'true' : 'false');
+    if (input && !mensagem) input.removeAttribute('aria-invalid');
+    if (err) {
+      err.textContent = mensagem || '';
+      err.hidden = !mensagem;
+    }
+    var box = input && input.closest('.form-tel');
+    if (box) box.classList.toggle('is-invalid', !!mensagem);
+    return !mensagem;
+  }
+
+  /* ── Nome: letras, não números ────────────────────────────────
+     Em vez de deixar escrever e só reclamar no fim, o campo recusa
+     o carácter na hora e explica porquê. */
+  var RE_DIGITO = /[0-9]/;
+  var RE_NOME_MAU = /[^\p{L}\p{M}\s'’.-]/gu;
+
+  function limparNome(v) {
+    return String(v || '').replace(RE_NOME_MAU, '').replace(/\s{2,}/g, ' ');
+  }
+
+  function contarLetras(v) { return String(v).replace(/[^\p{L}]/gu, '').length; }
+
+  var avisoNomeAte = {};
+
+  function validarNome(id, mostrar) {
+    var el = $('#' + id);
+    if (!el) return true;
+    var v = el.value.trim();
+    var vazio = id === 'f-first' ? t('f.name_err') : t('f.last_err');
+    var msg = !v ? vazio
+            : contarLetras(v) < 2 ? t('f.name_err_short')
+            : '';
+    /* Enquanto o aviso de carácter inválido está de pé, não o apagamos */
+    if (!mostrar && Date.now() < (avisoNomeAte[id] || 0)) return !msg;
+    if (mostrar || el.getAttribute('aria-invalid') === 'true') marcarErro(el, '#err-' + id.slice(2), msg);
+    return !msg;
+  }
+
+  function ligarFiltroNome(el) {
+    var id = el.id;
+    var errSel = '#err-' + id.slice(2);
+
+    el.addEventListener('input', function () {
+      var antes = el.value;
+      var depois = limparNome(antes);
+      if (depois !== antes) {
+        var pos = el.selectionStart - (antes.length - depois.length);
+        el.value = depois;
+        try { el.setSelectionRange(pos, pos); } catch (_) {}
+
+        /* O carácter desaparece do campo; sem esta mensagem a pessoa
+           não percebe porquê. Fica de pé uns segundos para ser lida. */
+        marcarErro(el, errSel, RE_DIGITO.test(antes) ? t('f.name_err_digits') : t('f.name_err_chars'));
+        avisoNomeAte[id] = Date.now() + 2600;
+        setTimeout(function () { validarNome(id, false); }, 2700);
+      } else {
+        validarNome(id, false);
+      }
+      refreshSaveBar();
+    });
+
+    el.addEventListener('blur', function () { validarNome(id, true); });
+  }
+
+  /* ── Email ── */
+  function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v).trim()); }
+
+  function validarEmail(mostrar) {
+    var el = $('#f-email');
+    if (!el) return true;
+    var msg = validEmail(el.value) ? '' : t('f.email_err');
+    if (mostrar || el.getAttribute('aria-invalid') === 'true') marcarErro(el, '#err-email', msg);
+    return !msg;
+  }
+
+  /* ── Telemóvel ── */
+  function validarTel(mostrar) {
+    var el = $('#f-phone');
+    if (!el || !telefone) return true;
+    var msg = telefone.vazio() ? t('f.phone_err')
+            : !telefone.valido() ? t('f.phone_err_short')
+            : '';
+    var box = el.closest('.form-tel');
+    if (mostrar || (box && box.classList.contains('is-invalid'))) marcarErro(el, '#err-phone', msg);
+    return !msg;
+  }
+
+  /* ── Data de nascimento ── */
+  function validarNasc(mostrar) {
+    var el = $('#f-birth');
+    if (!el) return true;
+    var msg = '';
+    if (el.value) {
+      var d = new Date(el.value + 'T00:00:00');
+      var ano = d.getFullYear();
+      if (isNaN(d.getTime()) || d > new Date() || ano < 1900) msg = t('f.birth_err');
+    }
+    if (mostrar || el.getAttribute('aria-invalid') === 'true') marcarErro(el, '#err-birth', msg);
+    return !msg;
+  }
+
+  function ligarTelefone() {
+    var box = $('#tel-box');
+    var input = $('#f-phone');
+    if (!box || !input || !window.CampoTelefone) return;
+
+    telefone = window.CampoTelefone.ligar({
+      box: box,
+      input: input,
+      iso: 'PT',
+      onChange: function () { validarTel(false); refreshSaveBar(); },
+      limiteBaixo: function () {
+        var bar = $('#save-bar');
+        if (!bar || !bar.classList.contains('is-open')) return null;
+        return bar.getBoundingClientRect().top - 10;
+      },
+      limiteCima: function () {
+        var top = $('.topbar');
+        return top ? top.getBoundingClientRect().bottom + 10 : null;
+      }
+    });
+
+    input.addEventListener('input', function () { validarTel(false); refreshSaveBar(); });
+    input.addEventListener('blur', function () { validarTel(true); });
   }
 
   function refreshSaveBar() {
@@ -439,35 +685,83 @@
     if (ini) ini.textContent = initialsOf(first, last);
   }
 
-  function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); }
+  /* Valida tudo e devolve o primeiro campo por corrigir */
+  function primeiroInvalido() {
+    var ordem = [
+      ['f-first', validarNome('f-first', true)],
+      ['f-last',  validarNome('f-last', true)],
+      ['f-email', validarEmail(true)],
+      ['f-phone', validarTel(true)],
+      ['f-birth', validarNasc(true)]
+    ];
+    for (var i = 0; i < ordem.length; i++) if (!ordem[i][1]) return ordem[i][0];
+    return null;
+  }
+
+  function limparErros() {
+    [['f-first', '#err-first'], ['f-last', '#err-last'], ['f-email', '#err-email'],
+     ['f-phone', '#err-phone'], ['f-birth', '#err-birth']].forEach(function (par) {
+      marcarErro($('#' + par[0]), par[1], '');
+    });
+    avisoNomeAte = {};
+  }
 
   function savePersonal() {
-    var email = $('#f-email');
-    var err = $('#err-email');
-    if (!validEmail(email.value)) {
-      email.setAttribute('aria-invalid', 'true');
-      if (err) err.hidden = false;
-      email.focus();
-      toast(t('f.email_err'), 'error');
+    var mau = primeiroInvalido();
+    if (mau) {
+      var el = $('#' + mau);
+      if (el) el.focus();
+      toast(t('toast.form_err'), 'error');
       return;
     }
-    email.removeAttribute('aria-invalid');
-    if (err) err.hidden = true;
 
     saved = readForm();
+    saved['f-first'] = saved['f-first'].trim();
+    saved['f-last']  = saved['f-last'].trim();
+    saved['f-email'] = saved['f-email'].trim();
+    $('#f-first').value = saved['f-first'];
+    $('#f-last').value  = saved['f-last'];
+    $('#f-email').value = saved['f-email'];
+
     try { localStorage.setItem(KEY_USER, JSON.stringify(saved)); } catch (e) {}
+
+    /* O modal de produtos lê esta chave para não pedir os dados
+       outra vez — vale a pena mantê-la em dia. */
+    try {
+      localStorage.setItem('inbarber.cliente', JSON.stringify({
+        nome: (saved['f-first'] + ' ' + saved['f-last']).trim(),
+        pais: saved.pais,
+        e164: saved.e164
+      }));
+    } catch (e) {}
+
     paintHero();
     refreshSaveBar();
     toast(t('toast.saved'), 'ok');
   }
 
   function initPersonal() {
+    ligarTelefone();
+
     var stored = {};
     try { stored = JSON.parse(localStorage.getItem(KEY_USER) || '{}'); } catch (e) {}
-    if (stored && typeof stored === 'object') writeForm(stored);
+    if (!stored || typeof stored !== 'object') stored = {};
+    /* Sem nada guardado, o mockup arranca com o número de exemplo */
+    if (!stored.e164 && !stored['f-phone']) stored.e164 = '+351912345678';
+    writeForm(stored);
 
     saved = readForm();
     paintHero();
+
+    $$('.js-nome').forEach(ligarFiltroNome);
+
+    var email = $('#f-email');
+    if (email) {
+      email.addEventListener('input', function () { validarEmail(false); });
+      email.addEventListener('blur',  function () { validarEmail(true); });
+    }
+    var nasc = $('#f-birth');
+    if (nasc) nasc.addEventListener('change', function () { validarNasc(true); });
 
     $$('.js-dirty').forEach(function (el) {
       el.addEventListener('input', refreshSaveBar);
@@ -480,9 +774,7 @@
 
     $('#discard-btn').addEventListener('click', function () {
       writeForm(saved);
-      var err = $('#err-email');
-      if (err) err.hidden = true;
-      $('#f-email').removeAttribute('aria-invalid');
+      limparErros();
       refreshSaveBar();
       toast(t('toast.discarded'), 'info');
     });
@@ -492,6 +784,231 @@
       e.preventDefault();
       e.returnValue = '';
     });
+  }
+
+  function revalidar() {
+    validarNome('f-first', false);
+    validarNome('f-last', false);
+    validarEmail(false);
+    validarTel(false);
+    validarNasc(false);
+  }
+
+  /* ════════════════════════════════════════
+     4b. HISTÓRICO DE COMPRAS DE PRODUTOS
+
+     As reservas feitas em produtos.html vivem em ProdutosData; a estas
+     juntam-se compras antigas de exemplo, para o mockup nunca aparecer
+     vazio a quem entra pela primeira vez.
+  ════════════════════════════════════════ */
+  var DEMO_COMPRAS = [
+    { id: 'demo_5', numero: '0031', dataReserva: '2026-08-12T18:20:00', estado: 'confirmado',
+      total: 88, poupanca: 9, observacoes: '',
+      produtos: [
+        { produtoId: 'prod_001', nome: 'Pomada Matte Black',    quantidade: 1, preco: 36, precoTabela: 45, subtotal: 36 },
+        { produtoId: 'prod_003', nome: 'Óleo de Barba Premium', quantidade: 1, preco: 52, precoTabela: null, subtotal: 52 }
+      ] },
+    { id: 'demo_4', numero: '0024', dataReserva: '2026-06-03T11:05:00', estado: 'confirmado',
+      total: 99, poupanca: 30, observacoes: 'Presente — embrulhar.',
+      produtos: [
+        { produtoId: 'prod_008', nome: 'Kit Barba Completo', quantidade: 1, preco: 99, precoTabela: 129, subtotal: 99 }
+      ] },
+    { id: 'demo_3', numero: '0018', dataReserva: '2026-04-21T17:40:00', estado: 'confirmado',
+      total: 104, poupanca: 0, observacoes: '',
+      produtos: [
+        { produtoId: 'prod_002', nome: 'Shampoo Anticaspa Pro', quantidade: 2, preco: 38, precoTabela: null, subtotal: 76 },
+        { produtoId: 'prod_007', nome: 'Pente de Madeira',      quantidade: 1, preco: 28, precoTabela: null, subtotal: 28 }
+      ] },
+    { id: 'demo_2', numero: '0009', dataReserva: '2025-12-14T10:15:00', estado: 'libertado',
+      total: 35, poupanca: 0, observacoes: '',
+      produtos: [
+        { produtoId: 'prod_004', nome: 'Cera Modeladora', quantidade: 1, preco: 35, precoTabela: null, subtotal: 35 }
+      ] },
+    { id: 'demo_1', numero: '0004', dataReserva: '2025-09-02T19:00:00', estado: 'confirmado',
+      total: 66, poupanca: 18, observacoes: '',
+      produtos: [
+        { produtoId: 'prod_005', nome: 'Bálsamo Pós-Barba', quantidade: 2, preco: 33, precoTabela: 42, subtotal: 66 }
+      ] }
+  ];
+
+  var VISIVEIS = 3;
+  var compras = [];
+  var comprasAbertas = {};
+  var verTodas = false;
+
+  var ESTADOS = {
+    confirmado: ['done', 'buy.state_done'],
+    reservado:  ['hold', 'buy.state_hold'],
+    libertado:  ['off',  'buy.state_off']
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function preco(n) {
+    if (window.ProdutosData && window.ProdutosData.fmtPreco) return window.ProdutosData.fmtPreco(n);
+    return 'R$ ' + Number(n || 0).toFixed(2).replace('.', ',');
+  }
+
+  function fmtData(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    var loc = currentLang === 'en' ? 'en-GB' : currentLang === 'es' ? 'es-ES' : 'pt-PT';
+    return d.toLocaleDateString(loc, { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function contarItens(c) {
+    return (c.produtos || []).reduce(function (s, l) { return s + (l.quantidade || 0); }, 0);
+  }
+
+  var ICO_SACO = '<svg viewBox="0 0 20 20"><path d="M3 6.5h14l-1.2 9.4a1.5 1.5 0 0 1-1.5 1.3H5.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M7 6.5a3 3 0 0 1 6 0"/></svg>';
+  var ICO_CHEV = '<svg class="buy-chev" viewBox="0 0 12 12" aria-hidden="true"><polyline points="3,4.5 6,7.5 9,4.5"/></svg>';
+
+  function compraHTML(c, escondida) {
+    var est = ESTADOS[c.estado] || ESTADOS.confirmado;
+    var n = contarItens(c);
+    var aberta = !!comprasAbertas[c.id];
+
+    var linhas = (c.produtos || []).map(function (l) {
+      return '<li class="buy-line">' +
+               '<span class="buy-q">' + l.quantidade + '×</span>' +
+               '<span class="buy-n">' + esc(l.nome) + '</span>' +
+               '<span class="buy-p">' + preco(l.subtotal) + '</span>' +
+             '</li>';
+    }).join('');
+
+    var resumo = '<div class="buy-sum">' +
+      '<p class="buy-sum-line"><span>' + t('buy.total') + '</span><strong>' + preco(c.total) + '</strong></p>' +
+      (c.poupanca > 0
+        ? '<p class="buy-sum-line buy-sum-line--save"><span>' + t('buy.save') + '</span><span>' + preco(c.poupanca) + '</span></p>'
+        : '') +
+      '</div>';
+
+    var obs = c.observacoes
+      ? '<p class="buy-meta">' + t('buy.obs') + ': ' + esc(c.observacoes) + '</p>'
+      : '';
+
+    var acoes = c.estado === 'libertado' ? '' :
+      '<div class="buy-actions">' +
+        '<button type="button" class="btn btn--ghost btn--sm js-buy-again" data-id="' + esc(c.id) + '">' +
+          t('buy.again') + '</button>' +
+      '</div>';
+
+    return '' +
+      '<div class="buy-item' + (aberta ? ' is-open' : '') + '" data-id="' + esc(c.id) + '" role="listitem"' +
+        (escondida ? ' hidden' : '') + '>' +
+        '<button type="button" class="row row--link buy-hd" aria-expanded="' + aberta + '" ' +
+                'aria-controls="buy-body-' + esc(c.id) + '">' +
+          '<span class="row-icon">' + ICO_SACO + '</span>' +
+          '<span class="row-text">' +
+            '<strong>' + (n === 1 ? t('buy.items_one') : t('buy.items_many', { n: n })) + '</strong>' +
+            '<small class="buy-when">' + fmtData(c.dataReserva) +
+              ' <span class="buy-num">· ' + t('buy.order') + ' #' + esc(c.numero) + '</span></small>' +
+          '</span>' +
+          '<span class="buy-total">' + preco(c.total) + '</span>' +
+          '<span class="buy-state buy-state--' + est[0] + '">' + t(est[1]) + '</span>' +
+          ICO_CHEV +
+        '</button>' +
+        '<div class="buy-body" id="buy-body-' + esc(c.id) + '"' + (aberta ? '' : ' hidden') + '>' +
+          '<ul class="buy-lines" role="list">' + linhas + '</ul>' +
+          resumo + obs + acoes +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderCompras() {
+    var lista = $('#buy-list');
+    if (!lista) return;
+
+    var vazio = $('#buy-empty');
+    var foot  = $('#buy-foot');
+    var spent = $('#buy-spent');
+    var nota  = $('#buy-note');
+    var more  = $('#buy-more');
+
+    if (!compras.length) {
+      lista.innerHTML = '';
+      if (vazio) vazio.hidden = false;
+      if (foot)  foot.hidden = true;
+      if (spent) spent.hidden = true;
+      return;
+    }
+    if (vazio) vazio.hidden = true;
+
+    lista.innerHTML = compras.map(function (c, i) {
+      return compraHTML(c, !verTodas && i >= VISIVEIS);
+    }).join('');
+
+    var gasto = compras.reduce(function (s, c) {
+      return s + (c.estado === 'libertado' ? 0 : (c.total || 0));
+    }, 0);
+    if (spent) {
+      spent.hidden = false;
+      $('#buy-spent-num').textContent = preco(gasto);
+      $('.buy-spent-label').textContent = t('buy.spent');
+    }
+
+    if (foot) {
+      foot.hidden = compras.length <= VISIVEIS;
+      if (nota) nota.textContent = compras.length === 1
+        ? t('buy.note_one')
+        : t('buy.note_many', { n: compras.length });
+      if (more) more.textContent = verTodas ? t('buy.less') : t('buy.more');
+    }
+  }
+
+  function alternarCompra(item) {
+    var id = item.dataset.id;
+    var body = $('.buy-body', item);
+    var head = $('.buy-hd', item);
+    var abrir = !comprasAbertas[id];
+    comprasAbertas[id] = abrir;
+    item.classList.toggle('is-open', abrir);
+    if (head) head.setAttribute('aria-expanded', String(abrir));
+    if (body) body.hidden = !abrir;
+  }
+
+  function comprarOutraVez(id) {
+    var c = compras.filter(function (x) { return x.id === id; })[0];
+    if (!c || !window.ProdutosData) return;
+    (c.produtos || []).forEach(function (l) {
+      if (l.produtoId) window.ProdutosData.carrinho.adicionar(l.produtoId, l.quantidade || 1);
+    });
+    toast(t('toast.cart'), 'ok');
+    setTimeout(function () { window.location.href = '/produtos.html'; }, 700);
+  }
+
+  function initCompras() {
+    var lista = $('#buy-list');
+    if (!lista) return;
+
+    lista.addEventListener('click', function (e) {
+      var again = e.target.closest('.js-buy-again');
+      if (again) { e.preventDefault(); comprarOutraVez(again.dataset.id); return; }
+      var head = e.target.closest('.buy-hd');
+      if (head) alternarCompra(head.closest('.buy-item'));
+    });
+
+    var more = $('#buy-more');
+    if (more) more.addEventListener('click', function () {
+      verTodas = !verTodas;
+      renderCompras();
+    });
+
+    compras = DEMO_COMPRAS.slice();
+    renderCompras();
+
+    /* As reservas reais entram à frente das de exemplo */
+    if (window.ProdutosData && window.ProdutosData.listarReservas) {
+      window.ProdutosData.listarReservas().then(function (reais) {
+        if (!reais || !reais.length) return;
+        compras = reais.concat(DEMO_COMPRAS);
+        renderCompras();
+      }).catch(function () {});
+    }
   }
 
   /* ════════════════════════════════════════
@@ -749,25 +1266,6 @@
      9. DADOS, SESSÃO E ELIMINAÇÃO
   ════════════════════════════════════════ */
   function initData() {
-    $('#download-data').addEventListener('click', function () {
-      var payload = {
-        exportedAt: new Date().toISOString(),
-        profile: saved,
-        preferences: prefs,
-        language: currentLang
-      };
-      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'inbarber-dados.json';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      toast(t('toast.export'), 'ok');
-    });
-
     $('#logout-btn').addEventListener('click', function () {
       try {
         localStorage.removeItem('inbarber_user');
@@ -857,6 +1355,7 @@
     initBack();
     initTabs();
     initPersonal();
+    initCompras();
     initAvatar();
     initPrefs();
     initPassword();

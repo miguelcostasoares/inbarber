@@ -21,7 +21,7 @@
   'use strict';
 
   /* ─── 1. MODO ─────────────────────────────────────────────── */
-  var MODO = 'mock';           // 'mock' | 'api'
+  var MODO = 'api';            // 'mock' | 'api'
 
   /* ─── 2. CHAVES DE ARMAZENAMENTO ──────────────────────────── */
   var K_STOCK = 'inbarber.produtos_stock';        // ajustes de stock/reservado
@@ -365,10 +365,29 @@
      de retorno são iguais aos do mock, por isso trocar MODO para
      'api' não obriga a mexer em nenhum ficheiro de UI.
   ──────────────────────────────────────────────────────────────── */
+  /* O back-end devolve o produto já com precoFinal/emPromocao/disponivel
+     calculados, mais o objeto i18n cru. Quem escolhe o idioma continua a
+     ser o front — a API não guarda estado de língua nenhum, e trocar de
+     idioma não obriga a ir buscar o catálogo outra vez. */
+  function traduzir(p) {
+    var l    = lang();
+    var trad = (l !== 'pt' && p && p.i18n && p.i18n[l]) || null;
+    if (!trad) return p;
+    var copia = {};
+    for (var k in p) { if (Object.prototype.hasOwnProperty.call(p, k)) copia[k] = p[k]; }
+    copia.nome      = trad[0];
+    copia.descricao = trad[1];
+    return copia;
+  }
+
+  function traduzirLista(ps) {
+    return (ps || []).map(traduzir);
+  }
+
   var api = {
-    listar:           function ()      { return API().listProducts({ disponivel: true }); },
-    listarTodos:      function ()      { return API().listProducts(); },
-    obter:            function (id)    { return API().getProduct(id); },
+    listar:           function ()      { return API().listProducts({ disponivel: true }).then(traduzirLista); },
+    listarTodos:      function ()      { return API().listProducts().then(traduzirLista); },
+    obter:            function (id)    { return API().getProduct(id).then(traduzir); },
     criarReserva:     function (dados) { return API().createProductReservation(dados); },
     listarReservas:   function (e)     { return API().listProductReservations(e ? { estado: e } : {}); },
     obterReserva:     function (id)    { return API().getProductReservation(id); },

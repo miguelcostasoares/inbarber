@@ -232,8 +232,17 @@
 
       var scroller = box.closest('.prod-modal-box');
       var rs = scroller ? scroller.getBoundingClientRect() : null;
-      var baixo = Math.min(window.innerHeight - 20, rs ? rs.bottom - 12 : Infinity);
-      var cima  = Math.max(12, rs ? rs.top + 8 : 12);
+
+      /* Quem liga o campo pode dizer onde é o chão e o teto: no perfil
+         há uma barra de guardar fixa em baixo e uma topbar em cima que
+         a lista não deve ir esconder-se por baixo. */
+      var chao = typeof opcoes.limiteBaixo === 'function' ? opcoes.limiteBaixo() : null;
+      var teto = typeof opcoes.limiteCima  === 'function' ? opcoes.limiteCima()  : null;
+
+      var baixo = Math.min(window.innerHeight - 20,
+                           rs ? rs.bottom - 12 : Infinity,
+                           typeof chao === 'number' ? chao : Infinity);
+      var cima  = Math.max(12, rs ? rs.top + 8 : 12, typeof teto === 'number' ? teto : 12);
 
       var r = box.getBoundingClientRect();
       var abaixo = baixo - r.bottom - 6;
@@ -256,6 +265,19 @@
       lista.style.maxHeight = Math.max(120, Math.min(232, espaco)) + 'px';
     }
 
+    /* A caixa move-se enquanto a lista está aberta — o teclado do
+       telemóvel a subir, a página a rolar, a barra de guardar a
+       aparecer. Voltamos a medir a cada movimento para a lista nunca
+       ficar cortada nem por baixo de outra coisa. */
+    var reacomodar = null;
+    function acomodarEmBreve() {
+      if (reacomodar) return;
+      reacomodar = requestAnimationFrame(function () {
+        reacomodar = null;
+        if (aberto) acomodar();
+      });
+    }
+
     function abrir() {
       if (aberto) return;
       aberto = true;
@@ -265,8 +287,10 @@
       busca.value = '';
       busca.placeholder = t('prod.tel_search');
       pintarLista('');
-      requestAnimationFrame(function () { busca.focus(); });
+      requestAnimationFrame(function () { busca.focus(); acomodar(); });
       document.addEventListener('click', foraDoCampo, true);
+      window.addEventListener('scroll', acomodarEmBreve, true);
+      window.addEventListener('resize', acomodarEmBreve);
     }
 
     function fechar(devolverFoco) {
@@ -275,6 +299,8 @@
       drop.hidden = true;
       botao.setAttribute('aria-expanded', 'false');
       document.removeEventListener('click', foraDoCampo, true);
+      window.removeEventListener('scroll', acomodarEmBreve, true);
+      window.removeEventListener('resize', acomodarEmBreve);
       if (devolverFoco !== false) botao.focus();
     }
 
@@ -282,15 +308,18 @@
       if (!box.contains(e.target)) fechar(false);
     }
 
-    function escolher(iso) {
+    /* semFoco: usado por quem repõe um país guardado ao carregar a
+       página — trocar o país nesse momento não deve roubar o foco
+       nem fazer a página saltar para o campo. */
+    function escolher(iso, semFoco) {
       var p = porIso(iso);
       if (!p) return;
       var d = digitos(input.value);          /* mantém o que já foi escrito */
       atual = p;
       pintarBotao();
       input.value = formatar(d, atual);
-      fechar();
-      input.focus();
+      fechar(!semFoco);
+      if (!semFoco) input.focus();
       if (opcoes.onChange) opcoes.onChange(atual);
     }
 

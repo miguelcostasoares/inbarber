@@ -126,17 +126,22 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="f-first" data-i18n="f.first">Nome</label>
-              <input class="form-input js-dirty" id="f-first" type="text" value="Ricardo" autocomplete="given-name">
+              <input class="form-input js-dirty js-nome" id="f-first" type="text" value="Ricardo"
+                     autocomplete="given-name" maxlength="40" spellcheck="false">
+              <p class="form-error" id="err-first" hidden></p>
             </div>
             <div class="form-group">
               <label class="form-label" for="f-last" data-i18n="f.last">Sobrenome</label>
-              <input class="form-input js-dirty" id="f-last" type="text" value="Almeida" autocomplete="family-name">
+              <input class="form-input js-dirty js-nome" id="f-last" type="text" value="Almeida"
+                     autocomplete="family-name" maxlength="40" spellcheck="false">
+              <p class="form-error" id="err-last" hidden></p>
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="f-email" data-i18n="f.email">Email</label>
-            <input class="form-input js-dirty" id="f-email" type="email" value="ricardo.almeida@email.com" autocomplete="email">
+            <input class="form-input js-dirty" id="f-email" type="email" value="ricardo.almeida@email.com"
+                   autocomplete="email" maxlength="80" spellcheck="false" inputmode="email">
             <p class="form-hint" data-i18n="f.email_hint">Enviamos as confirmações de reserva para este endereço.</p>
             <p class="form-error" id="err-email" hidden data-i18n="f.email_err">Escreva um email válido.</p>
           </div>
@@ -144,11 +149,17 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="f-phone" data-i18n="f.phone">Telemóvel</label>
-              <input class="form-input js-dirty" id="f-phone" type="tel" value="+351 912 345 678" autocomplete="tel">
+              <!-- O seletor de país e a máscara são montados por js/telefone.js -->
+              <div class="form-tel" id="tel-box">
+                <input class="form-tel-input js-dirty" id="f-phone" type="tel" inputmode="numeric"
+                       autocomplete="tel-national" aria-describedby="err-phone">
+              </div>
+              <p class="form-error" id="err-phone" hidden></p>
             </div>
             <div class="form-group">
               <label class="form-label" for="f-birth" data-i18n="f.birth">Data de nascimento</label>
-              <input class="form-input js-dirty" id="f-birth" type="date" value="1992-04-17">
+              <input class="form-input js-dirty" id="f-birth" type="date" value="1992-04-17" max="2026-12-31">
+              <p class="form-error" id="err-birth" hidden></p>
             </div>
           </div>
         </div>
@@ -228,6 +239,35 @@
           </span>
           <svg class="row-arrow" viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg>
         </a>
+      </div>
+
+      <!-- Histórico de compras de produtos -->
+      <div class="card" id="card-compras">
+        <div class="card-hd">
+          <div class="card-hd-text">
+            <p class="card-title" data-i18n="buy.title">Histórico de compras</p>
+            <p class="card-sub" data-i18n="buy.sub">Produtos reservados na loja e levantados no balcão.</p>
+          </div>
+          <span class="buy-spent" id="buy-spent" hidden>
+            <em class="buy-spent-num" id="buy-spent-num">—</em>
+            <span class="buy-spent-label" data-i18n="buy.spent">Total gasto</span>
+          </span>
+        </div>
+
+        <div class="buy-list" id="buy-list" role="list"></div>
+
+        <div class="buy-empty" id="buy-empty" hidden>
+          <span class="buy-empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 7.5h16l-1.4 10.6a1.7 1.7 0 0 1-1.7 1.4H7.1a1.7 1.7 0 0 1-1.7-1.4z"/><path d="M8.5 7.5a3.5 3.5 0 0 1 7 0"/></svg>
+          </span>
+          <p data-i18n="buy.empty">Ainda não comprou nenhum produto.</p>
+          <a class="btn btn--primary btn--sm" href="/produtos.html" data-i18n="buy.empty_cta">Ver a loja</a>
+        </div>
+
+        <div class="card-foot" id="buy-foot" hidden>
+          <span class="card-foot-note" id="buy-note"></span>
+          <button class="btn btn--ghost btn--sm" id="buy-more" data-i18n="buy.more">Ver todas</button>
+        </div>
       </div>
     </section>
 
@@ -556,17 +596,6 @@
           </div>
         </div>
 
-        <button class="row row--link" id="download-data">
-          <span class="row-icon">
-            <svg viewBox="0 0 20 20"><path d="M10 3v9"/><polyline points="6.5,8.5 10,12 13.5,8.5"/><path d="M3.5 15.5h13"/></svg>
-          </span>
-          <span class="row-text">
-            <strong data-i18n="sec.export">Descarregar os meus dados</strong>
-            <small data-i18n="sec.export_sub">Reservas, faturas e preferências em JSON</small>
-          </span>
-          <svg class="row-arrow" viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg>
-        </button>
-
         <a class="row row--link" href="#" >
           <span class="row-icon">
             <svg viewBox="0 0 20 20"><rect x="3.5" y="2.5" width="13" height="15" rx="2"/><path d="M6.5 7h7M6.5 10h7M6.5 13h4"/></svg>
@@ -656,6 +685,8 @@
   </div>
 </div>
 
+<script src="/js/produtos-data.js"></script>
+<script src="/js/telefone.js"></script>
 <script src="/js/profile-btn.js"></script>
 <script src="/js/perfil.js"></script>
 </body>

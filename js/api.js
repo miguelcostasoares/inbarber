@@ -455,6 +455,33 @@ function releaseProductReservation(id) {
    então expõe tudo em um namespace único no escopo global,
    evitando colidir com funções soltas do agenda-crm.js.
 ──────────────────────────────────────────────────────────── */
+/* ─── 8. PREFERÊNCIAS ────────────────────────────────────
+   GET   /api/preferences  → buscar configurações atuais
+   PUT   /api/preferences  → salvar configurações
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Busca as preferências da barbearia (horários e almoço).
+ * @returns {Promise<Object>} { horarios, almoco }
+ */
+function getPreferences() {
+  return apiRequest('/preferences', { method: 'GET' });
+}
+
+/**
+ * Salva as preferências da barbearia.
+ * @param {Object} data
+ * @param {Object} data.horarios - { seg, ter, … dom: { aberto, abertura, fechamento } }
+ * @param {Object} data.almoco   - { ativo, inicio, fim }
+ * @returns {Promise<Object>} preferências salvas
+ */
+function savePreferences(data) {
+  return apiRequest('/preferences', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
 window.InBarberAPI = {
   listAppointments,
   getAppointment,
@@ -483,4 +510,6 @@ window.InBarberAPI = {
   getProductReservation,
   confirmProductReservation,
   releaseProductReservation,
+  getPreferences,
+  savePreferences,
 };

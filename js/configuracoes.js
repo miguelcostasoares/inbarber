@@ -731,6 +731,11 @@ function initTabs() {
       if (target === 'servicos' && !SERVICOS_STATE.servicos.length && !SERVICOS_STATE.loading) {
         loadServicos();
       }
+
+      // Carrega preferências na primeira visita
+      if (target === 'preferencias' && !PREF_STATE.dados && !PREF_STATE.loading) {
+        loadPreferencias();
+      }
     });
   });
 }
@@ -970,7 +975,282 @@ function initFormListeners() {
   });
 }
 
-/* ─── 14. BOOT ──────────────────────────────────────────── */
+/* ─── 14. PREFERÊNCIAS: CONFIG ──────────────────────────── */
+const DIAS_SEMANA = [
+  { key: 'seg', label: 'Segunda' },
+  { key: 'ter', label: 'Terça' },
+  { key: 'qua', label: 'Quarta' },
+  { key: 'qui', label: 'Quinta' },
+  { key: 'sex', label: 'Sexta' },
+  { key: 'sab', label: 'Sábado' },
+  { key: 'dom', label: 'Domingo' },
+];
+
+const PREF_DEFAULTS = {
+  horarios: {
+    seg: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
+    ter: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
+    qua: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
+    qui: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
+    sex: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
+    sab: { aberto: true,  abertura: '09:00', fechamento: '17:00' },
+    dom: { aberto: false, abertura: '09:00', fechamento: '14:00' },
+  },
+  almoco: {
+    ativo:  false,
+    inicio: '12:00',
+    fim:    '13:00',
+  },
+};
+
+const PREF_STATE = {
+  loading: false,
+  dados:   null,
+};
+
+/* ─── 15. PREFERÊNCIAS: RENDER DOS DIAS ─────────────────── */
+function initPrefDias(horarios) {
+  const container = document.getElementById('prefDias');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  DIAS_SEMANA.forEach(({ key, label }) => {
+    const diaData = (horarios && horarios[key]) || PREF_DEFAULTS.horarios[key];
+    const aberto  = !!diaData.aberto;
+
+    const row = document.createElement('div');
+    row.className = 'pref-dia-row' + (aberto ? '' : ' pref-dia-row--fechado');
+    row.dataset.dia = key;
+
+    row.innerHTML = `
+      <div class="pref-dia-label">
+        <button
+          class="toggle-switch ${aberto ? 'toggle-switch--on' : ''}"
+          data-action="toggle-dia"
+          data-dia="${key}"
+          type="button"
+          role="switch"
+          aria-checked="${aberto ? 'true' : 'false'}"
+          aria-label="${aberto ? 'Fechar' : 'Abrir'} ${label}"
+        >
+          <span class="toggle-switch__track" aria-hidden="true">
+            <span class="toggle-switch__thumb"></span>
+          </span>
+        </button>
+        <span class="pref-dia-name">${label}</span>
+      </div>
+
+      <div class="pref-horarios">
+        <div class="form-input-wrap">
+          <div class="form-input-icon" aria-hidden="true">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M6.5 4v2.8l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <input
+            class="form-input form-input--icon pref-time-input"
+            id="pref-${key}-abertura"
+            type="time"
+            value="${diaData.abertura || '08:00'}"
+            aria-label="Abertura ${label}"
+            ${aberto ? '' : 'tabindex="-1"'}
+          />
+        </div>
+        <span class="pref-time-sep" aria-hidden="true">→</span>
+        <div class="form-input-wrap">
+          <div class="form-input-icon" aria-hidden="true">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M6.5 4v2.8l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <input
+            class="form-input form-input--icon pref-time-input"
+            id="pref-${key}-fechamento"
+            type="time"
+            value="${diaData.fechamento || '18:00'}"
+            aria-label="Fechamento ${label}"
+            ${aberto ? '' : 'tabindex="-1"'}
+          />
+        </div>
+      </div>
+
+      <div></div>
+    `;
+
+    container.appendChild(row);
+  });
+}
+
+/* ─── 16. PREFERÊNCIAS: TOGGLE DIA ──────────────────────── */
+function toggleDia(key) {
+  const row = document.querySelector(`.pref-dia-row[data-dia="${key}"]`);
+  if (!row) return;
+
+  const isOpen   = !row.classList.contains('pref-dia-row--fechado');
+  const novoOpen = !isOpen;
+
+  row.classList.toggle('pref-dia-row--fechado', !novoOpen);
+
+  const btn = row.querySelector('[data-action="toggle-dia"]');
+  if (btn) {
+    btn.classList.toggle('toggle-switch--on', novoOpen);
+    btn.setAttribute('aria-checked', novoOpen ? 'true' : 'false');
+    const dia = DIAS_SEMANA.find((d) => d.key === key);
+    btn.setAttribute('aria-label', `${novoOpen ? 'Fechar' : 'Abrir'} ${dia?.label || key}`);
+  }
+
+  const inputs = row.querySelectorAll('.pref-time-input');
+  inputs.forEach((inp) => {
+    inp.setAttribute('tabindex', novoOpen ? '0' : '-1');
+  });
+}
+
+/* ─── 17. PREFERÊNCIAS: TOGGLE ALMOÇO ───────────────────── */
+function syncAlmocoUI(ativo) {
+  const btn       = document.getElementById('toggleAlmoco');
+  const horarios  = document.getElementById('prefAlmocoHorarios');
+  if (!btn || !horarios) return;
+
+  btn.classList.toggle('toggle-switch--on', ativo);
+  btn.setAttribute('aria-checked', ativo ? 'true' : 'false');
+  btn.setAttribute('aria-label', ativo ? 'Desativar bloqueio de almoço' : 'Ativar bloqueio de almoço');
+
+  const labelEl = btn.querySelector('.toggle-switch__label');
+  if (labelEl) labelEl.textContent = ativo ? 'Ativo' : 'Inativo';
+
+  horarios.hidden = !ativo;
+}
+
+/* ─── 18. PREFERÊNCIAS: LER FORMULÁRIO ──────────────────── */
+function readPrefForm() {
+  const horarios = {};
+
+  DIAS_SEMANA.forEach(({ key }) => {
+    const row    = document.querySelector(`.pref-dia-row[data-dia="${key}"]`);
+    const aberto = row && !row.classList.contains('pref-dia-row--fechado');
+    const abertura   = document.getElementById(`pref-${key}-abertura`)?.value   || '08:00';
+    const fechamento = document.getElementById(`pref-${key}-fechamento`)?.value || '18:00';
+    horarios[key] = { aberto, abertura, fechamento };
+  });
+
+  const almocoAtivo = document.getElementById('toggleAlmoco')?.classList.contains('toggle-switch--on') || false;
+  const almocoInicio = document.getElementById('almocoInicio')?.value || '12:00';
+  const almocoFim    = document.getElementById('almocoFim')?.value    || '13:00';
+
+  return {
+    horarios,
+    almoco: {
+      ativo:  almocoAtivo,
+      inicio: almocoInicio,
+      fim:    almocoFim,
+    },
+  };
+}
+
+/* ─── 19. PREFERÊNCIAS: LOAD ─────────────────────────────── */
+async function loadPreferencias() {
+  const loading = document.getElementById('prefLoading');
+  const body    = document.getElementById('prefBody');
+  if (!loading || !body) return;
+
+  PREF_STATE.loading = true;
+  loading.hidden = false;
+  body.hidden    = true;
+
+  try {
+    const dados = await window.InBarberAPI.getPreferences();
+    PREF_STATE.dados = dados;
+    initPrefDias(dados.horarios);
+
+    const almocoAtivo = !!(dados.almoco && dados.almoco.ativo);
+    syncAlmocoUI(almocoAtivo);
+
+    if (dados.almoco) {
+      const ini = document.getElementById('almocoInicio');
+      const fim = document.getElementById('almocoFim');
+      if (ini && dados.almoco.inicio) ini.value = dados.almoco.inicio;
+      if (fim && dados.almoco.fim)    fim.value = dados.almoco.fim;
+    }
+  } catch (_err) {
+    // Backend ainda não existe ou houve erro: usa defaults sem toast
+    PREF_STATE.dados = JSON.parse(JSON.stringify(PREF_DEFAULTS));
+    initPrefDias(PREF_DEFAULTS.horarios);
+    syncAlmocoUI(false);
+  } finally {
+    PREF_STATE.loading = false;
+    loading.hidden = true;
+    body.hidden    = false;
+  }
+}
+
+/* ─── 20. PREFERÊNCIAS: SALVAR ──────────────────────────── */
+async function handleSalvarPreferencias() {
+  const dados = readPrefForm();
+
+  // Validação: almoço ativo → início < fim
+  if (dados.almoco.ativo) {
+    if (dados.almoco.inicio >= dados.almoco.fim) {
+      flashInputError('almocoInicio');
+      flashInputError('almocoFim');
+      showToast('error', 'O horário de início do almoço deve ser anterior ao fim.');
+      return;
+    }
+  }
+
+  // Validação: para cada dia aberto, abertura < fechamento
+  for (const { key, label } of DIAS_SEMANA) {
+    const d = dados.horarios[key];
+    if (d.aberto && d.abertura >= d.fechamento) {
+      flashInputError(`pref-${key}-abertura`);
+      flashInputError(`pref-${key}-fechamento`);
+      showToast('error', `${label}: o horário de abertura deve ser anterior ao fechamento.`);
+      return;
+    }
+  }
+
+  const btn = document.getElementById('btnSalvarPreferencias');
+  if (btn) btn.disabled = true;
+
+  try {
+    await window.InBarberAPI.savePreferences(dados);
+    PREF_STATE.dados = dados;
+    showToast('success', 'Preferências salvas com sucesso!');
+  } catch (err) {
+    showToast('error', err.message || 'Erro ao salvar preferências.');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* ─── 21. PREFERÊNCIAS: EVENT LISTENERS ─────────────────── */
+function initPreferenciasListeners() {
+  // Salvar
+  document
+    .getElementById('btnSalvarPreferencias')
+    ?.addEventListener('click', handleSalvarPreferencias);
+
+  // Toggle almoço
+  document
+    .getElementById('toggleAlmoco')
+    ?.addEventListener('click', () => {
+      const ativo = !document.getElementById('toggleAlmoco').classList.contains('toggle-switch--on');
+      syncAlmocoUI(ativo);
+    });
+
+  // Delegação: toggles de dia dentro de #prefDias
+  document
+    .getElementById('prefDias')
+    ?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action="toggle-dia"]');
+      if (!btn) return;
+      toggleDia(btn.dataset.dia);
+    });
+}
+
+/* ─── 22. BOOT ──────────────────────────────────────────── */
 function boot() {
   renderDate();
   loadFromStorage();
@@ -982,6 +1262,7 @@ function boot() {
   initTabs();
   initEquipeListeners();
   initServicosListeners();
+  initPreferenciasListeners();
 
   // Dispara checkDirty uma vez para sincronizar estado inicial dos botões
   checkDirty();

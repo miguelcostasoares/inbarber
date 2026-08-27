@@ -262,7 +262,6 @@
             aria-controls="tab-preferencias"
             id="btn-tab-preferencias"
             data-tab="preferencias"
-            disabled
           >
             <svg
               width="15"
@@ -286,7 +285,6 @@
               />
             </svg>
             Preferências
-            <span class="config-tab__badge">Em breve</span>
           </button>
         </nav>
       </header>
@@ -814,6 +812,136 @@
         </div>
       </section>
       <!-- /tab-servicos -->
+
+      <!-- ════════════════════════════════════════════
+         TAB: PREFERÊNCIAS
+      ════════════════════════════════════════════ -->
+      <section
+        class="config-content config-content--preferencias"
+        id="tab-preferencias"
+        role="tabpanel"
+        aria-labelledby="btn-tab-preferencias"
+        hidden
+      >
+        <!-- Cabeçalho da seção -->
+        <div class="pref-header">
+          <div class="pref-header__info">
+            <h2 class="pref-header__title">Preferências da Agenda</h2>
+            <p class="pref-header__subtitle">Configure o horário de funcionamento e o bloqueio de almoço.</p>
+          </div>
+          <button class="btn-primary" id="btnSalvarPreferencias" type="button">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Salvar Preferências
+          </button>
+        </div>
+
+        <!-- Estado de carregamento -->
+        <div class="pref-loading" id="prefLoading" aria-live="polite">
+          <div class="equipe-loading__spinner" aria-hidden="true"></div>
+          <span>Carregando preferências…</span>
+        </div>
+
+        <!-- Conteúdo (oculto durante carregamento) -->
+        <div class="pref-body" id="prefBody" hidden>
+
+          <!-- ── BLOCO: Horário de Funcionamento ── -->
+          <div class="pref-card">
+            <div class="pref-card__head">
+              <div class="pref-card__head-icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M7.5 4v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="pref-card__title">Horário de Funcionamento</h3>
+                <p class="pref-card__subtitle">Defina os horários de abertura e fechamento para cada dia da semana.</p>
+              </div>
+            </div>
+
+            <div class="pref-dias" id="prefDias">
+              <!-- Gerado via JS: initPrefDias() -->
+            </div>
+          </div>
+
+          <!-- ── BLOCO: Bloqueio de Almoço ── -->
+          <div class="pref-card">
+            <div class="pref-card__head">
+              <div class="pref-card__head-icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path d="M5 1v4M10 1v4M3 6h9M4 13h7a1 1 0 001-1V5H3v7a1 1 0 001 1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="pref-card__title">Bloqueio de Almoço</h3>
+                <p class="pref-card__subtitle">Bloqueia automaticamente um intervalo de almoço em todos os dias abertos.</p>
+              </div>
+              <!-- Toggle alinhado à direita do cabeçalho -->
+              <div class="pref-card__head-toggle">
+                <button
+                  class="toggle-switch"
+                  id="toggleAlmoco"
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  aria-label="Ativar bloqueio de almoço"
+                  data-action="toggle-almoco"
+                >
+                  <span class="toggle-switch__track" aria-hidden="true">
+                    <span class="toggle-switch__thumb"></span>
+                  </span>
+                  <span class="toggle-switch__label">Inativo</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="pref-almoco-horarios" id="prefAlmocoHorarios" hidden>
+              <div class="pref-time-row">
+                <div class="form-group">
+                  <label class="form-label" for="almocoInicio">Início</label>
+                  <div class="form-input-wrap">
+                    <div class="form-input-icon" aria-hidden="true">
+                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                        <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/>
+                        <path d="M6.5 4v2.8l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <input
+                      class="form-input form-input--icon pref-time-input"
+                      id="almocoInicio"
+                      type="time"
+                      value="12:00"
+                    />
+                  </div>
+                </div>
+                <div class="pref-time-sep" aria-hidden="true">→</div>
+                <div class="form-group">
+                  <label class="form-label" for="almocoFim">Fim</label>
+                  <div class="form-input-wrap">
+                    <div class="form-input-icon" aria-hidden="true">
+                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                        <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/>
+                        <path d="M6.5 4v2.8l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <input
+                      class="form-input form-input--icon pref-time-input"
+                      id="almocoFim"
+                      type="time"
+                      value="13:00"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /pref-body -->
+      </section>
+      <!-- /tab-preferencias -->
 
       <!-- ════════════════════════════════════════════
          MODAL: BARBEIRO (criar / editar)

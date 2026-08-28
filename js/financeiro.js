@@ -70,38 +70,12 @@ const PAYMENT_METHODS = [
     },
 ];
 
-const SAIDAS_TOTAL = 2_340;
+// Estado real de Metas & Comissões — preenchido via API em loadMetasData()
+let METAS_DATA = [];         // [{ id, meta, comissaoPct }]
+let META_BARBEARIA_TOTAL = 0;
 
-// Mock data para Metas & Comissões
-// meta agora é em R$ (valor gerado), não em cortes
-const METAS_DATA = [
-    { id: 'marcos', meta: 9_000, comissaoPct: 30 },
-    { id: 'joao',   meta: 7_500, comissaoPct: 28 },
-    { id: 'andre',  meta: 6_500, comissaoPct: 25 },
-    { id: 'carlos', meta: 4_000, comissaoPct: 22 },
-];
-
-const META_BARBEARIA_TOTAL = 28_000;
-
-// Mock data para Saídas
-let SAIDAS_DATA = [
-    { id: 1,  data: '2025-08-01', desc: 'Aluguel do espaço',           categoria: 'Aluguel',      valor: 2200, pgto: 'Transferência' },
-    { id: 2,  data: '2025-08-03', desc: 'Shampoo e condicionadores',   categoria: 'Produtos',     valor: 340,  pgto: 'PIX'           },
-    { id: 3,  data: '2025-08-05', desc: 'Manutenção das cadeiras',     categoria: 'Manutenção',   valor: 480,  pgto: 'PIX'           },
-    { id: 4,  data: '2025-08-07', desc: 'Energia elétrica',            categoria: 'Utilidades',   valor: 310,  pgto: 'Boleto'        },
-    { id: 5,  data: '2025-08-08', desc: 'Cera e pomadas',              categoria: 'Produtos',     valor: 210,  pgto: 'Dinheiro'      },
-    { id: 6,  data: '2025-08-10', desc: 'Anúncios Instagram/Meta',     categoria: 'Marketing',    valor: 400,  pgto: 'Cartão'        },
-    { id: 7,  data: '2025-08-12', desc: 'Lâminas e descartáveis',      categoria: 'Produtos',     valor: 155,  pgto: 'PIX'           },
-    { id: 8,  data: '2025-08-14', desc: 'Conta de água',               categoria: 'Utilidades',   valor: 90,   pgto: 'Boleto'        },
-    { id: 9,  data: '2025-08-15', desc: 'Conserto da máquina de corte',categoria: 'Manutenção',   valor: 220,  pgto: 'Dinheiro'      },
-    { id: 10, data: '2025-08-17', desc: 'Internet e telefone',         categoria: 'Utilidades',   valor: 130,  pgto: 'Boleto'        },
-    { id: 11, data: '2025-08-18', desc: 'Toalhas e capas',             categoria: 'Equipamentos', valor: 190,  pgto: 'PIX'           },
-    { id: 12, data: '2025-08-20', desc: 'Material de limpeza',         categoria: 'Outros',       valor: 85,   pgto: 'Dinheiro'      },
-    { id: 13, data: '2025-08-21', desc: 'Adiantamento de pessoal',     categoria: 'Pessoal',      valor: 800,  pgto: 'PIX'           },
-    { id: 14, data: '2025-08-22', desc: 'Tinta e coloração',           categoria: 'Produtos',     valor: 280,  pgto: 'Cartão'        },
-    { id: 15, data: '2025-08-23', desc: 'Cadeira de espera nova',      categoria: 'Equipamentos', valor: 650,  pgto: 'Cartão'        },
-];
-let _saidasNextId = 16;
+// Estado real de Saídas — preenchido via API (a conectar)
+let SAIDAS_DATA = [];
 
 // Dados para o gráfico de linha por período
 const LINE_DATA = {
@@ -165,7 +139,8 @@ function hideTooltip() {
 /* ─── 5. KPIs ───────────────────────────────────────────── */
 function renderKPIs() {
     const totalFaturamento = PAYMENT_METHODS.reduce((a, m) => a + m.total, 0);
-    const faturamentoLiquido = totalFaturamento - SAIDAS_TOTAL;
+    const totalSaidas = SAIDAS_DATA.reduce((a, s) => a + s.valor, 0);
+    const faturamentoLiquido = totalFaturamento - totalSaidas;
     const totalCortes = FIN_BARBERS.reduce((a, b) => a + b.cortes, 0);
 
     // Valores estáticos imediatos (trends e datas não são animados)
@@ -536,50 +511,51 @@ function renderBarChart() {
 /* ─── 8. METAS & COMISSÕES ──────────────────────────────── */
 
 // Cores reutilizadas dos avatares
-const BARBER_AVATAR_STYLES = {
-    marcos: 'linear-gradient(135deg, #0047ff, #00f0ff)',
-    joao:   'linear-gradient(135deg, #4da6ff, #0047ff)',
-    andre:  'linear-gradient(135deg, #00d68f, #0047ff)',
-    carlos: 'linear-gradient(135deg, #8b5cf6, #ff4d6a)',
-};
+// Paleta de cores para avatares e barras de progresso — atribuída dinamicamente
+// por posição ao carregar os barbeiros do back, sem depender de IDs fixos.
+const _AVATAR_PALETTE = [
+    'linear-gradient(135deg, #0047ff, #00f0ff)',
+    'linear-gradient(135deg, #4da6ff, #0047ff)',
+    'linear-gradient(135deg, #00d68f, #0047ff)',
+    'linear-gradient(135deg, #8b5cf6, #ff4d6a)',
+    'linear-gradient(135deg, #ff9c40, #ff4d6a)',
+    'linear-gradient(135deg, #00f0ff, #00d68f)',
+];
 
-const BARBER_PROGRESS_COLORS = {
-    marcos: '#00f0ff',
-    joao:   '#4da6ff',
-    andre:  '#00d68f',
-    carlos: '#8b5cf6',
-};
+const _PROGRESS_PALETTE = [
+    '#00f0ff', '#4da6ff', '#00d68f', '#8b5cf6', '#ff9c40', '#ff4d6a',
+];
+
+// Mapas populados em loadMetasData()
+let BARBER_AVATAR_STYLES   = {};
+let BARBER_PROGRESS_COLORS = {};
 
 function calcMetasState() {
-    return FIN_BARBERS.map(b => {
-        const m = METAS_DATA.find(x => x.id === b.id);
-        // % atingido agora é baseado no faturamento (valor gerado)
-        const pct = Math.round((b.faturamento / m.meta) * 100);
-        const comissaoVal = Math.round(b.faturamento * (m.comissaoPct / 100));
-        return { ...b, meta: m.meta, comissaoPct: m.comissaoPct, pct, comissaoVal };
+    return METAS_DATA.map(m => {
+        const pct = m.meta > 0 ? Math.round((m.faturamento / m.meta) * 100) : 0;
+        const comissaoVal = Math.round(m.faturamento * (m.comissaoPct / 100));
+        return { ...m, pct, comissaoVal };
     });
 }
 
+const BARBER_SOLID_COLORS_LIST = [
+    'var(--gold)', 'var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--red)',
+];
+
 function renderMetasKPIs(state) {
-    // KPI meta total barbearia
-    const totalFat = FIN_BARBERS.reduce((a, b) => a + b.faturamento, 0);
-    const pctMeta = ((totalFat / META_BARBEARIA_TOTAL) * 100).toFixed(1);
+    const totalFat = state.reduce((a, b) => a + b.faturamento, 0);
+    const pctMeta = META_BARBEARIA_TOTAL > 0
+        ? ((totalFat / META_BARBEARIA_TOTAL) * 100).toFixed(1)
+        : '0.0';
+
     document.getElementById('metaTotalValor').textContent = fmt(META_BARBEARIA_TOTAL);
     document.getElementById('metaTotalRealizado').textContent = fmt(totalFat) + ' realizados';
     document.getElementById('metaTotalBarFill').style.width = Math.min(parseFloat(pctMeta), 100) + '%';
     document.getElementById('metaTotalPct').textContent = pctMeta.replace('.', ',') + '%';
 
-    // KPI barras por barbeiro — cores sólidas do sistema, sem degradê
-    const BARBER_SOLID_COLORS = {
-        marcos: 'var(--gold)',
-        joao:   'var(--blue)',
-        andre:  'var(--green)',
-        carlos: 'var(--orange)',
-    };
-
     const list = document.getElementById('barberProgressList');
-    list.innerHTML = state.map(b => {
-        const color = BARBER_SOLID_COLORS[b.id];
+    list.innerHTML = state.map((b, i) => {
+        const color = BARBER_SOLID_COLORS_LIST[i % BARBER_SOLID_COLORS_LIST.length];
         const pct = Math.min(b.pct, 100);
         return `
             <div class="barber-progress-item">
@@ -593,7 +569,6 @@ function renderMetasKPIs(state) {
         `;
     }).join('');
 
-    // KPI comissão total
     const totalComissao = state.reduce((a, b) => a + b.comissaoVal, 0);
     document.getElementById('comissaoTotalValor').textContent = fmt(totalComissao);
 }
@@ -793,20 +768,13 @@ async function metasSaveBarSave() {
 
 async function salvarMetasEComissoes(metasData) {
     const promises = metasData.map(m =>
-        fetch(`/api/barbers/${m.id}/metas-comissao`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                meta_valor: m.meta,
-                comissao_pct: m.comissaoPct,
-            }),
-        }).then(res => {
-            if (!res.ok) throw new Error(`Erro ao salvar barbeiro ${m.id}: ${res.status}`);
-            return res.json();
+        InBarberAPI.saveBarberMetaComissao(m.id, {
+            meta_valor:   m.meta,
+            comissao_pct: m.comissaoPct,
         })
     );
     return Promise.all(promises);
-}
+}   
 
 function initMetasSaveBar() {
     const btnCancel = document.getElementById('metasBtnCancel');
@@ -814,6 +782,67 @@ function initMetasSaveBar() {
 
     if (btnCancel) btnCancel.addEventListener('click', metasSaveBarCancel);
     if (btnSave)   btnSave.addEventListener('click', metasSaveBarSave);
+}
+
+async function loadMetasData() {
+    const metasTbody      = document.getElementById('metasTableBody');
+    const comissoesTbody  = document.getElementById('comissoesTableBody');
+    const loadingRow      = `
+        <tr>
+            <td colspan="5" style="text-align:center; padding:32px; color:var(--muted); font-size:13px;">
+                Carregando…
+            </td>
+        </tr>`;
+
+    if (metasTbody)     metasTbody.innerHTML     = loadingRow;
+    if (comissoesTbody) comissoesTbody.innerHTML  = loadingRow.replace('colspan="5"', 'colspan="4"');
+
+    try {
+        const [barbers, metas] = await Promise.all([
+            InBarberAPI.listBarbers(),
+            InBarberAPI.getBarbersMetas(),
+        ]);
+
+        // Mapas de cor dinâmicos
+        BARBER_AVATAR_STYLES   = {};
+        BARBER_PROGRESS_COLORS = {};
+        barbers.forEach((b, i) => {
+            BARBER_AVATAR_STYLES[b.id]   = _AVATAR_PALETTE[i % _AVATAR_PALETTE.length];
+            BARBER_PROGRESS_COLORS[b.id] = _PROGRESS_PALETTE[i % _PROGRESS_PALETTE.length];
+        });
+
+        // Monta METAS_DATA combinando barbeiros + metas do período
+        const metaMap = {};
+        metas.forEach(m => { metaMap[m.barbeiro_id] = m.meta_valor; });
+
+        METAS_DATA = barbers.map(b => ({
+            id:          b.id,
+            name:        b.nome || b.name,
+            initials:    (b.nome || b.name)
+                            .split(' ')
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map(p => p[0].toUpperCase())
+                            .join(''),
+            faturamento: 0,   // será alimentado pela integração de agendamentos (próxima etapa)
+            comissaoPct: b.comissao_pct ?? 0,
+            meta:        metaMap[b.id] ?? 0,
+        }));
+
+        META_BARBEARIA_TOTAL = METAS_DATA.reduce((a, m) => a + m.meta, 0);
+
+        refreshMetas();
+    } catch (err) {
+        console.error('[Metas] Erro ao carregar dados:', err);
+        const errRow = (cols) => `
+            <tr>
+                <td colspan="${cols}" style="text-align:center; padding:32px; color:var(--red); font-size:13px;">
+                    Erro ao carregar dados. Verifique a conexão com o servidor.
+                </td>
+            </tr>`;
+        if (metasTbody)     metasTbody.innerHTML     = errRow(5);
+        if (comissoesTbody) comissoesTbody.innerHTML  = errRow(4);
+    }
 }
 
 function refreshMetas() {
@@ -847,12 +876,18 @@ const SAIDAS_CAT_COLORS = {
 let saidasPgtoChart = null;
 
 function getSaidasFiltradas() {
-    const cat   = document.getElementById('saidasFiltroCategoria')?.value || '';
-    const pgto  = document.getElementById('saidasFiltroPgto')?.value     || '';
+    const cat  = document.getElementById('saidasFiltroCategoria')?.value || '';
+    const pgto = document.getElementById('saidasFiltroPgto')?.value     || '';
     return SAIDAS_DATA.filter(s =>
         (!cat  || s.categoria === cat) &&
         (!pgto || s.pgto === pgto)
     );
+}
+
+async function loadSaidasData() {
+    // TODO: conectar a GET /api/saidas quando a rota existir no back
+    SAIDAS_DATA = [];
+    refreshSaidas();
 }
 
 function renderSaidasKPIs(data) {
@@ -1013,8 +1048,8 @@ function renderSaidasTable(data) {
     // Ação editar
     tbody.querySelectorAll('.saidas-action-btn--edit').forEach(btn => {
         btn.addEventListener('click', () => {
-            const id = parseInt(btn.dataset.id, 10);
-            const saida = SAIDAS_DATA.find(s => s.id === id);
+            const id   = btn.dataset.id;
+            const saida = SAIDAS_DATA.find(s => String(s.id) === id);
             if (!saida) return;
             openSaidasModal(saida);
         });
@@ -1023,7 +1058,7 @@ function renderSaidasTable(data) {
     // Ação excluir
     tbody.querySelectorAll('.saidas-action-btn--del').forEach(btn => {
         btn.addEventListener('click', () => {
-            const id   = parseInt(btn.dataset.id, 10);
+            const id   = btn.dataset.id;
             const desc = btn.dataset.desc;
             openDeleteModal(id, desc);
         });
@@ -1110,36 +1145,23 @@ function initSaidasModals() {
         if (e.target === e.currentTarget) closeSaidasModal();
     });
 
-    // Salvar
+    // Salvar — TODO: conectar a POST/PUT /api/saidas quando a rota existir no back
     document.getElementById('saidasModalSave')?.addEventListener('click', () => {
-        const idVal  = document.getElementById('saidasModalId').value;
-        const desc   = document.getElementById('saidasModalDesc').value.trim();
-        const data   = document.getElementById('saidasModalData').value;
-        const cat    = document.getElementById('saidasModalCategoria').value;
-        const raw    = document.getElementById('saidasModalValor').value.replace(/\./g, '').replace(',', '.');
-        const valor  = parseFloat(raw);
-        const pgto   = document.getElementById('saidasModalPgto').value;
+        const idVal = document.getElementById('saidasModalId').value;
+        const desc  = document.getElementById('saidasModalDesc').value.trim();
+        const data  = document.getElementById('saidasModalData').value;
+        const cat   = document.getElementById('saidasModalCategoria').value;
+        const raw   = document.getElementById('saidasModalValor').value.replace(/\./g, '').replace(',', '.');
+        const valor = parseFloat(raw);
+        const pgto  = document.getElementById('saidasModalPgto').value;
 
         if (!desc || !data || !cat || !valor || !pgto) {
             showToast('Preencha todos os campos.', 'warn');
             return;
         }
 
-        if (idVal) {
-            // Editar
-            const idx = SAIDAS_DATA.findIndex(s => s.id === parseInt(idVal, 10));
-            if (idx !== -1) {
-                SAIDAS_DATA[idx] = { id: parseInt(idVal, 10), data, desc, categoria: cat, valor, pgto };
-            }
-            showToast('Saída atualizada com sucesso.', 'success');
-        } else {
-            // Novo
-            SAIDAS_DATA.push({ id: _saidasNextId++, data, desc, categoria: cat, valor, pgto });
-            showToast('Saída cadastrada com sucesso.', 'success');
-        }
-
+        showToast('Integração com backend pendente.', 'warn');
         closeSaidasModal();
-        refreshSaidas();
     });
 
     // Fechar modal exclusão
@@ -1149,13 +1171,10 @@ function initSaidasModals() {
         if (e.target === e.currentTarget) closeDeleteModal();
     });
 
-    // Confirmar exclusão
-    document.getElementById('saidasDeleteConfirm')?.addEventListener('click', e => {
-        const id = parseInt(e.currentTarget.dataset.id, 10);
-        SAIDAS_DATA = SAIDAS_DATA.filter(s => s.id !== id);
+    // Confirmar exclusão — TODO: conectar a DELETE /api/saidas/:id quando a rota existir no back
+    document.getElementById('saidasDeleteConfirm')?.addEventListener('click', () => {
+        showToast('Integração com backend pendente.', 'warn');
         closeDeleteModal();
-        refreshSaidas();
-        showToast('Saída excluída.', 'success');
     });
 
     // Filtros
@@ -1377,9 +1396,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initFinTabs();
     initSidebar();
     initTooltipHide();
-    refreshMetas();
+    loadMetasData();
     initMetasSaveBar();
-    refreshSaidas();
+    loadSaidasData();
     initSaidasModals();
 
     // ── Animações de entrada ──────────────────────────────────

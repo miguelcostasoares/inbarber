@@ -305,6 +305,31 @@ function toggleBarberStatus(id, ativo) {
   });
 }
 
+/**
+ * Busca as metas individuais de todos os barbeiros para um período.
+ * GET /api/barbers/metas?periodo=YYYY-MM
+ * @param {string} [periodo] - formato YYYY-MM (default: mês corrente)
+ * @returns {Promise<Array>} [{ barbeiro_id, meta_valor }]
+ */
+function getBarbersMetas(periodo) {
+  const qs = periodo ? `?periodo=${encodeURIComponent(periodo)}` : '';
+  return apiRequest(`/barbers/metas${qs}`, { method: 'GET' });
+}
+
+/**
+ * Salva a meta individual e/ou % de comissão de um barbeiro.
+ * PATCH /api/barbers/:id/metas-comissao
+ * @param {string} id - ID do barbeiro
+ * @param {{ meta_valor?: number, comissao_pct?: number }} data
+ * @returns {Promise<Object>} { id, meta_valor, comissao_pct }
+ */
+function saveBarberMetaComissao(id, data) {
+  return apiRequest(`/barbers/${encodeURIComponent(id)}/metas-comissao`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
 /* ─── 5. CLIENTES ───────────────────────────────────────────
    GET  /api/clients              → listagem completa (tela Clientes)
    GET  /api/clients?search=termo → autocomplete (Agenda)
@@ -585,6 +610,8 @@ window.InBarberAPI = {
   createBarber,
   updateBarber,
   toggleBarberStatus,
+  getBarbersMetas,
+  saveBarberMetaComissao,
   searchClients,
   listClients,
   getClient,

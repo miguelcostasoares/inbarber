@@ -797,6 +797,7 @@ def serializar_barbeiro(row):
         'endereco':        row['endereco'] or '',
         'avatar':          row.get('avatar'),
         'ativo':           bool(row['ativo']),
+        'comissao_pct':    float(row['comissao_pct']) if row.get('comissao_pct') is not None else 0.0,
     }
 
 
@@ -808,13 +809,15 @@ def listar_barbeiros():
     try:
         if include_inactive:
             cursor.execute(
-                '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
+                '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo,
+                          comissao_pct
                    FROM barbeiros
                    ORDER BY nome ASC'''
             )
         else:
             cursor.execute(
-                '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
+                '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo,
+                          comissao_pct
                    FROM barbeiros
                    WHERE ativo = 1
                    ORDER BY nome ASC'''
@@ -867,6 +870,49 @@ def criar_barbeiro():
     except Exception as e:
         conn.rollback()
         return jsonify({'error': f'Erro ao criar barbeiro: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/barbers/metas', methods=['GET'])
+def listar_metas_barbeiros():
+    """
+    Retorna as metas individuais de todos os barbeiros para um período.
+    Query param: periodo=YYYY-MM (default: mês corrente)
+    Resposta: [{ barbeiro_id, meta_valor }]
+    """
+    import datetime
+    periodo_str = request.args.get('periodo')
+    if periodo_str:
+        try:
+            periodo_inicio = datetime.date.fromisoformat(periodo_str + '-01')
+        except ValueError:
+            return jsonify({'error': 'Formato de período inválido. Use YYYY-MM.'}), 400
+    else:
+        hoje = datetime.date.today()
+        periodo_inicio = hoje.replace(day=1)
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            '''SELECT barbeiro_id, meta_valor
+               FROM metas_barbeiro
+               WHERE periodo_tipo = 'mes'
+                 AND periodo_inicio = %s''',
+            (periodo_inicio,)
+        )
+        rows = cursor.fetchall()
+        return jsonify([
+            {
+                'barbeiro_id': r['barbeiro_id'],
+                'meta_valor':  float(r['meta_valor']),
+            }
+            for r in rows
+        ]), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao buscar metas: {e}'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -927,7 +973,8 @@ def atualizar_barbeiro(barbeiro_id):
         conn.commit()
 
         cursor.execute(
-            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
+            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo,
+                      comissao_pct
                FROM barbeiros WHERE id = %s''',
             (barbeiro_id,)
         )
@@ -963,14 +1010,15 @@ def toggle_barbeiro_status(barbeiro_id):
         conn.commit()
 
         cursor.execute(
-            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
+            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo,
+                      comissao_pct
                FROM barbeiros WHERE id = %s''',
             (barbeiro_id,)
         )
         return jsonify(serializar_barbeiro(cursor.fetchone())), 200
     except Exception as e:
         conn.rollback()
-        return jsonify({'error': f'Erro ao atualizar status: {e}'}), 500
+        return jsonify({'error': f'Erro ao alterar status: {e}'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -2134,6 +2182,107 @@ def upload_logo():
 @app.route('/uploads/logo/<filename>')
 def servir_logo(filename):
     return send_from_directory(LOGO_FOLDER, filename)
+
+
+@app.route('/api/barbers/<barbeiro_id>/metas-comissao', methods=['PATCH'])
+def salvar_meta_comissao(barbeiro_id):
+    """
+    Atualiza a meta individual (metas_barbeiro) e/ou % de comissão
+    (barbeiros.comissao_pct) de um barbeiro para o período atual.
+
+    Body JSON (ao menos um campo obrigatório):
+        meta_valor   : float  — meta em R$ para o mês corrente
+        comissao_pct : float  — percentual de comissão (0-100)
+    """
+    data = request.get_json(silent=True) or {}
+
+    meta_valor   = data.get('meta_valor')
+    comissao_pct = data.get('comissao_pct')
+
+    if meta_valor is None and comissao_pct is None:
+        return jsonify({'error': 'Informe ao menos meta_valor ou comissao_pct.'}), 400
+
+    if meta_valor is not None:
+        try:
+            meta_valor = float(meta_valor)
+            if meta_valor < 0:
+                raise ValueError()
+        except (TypeError, ValueError):
+            return jsonify({'error': 'meta_valor deve ser um número positivo.'}), 400
+
+    if comissao_pct is not None:
+        try:
+            comissao_pct = float(comissao_pct)
+            if not (0 <= comissao_pct <= 100):
+                raise ValueError()
+        except (TypeError, ValueError):
+            return jsonify({'error': 'comissao_pct deve ser um número entre 0 e 100.'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id FROM barbeiros WHERE id = %s AND ativo = 1', (barbeiro_id,))
+        if not cursor.fetchone():
+            return jsonify({'error': 'Barbeiro não encontrado.'}), 404
+
+        # ── 1. Atualiza comissao_pct na tabela barbeiros ───────────────────
+        if comissao_pct is not None:
+            cursor.execute(
+                'UPDATE barbeiros SET comissao_pct = %s WHERE id = %s',
+                (comissao_pct, barbeiro_id)
+            )
+
+        # ── 2. Upsert na tabela metas_barbeiro para o mês corrente ────────
+        if meta_valor is not None:
+            from datetime import date
+            hoje = date.today()
+            periodo_inicio = hoje.replace(day=1)
+
+            cursor.execute(
+                '''INSERT INTO metas_barbeiro
+                       (barbeiro_id, periodo_tipo, periodo_inicio, meta_valor)
+                   VALUES (%s, 'mes', %s, %s)
+                   ON DUPLICATE KEY UPDATE
+                       meta_valor = VALUES(meta_valor),
+                       updated_at = CURRENT_TIMESTAMP''',
+                (barbeiro_id, periodo_inicio, meta_valor)
+            )
+
+        conn.commit()
+
+        # ── 3. Lê os valores atualizados para retornar ao front ───────────
+        cursor.execute(
+            'SELECT comissao_pct FROM barbeiros WHERE id = %s',
+            (barbeiro_id,)
+        )
+        barb = cursor.fetchone()
+
+        meta_retorno = None
+        if meta_valor is not None:
+            cursor.execute(
+                '''SELECT meta_valor FROM metas_barbeiro
+                   WHERE barbeiro_id = %s
+                     AND periodo_tipo = 'mes'
+                     AND periodo_inicio = %s''',
+                (barbeiro_id, periodo_inicio)
+            )
+            row_meta = cursor.fetchone()
+            meta_retorno = float(row_meta['meta_valor']) if row_meta else meta_valor
+
+        return jsonify({
+            'id':          barbeiro_id,
+            'comissao_pct': float(barb['comissao_pct']),
+            'meta_valor':   meta_retorno,
+        }), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao salvar meta/comissão: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
 if __name__ == '__main__':
     try:
         conn = get_db()

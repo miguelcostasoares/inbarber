@@ -885,8 +885,25 @@ function getSaidasFiltradas() {
 }
 
 async function loadSaidasData() {
-    // TODO: conectar a GET /api/saidas quando a rota existir no back
-    SAIDAS_DATA = [];
+    const periodoEl = document.getElementById('saidasFiltroPeriodo');
+    const catEl     = document.getElementById('saidasFiltroCategoria');
+    const pgtoEl    = document.getElementById('saidasFiltroPgto');
+
+    const filters = {
+        periodo:   periodoEl?.value  || 'mes',
+        categoria: catEl?.value      || '',
+        pgto:      pgtoEl?.value     || '',
+    };
+
+    try {
+        const rows = await InBarberAPI.listSaidas(filters);
+        SAIDAS_DATA = rows;
+    } catch (err) {
+        console.error('[Saídas] Erro ao carregar:', err);
+        SAIDAS_DATA = [];
+        showToast('Erro ao carregar saídas. Verifique a conexão.', 'error');
+    }
+
     refreshSaidas();
 }
 
@@ -1023,7 +1040,7 @@ function renderSaidasTable(data) {
                 <td>
                     <span class="saidas-cat-badge" style="--cat-color: ${catColor};">${s.categoria}</span>
                 </td>
-                <td style="font-weight: 700; color: var(--red);">${fmt(s.valor)}</td>
+                <td style="font-weight: 700; color: rgba(0, 214, 143, 0.59);">${fmt(s.valor)}</td>
                 <td>
                     <span class="saidas-pgto-badge">${s.pgto}</span>
                 </td>
@@ -1087,9 +1104,9 @@ function openSaidasModal(saida = null) {
         idInput.value         = saida.id;
         desc.value            = saida.desc;
         data.value            = saida.data;
-        cat.value             = saida.categoria;
+        cat.value             = saida.categoriaId;
         valor.value           = saida.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        pgto.value            = saida.pgto;
+        pgto.value            = saida.pgtoId;
     } else {
         title.textContent = 'Nova Saída';
         idInput.value     = '';
@@ -1125,7 +1142,48 @@ function closeDeleteModal() {
     overlay.classList.remove('is-open');
 }
 
+async function loadSaidasLookups() {
+    try {
+        const [categorias, formas] = await Promise.all([
+            InBarberAPI.listSaidasCategorias(),
+            InBarberAPI.listSaidasPgto(),
+        ]);
+
+        // Popula selects do modal
+        const catModal  = document.getElementById('saidasModalCategoria');
+        const pgtoModal = document.getElementById('saidasModalPgto');
+
+        if (catModal) {
+            catModal.innerHTML = '<option value="">Selecionar...</option>' +
+                categorias.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+        }
+        if (pgtoModal) {
+            pgtoModal.innerHTML = '<option value="">Selecionar...</option>' +
+                formas.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
+        }
+
+        // Popula filtros da toolbar
+        const catFiltro  = document.getElementById('saidasFiltroCategoria');
+        const pgtoFiltro = document.getElementById('saidasFiltroPgto');
+
+        if (catFiltro) {
+            catFiltro.innerHTML = '<option value="">Todas as categorias</option>' +
+                categorias.map(c => `<option value="${c.nome}">${c.nome}</option>`).join('');
+        }
+        if (pgtoFiltro) {
+            pgtoFiltro.innerHTML = '<option value="">Todas as formas</option>' +
+                formas.map(f => `<option value="${f.nome}">${f.nome}</option>`).join('');
+        }
+
+    } catch (err) {
+        console.error('[Saídas] Erro ao carregar lookups:', err);
+    }
+}
+
 function initSaidasModals() {
+    // Popula selects de categoria e forma de pagamento via API
+    loadSaidasLookups();
+
     // Máscara de moeda no valor
     const valorInput = document.getElementById('saidasModalValor');
     valorInput?.addEventListener('input', () => {
@@ -1145,23 +1203,60 @@ function initSaidasModals() {
         if (e.target === e.currentTarget) closeSaidasModal();
     });
 
-    // Salvar — TODO: conectar a POST/PUT /api/saidas quando a rota existir no back
-    document.getElementById('saidasModalSave')?.addEventListener('click', () => {
-        const idVal = document.getElementById('saidasModalId').value;
-        const desc  = document.getElementById('saidasModalDesc').value.trim();
-        const data  = document.getElementById('saidasModalData').value;
-        const cat   = document.getElementById('saidasModalCategoria').value;
-        const raw   = document.getElementById('saidasModalValor').value.replace(/\./g, '').replace(',', '.');
-        const valor = parseFloat(raw);
-        const pgto  = document.getElementById('saidasModalPgto').value;
+    // Salvar — criar ou editar via API
+    document.getElementById('saidasModalSave')?.addEventListener('click', async () => {
+        const saveBtn = document.getElementById('saidasModalSave');
+        const idVal   = document.getElementById('saidasModalId').value;
+        const desc    = document.getElementById('saidasModalDesc').value.trim();
+        const data    = document.getElementById('saidasModalData').value;
+        const catSel  = document.getElementById('saidasModalCategoria');
+        const cat     = catSel.value;
+        const raw     = document.getElementById('saidasModalValor').value.replace(/\./g, '').replace(',', '.');
+        const valor   = parseFloat(raw);
+        const pgtoSel = document.getElementById('saidasModalPgto');
+        const pgto    = pgtoSel.value;
 
         if (!desc || !data || !cat || !valor || !pgto) {
             showToast('Preencha todos os campos.', 'warn');
             return;
         }
 
-        showToast('Integração com backend pendente.', 'warn');
-        closeSaidasModal();
+        const categoriaId = parseInt(cat, 10);
+        const pgtoId      = parseInt(pgto, 10);
+
+        if (isNaN(categoriaId) || isNaN(pgtoId)) {
+            showToast('Selecione categoria e forma de pagamento válidas.', 'warn');
+            return;
+        }
+
+        saveBtn.disabled   = true;
+        saveBtn.textContent = 'Salvando...';
+
+        const payload = {
+            descricao:   desc,
+            data:        data,
+            categoriaId: categoriaId,
+            valor:       valor,
+            pgtoId:      pgtoId,
+        };
+
+        try {
+            if (idVal) {
+                await InBarberAPI.updateSaida(Number(idVal), payload);
+                showToast('Saída atualizada com sucesso!', 'success');
+            } else {
+                await InBarberAPI.createSaida(payload);
+                showToast('Saída registrada com sucesso!', 'success');
+            }
+            closeSaidasModal();
+            await loadSaidasData();
+        } catch (err) {
+            console.error('[Saídas] Erro ao salvar:', err);
+            showToast(err.message || 'Erro ao salvar saída.', 'error');
+        } finally {
+            saveBtn.disabled   = false;
+            saveBtn.textContent = 'Salvar';
+        }
     });
 
     // Fechar modal exclusão
@@ -1171,15 +1266,32 @@ function initSaidasModals() {
         if (e.target === e.currentTarget) closeDeleteModal();
     });
 
-    // Confirmar exclusão — TODO: conectar a DELETE /api/saidas/:id quando a rota existir no back
-    document.getElementById('saidasDeleteConfirm')?.addEventListener('click', () => {
-        showToast('Integração com backend pendente.', 'warn');
-        closeDeleteModal();
+    // Confirmar exclusão — remove via API e recarrega a listagem
+    document.getElementById('saidasDeleteConfirm')?.addEventListener('click', async () => {
+        const confirmBtn = document.getElementById('saidasDeleteConfirm');
+        const id = confirmBtn.dataset.id;
+        if (!id) return;
+
+        confirmBtn.disabled    = true;
+        confirmBtn.textContent = 'Excluindo...';
+
+        try {
+            await InBarberAPI.deleteSaida(Number(id));
+            showToast('Saída excluída com sucesso!', 'success');
+            closeDeleteModal();
+            await loadSaidasData();
+        } catch (err) {
+            console.error('[Saídas] Erro ao excluir:', err);
+            showToast(err.message || 'Erro ao excluir saída.', 'error');
+        } finally {
+            confirmBtn.disabled    = false;
+            confirmBtn.textContent = 'Excluir';
+        }
     });
 
-    // Filtros
-    ['saidasFiltroCategoria', 'saidasFiltroPgto', 'saidasFiltroPeriodo'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', () => {
+    // Filtros — ao mudar qualquer filtro, busca novamente na API
+    ['saidasFiltroCategoria', 'saidasFiltroPgto', 'saidasFiltroPeriodo'].forEach(filtroId => {
+        document.getElementById(filtroId)?.addEventListener('change', async () => {
             const periodoEl = document.getElementById('saidasFiltroPeriodo');
             const periodoMap = {
                 dia: 'Hoje', semana: 'Esta semana', mes: 'Este mês',
@@ -1187,7 +1299,7 @@ function initSaidasModals() {
             };
             const badge = document.getElementById('saidasPeriodoBadge');
             if (badge && periodoEl) badge.textContent = periodoMap[periodoEl.value] || 'Este mês';
-            refreshSaidas();
+            await loadSaidasData();
         });
     });
 }

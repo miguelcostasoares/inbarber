@@ -2283,6 +2283,325 @@ def salvar_meta_comissao(barbeiro_id):
         conn.close()
 
 
+# ═══════════════════════════════════════════════════════════
+# SAÍDAS — Financeiro
+# GET    /api/saidas              → listar (com filtros)
+# POST   /api/saidas              → criar
+# PUT/PATCH /api/saidas/<id>      → editar
+# DELETE /api/saidas/<id>         → excluir
+# GET    /api/saidas/categorias   → lookup de categorias
+# GET    /api/saidas/pgto         → lookup de formas de pagamento
+# ═══════════════════════════════════════════════════════════
+
+
+def serializar_saida(row):
+    """Converte uma linha do banco em dict JSON-safe para a tela Saídas."""
+    return {
+        'id':        row['id'],
+        'data':      str(row['data']),
+        'desc':      row['descricao'],
+        'categoria': row['categoria_nome'],
+        'categoriaId': row['categoria_id'],
+        'valor':     float(row['valor']),
+        'pgto':      row['pgto_nome'],
+        'pgtoId':    row['forma_pagamento_id'],
+    }
+
+
+@app.route('/api/saidas/categorias', methods=['GET'])
+def listar_categorias_saida():
+    """Retorna todas as categorias de saída para popular os <select> do front."""
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id, nome FROM categorias_saida ORDER BY nome')
+        rows = cursor.fetchall()
+        return jsonify(rows), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao buscar categorias: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/saidas/pgto', methods=['GET'])
+def listar_pgto_saida():
+    """Retorna formas de pagamento ativas para popular os <select> do front."""
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id, nome FROM formas_pagamento WHERE ativo = 1 ORDER BY nome')
+        rows = cursor.fetchall()
+        return jsonify(rows), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao buscar formas de pagamento: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/saidas', methods=['GET'])
+def listar_saidas():
+    """
+    Lista saídas com filtros opcionais.
+
+    Query params:
+        periodo   : 'dia' | 'semana' | 'mes' | 'trimestre' | 'semestre' | 'ano'
+        categoria : nome da categoria (string)
+        pgto      : nome da forma de pagamento (string)
+    """
+    from datetime import date
+
+    periodo   = request.args.get('periodo', 'mes')
+    categoria = request.args.get('categoria', '')
+    pgto      = request.args.get('pgto', '')
+
+    hoje = date.today()
+
+    if periodo == 'dia':
+        data_inicio = hoje
+        data_fim    = hoje
+    elif periodo == 'semana':
+        data_inicio = hoje - timedelta(days=hoje.weekday())
+        data_fim    = data_inicio + timedelta(days=6)
+    elif periodo == 'trimestre':
+        mes_inicio  = ((hoje.month - 1) // 3) * 3 + 1
+        data_inicio = hoje.replace(month=mes_inicio, day=1)
+        mes_fim     = mes_inicio + 2
+        import calendar
+        data_fim = hoje.replace(
+            month=mes_fim,
+            day=calendar.monthrange(hoje.year, mes_fim)[1]
+        )
+    elif periodo == 'semestre':
+        mes_inicio  = 1 if hoje.month <= 6 else 7
+        data_inicio = hoje.replace(month=mes_inicio, day=1)
+        mes_fim     = 6 if mes_inicio == 1 else 12
+        import calendar
+        data_fim = hoje.replace(
+            month=mes_fim,
+            day=calendar.monthrange(hoje.year, mes_fim)[1]
+        )
+    elif periodo == 'ano':
+        data_inicio = hoje.replace(month=1, day=1)
+        data_fim    = hoje.replace(month=12, day=31)
+    else:
+        # 'mes' (default)
+        import calendar
+        data_inicio = hoje.replace(day=1)
+        data_fim    = hoje.replace(
+            day=calendar.monthrange(hoje.year, hoje.month)[1]
+        )
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        sql = '''
+            SELECT
+                s.id,
+                s.data,
+                s.descricao,
+                s.categoria_id,
+                cs.nome AS categoria_nome,
+                s.valor,
+                s.forma_pagamento_id,
+                fp.nome AS pgto_nome
+            FROM saidas s
+            JOIN categorias_saida cs ON cs.id = s.categoria_id
+            JOIN formas_pagamento  fp ON fp.id = s.forma_pagamento_id
+            WHERE s.data BETWEEN %s AND %s
+        '''
+        params = [data_inicio, data_fim]
+
+        if categoria:
+            sql += ' AND cs.nome = %s'
+            params.append(categoria)
+
+        if pgto:
+            sql += ' AND fp.nome = %s'
+            params.append(pgto)
+
+        sql += ' ORDER BY s.data DESC, s.id DESC'
+
+        cursor.execute(sql, params)
+        rows = cursor.fetchall()
+        return jsonify([serializar_saida(r) for r in rows]), 200
+
+    except Exception as e:
+        return jsonify({'error': f'Erro ao listar saídas: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/saidas', methods=['POST'])
+def criar_saida():
+    """
+    Cria uma nova saída.
+
+    Body JSON:
+        data        : 'YYYY-MM-DD'
+        descricao   : string (obrigatório)
+        categoriaId : int — id de categorias_saida
+        valor       : float
+        pgtoId      : int — id de formas_pagamento
+    """
+    data_req = request.get_json(silent=True) or {}
+
+    descricao    = (data_req.get('descricao') or '').strip()
+    data_saida   = data_req.get('data')
+    categoria_id = data_req.get('categoriaId')
+    valor        = data_req.get('valor')
+    pgto_id      = data_req.get('pgtoId')
+
+    if not all([descricao, data_saida, categoria_id, valor is not None, pgto_id]):
+        return jsonify({'error': 'Campos obrigatórios: descricao, data, categoriaId, valor, pgtoId.'}), 400
+
+    try:
+        valor = float(valor)
+        if valor <= 0:
+            raise ValueError()
+    except (TypeError, ValueError):
+        return jsonify({'error': 'valor deve ser um número positivo.'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            '''INSERT INTO saidas (data, descricao, categoria_id, valor, forma_pagamento_id)
+               VALUES (%s, %s, %s, %s, %s)''',
+            (data_saida, descricao, categoria_id, valor, pgto_id)
+        )
+        conn.commit()
+        novo_id = cursor.lastrowid
+
+        cursor.execute(
+            '''SELECT s.id, s.data, s.descricao, s.categoria_id,
+                      cs.nome AS categoria_nome, s.valor,
+                      s.forma_pagamento_id, fp.nome AS pgto_nome
+               FROM saidas s
+               JOIN categorias_saida cs ON cs.id = s.categoria_id
+               JOIN formas_pagamento  fp ON fp.id = s.forma_pagamento_id
+               WHERE s.id = %s''',
+            (novo_id,)
+        )
+        row = cursor.fetchone()
+        return jsonify(serializar_saida(row)), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao criar saída: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/saidas/<int:saida_id>', methods=['PUT', 'PATCH'])
+def atualizar_saida(saida_id):
+    """
+    Atualiza uma saída existente (edição completa ou parcial).
+
+    Body JSON (ao menos um campo):
+        data        : 'YYYY-MM-DD'
+        descricao   : string
+        categoriaId : int
+        valor       : float
+        pgtoId      : int
+    """
+    data_req = request.get_json(silent=True) or {}
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id FROM saidas WHERE id = %s', (saida_id,))
+        if not cursor.fetchone():
+            return jsonify({'error': 'Saída não encontrada.'}), 404
+
+        campos = []
+        params = []
+
+        if 'descricao' in data_req:
+            desc = (data_req['descricao'] or '').strip()
+            if not desc:
+                return jsonify({'error': 'descricao não pode ser vazia.'}), 400
+            campos.append('descricao = %s')
+            params.append(desc)
+
+        if 'data' in data_req:
+            campos.append('data = %s')
+            params.append(data_req['data'])
+
+        if 'categoriaId' in data_req:
+            campos.append('categoria_id = %s')
+            params.append(data_req['categoriaId'])
+
+        if 'valor' in data_req:
+            try:
+                v = float(data_req['valor'])
+                if v <= 0:
+                    raise ValueError()
+            except (TypeError, ValueError):
+                return jsonify({'error': 'valor deve ser um número positivo.'}), 400
+            campos.append('valor = %s')
+            params.append(v)
+
+        if 'pgtoId' in data_req:
+            campos.append('forma_pagamento_id = %s')
+            params.append(data_req['pgtoId'])
+
+        if not campos:
+            return jsonify({'error': 'Nenhum campo para atualizar.'}), 400
+
+        params.append(saida_id)
+        cursor.execute(
+            f'UPDATE saidas SET {", ".join(campos)} WHERE id = %s',
+            params
+        )
+        conn.commit()
+
+        cursor.execute(
+            '''SELECT s.id, s.data, s.descricao, s.categoria_id,
+                      cs.nome AS categoria_nome, s.valor,
+                      s.forma_pagamento_id, fp.nome AS pgto_nome
+               FROM saidas s
+               JOIN categorias_saida cs ON cs.id = s.categoria_id
+               JOIN formas_pagamento  fp ON fp.id = s.forma_pagamento_id
+               WHERE s.id = %s''',
+            (saida_id,)
+        )
+        row = cursor.fetchone()
+        return jsonify(serializar_saida(row)), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao atualizar saída: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/saidas/<int:saida_id>', methods=['DELETE'])
+def deletar_saida(saida_id):
+    """Remove uma saída definitivamente."""
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id FROM saidas WHERE id = %s', (saida_id,))
+        if not cursor.fetchone():
+            return jsonify({'error': 'Saída não encontrada.'}), 404
+
+        cursor.execute('DELETE FROM saidas WHERE id = %s', (saida_id,))
+        conn.commit()
+        return '', 204
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao excluir saída: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
 if __name__ == '__main__':
     try:
         conn = get_db()

@@ -595,6 +595,89 @@ function uploadBarbershopLogo(file) {
   });
 }
 
+/* ─── 10. SAÍDAS ─────────────────────────────────────────────
+   GET    /api/saidas                → listar com filtros de período/categoria/pgto
+   POST   /api/saidas                → criar nova saída
+   PATCH  /api/saidas/:id            → editar saída existente
+   DELETE /api/saidas/:id            → excluir saída
+   GET    /api/saidas/categorias     → lookup de categorias (para popular <select>)
+   GET    /api/saidas/pgto           → lookup de formas de pagamento (para popular <select>)
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Lista as categorias de saída disponíveis no banco.
+ * Usado para popular dinamicamente os <select> do modal e dos filtros.
+ * @returns {Promise<Array<{id: number, nome: string}>>}
+ */
+function listSaidasCategorias() {
+  return apiRequest('/saidas/categorias', { method: 'GET' });
+}
+
+/**
+ * Lista as formas de pagamento ativas no banco.
+ * Usado para popular dinamicamente os <select> do modal e dos filtros.
+ * @returns {Promise<Array<{id: number, nome: string}>>}
+ */
+function listSaidasPgto() {
+  return apiRequest('/saidas/pgto', { method: 'GET' });
+}
+
+/**
+ * Lista saídas com filtros opcionais de período, categoria e forma de pagamento.
+ * @param {Object} [filters]
+ * @param {string} [filters.periodo]   - 'dia' | 'semana' | 'mes' | 'trimestre' | 'semestre' | 'ano'
+ * @param {string} [filters.categoria] - nome da categoria (string exata)
+ * @param {string} [filters.pgto]      - nome da forma de pagamento (string exata)
+ * @returns {Promise<Array>} lista de saídas
+ */
+function listSaidas(filters = {}) {
+  const qs = buildQueryString({
+    periodo:   filters.periodo,
+    categoria: filters.categoria,
+    pgto:      filters.pgto,
+  });
+  return apiRequest(`/saidas${qs}`, { method: 'GET' });
+}
+
+/**
+ * Cria uma nova saída.
+ * @param {Object} data
+ * @param {string} data.descricao
+ * @param {string} data.data          - formato YYYY-MM-DD
+ * @param {number} data.categoriaId   - id de categorias_saida
+ * @param {number} data.valor
+ * @param {number} data.pgtoId        - id de formas_pagamento
+ * @returns {Promise<Object>} saída criada
+ */
+function createSaida(data) {
+  return apiRequest('/saidas', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Atualiza uma saída existente.
+ * @param {number} id
+ * @param {Object} data - mesmos campos de createSaida, todos opcionais
+ * @returns {Promise<Object>} saída atualizada
+ */
+function updateSaida(id, data) {
+  return apiRequest(`/saidas/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Remove uma saída definitivamente.
+ * @param {number} id
+ * @returns {Promise<void>}
+ */
+function deleteSaida(id) {
+  return apiRequest(`/saidas/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
 window.InBarberAPI = {
   listAppointments,
   getAppointment,
@@ -631,4 +714,10 @@ window.InBarberAPI = {
   getBarbershop,
   saveBarbershop,
   uploadBarbershopLogo,
+  listSaidasCategorias,
+  listSaidasPgto,
+  listSaidas,
+  createSaida,
+  updateSaida,
+  deleteSaida,
 };

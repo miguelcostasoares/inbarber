@@ -356,6 +356,7 @@ function deleteClient(id) {
    Endpoints esperados:
      GET    /api/products                      ?disponivel=true
      GET    /api/products/:id
+     POST   /api/products                     (CRM: criar produto)
      PATCH  /api/products/:id                 (CRM: promoção, destaque, stock)
      POST   /api/product-reservations
      GET    /api/product-reservations          ?estado=reservado
@@ -383,10 +384,26 @@ function getProduct(id) {
 }
 
 /**
+ * Cria um produto novo a partir do CRM.
+ * A imagem vai como data URL já redimensionado pelo browser — o
+ * back-end guarda a string tal como a recebe, do mesmo modo que
+ * guardaria um caminho para assets/produtos/.
+ * @param {Object} data - { nome, descricao, preco, precoPromo, stock,
+ *                          categoria, img, destaque, ativo, novo }
+ * @returns {Promise<Object>} produto criado, já com id
+ */
+function createProduct(data) {
+  return apiRequest('/products', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
  * Atualiza os campos de um produto que o CRM gere.
  * Enviar precoPromo: null tira o produto de promoção.
  * @param {string} id
- * @param {Object} data - { ativo, destaque, precoPromo, preco, stock }
+ * @param {Object} data - { ativo, destaque, novo, precoPromo, preco, stock, img }
  * @returns {Promise<Object>} produto atualizado
  */
 function updateProduct(id, data) {
@@ -482,6 +499,57 @@ function savePreferences(data) {
   });
 }
 
+/* ─── 9. BARBEARIA ───────────────────────────────────────
+   GET /api/barbershop      → carregar dados
+   PUT /api/barbershop      → salvar nome, telefone, endereço
+   POST /api/barbershop/logo → upload de logo (multipart)
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Busca os dados gerais da barbearia.
+ * @returns {Promise<Object>} { nome, telefone, endereco, logoUrl }
+ */
+function getBarbershop() {
+  return apiRequest('/barbershop', { method: 'GET' });
+}
+
+/**
+ * Salva nome, telefone e endereço da barbearia.
+ * @param {Object} data - { nome, telefone, endereco }
+ * @returns {Promise<Object>} dados atualizados
+ */
+function saveBarbershop(data) {
+  return apiRequest('/barbershop', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Faz upload do logo da barbearia.
+ * @param {File} file - arquivo de imagem selecionado pelo input
+ * @returns {Promise<Object>} { logoUrl }
+ */
+function uploadBarbershopLogo(file) {
+  const formData = new FormData();
+  formData.append('logo', file);
+
+  // Upload multipart — sem Content-Type manual (o browser define o boundary).
+  return fetch(`${API_BASE_URL}/barbershop/logo`, {
+    method: 'POST',
+    body: formData,
+  }).then(async (response) => {
+    const body = await response.json().catch(() => null);
+    if (!response.ok) {
+      const err = new Error(body?.error || `Erro ${response.status} ao enviar logo.`);
+      err.status = response.status;
+      err.data = body;
+      throw err;
+    }
+    return body;
+  });
+}
+
 window.InBarberAPI = {
   listAppointments,
   getAppointment,
@@ -504,6 +572,7 @@ window.InBarberAPI = {
   deleteClient,
   listProducts,
   getProduct,
+  createProduct,
   updateProduct,
   createProductReservation,
   listProductReservations,
@@ -512,4 +581,7 @@ window.InBarberAPI = {
   releaseProductReservation,
   getPreferences,
   savePreferences,
+  getBarbershop,
+  saveBarbershop,
+  uploadBarbershopLogo,
 };

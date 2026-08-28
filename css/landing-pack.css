@@ -3415,6 +3415,7 @@
   z-index: 2;
 }
 .shop-badge.low   { background: var(--red, #ff4444); }
+.shop-badge.new   { background: var(--green, #00d68f); color: #06120d; }
 .shop-badge.promo {
   background: #fff; color: #0a0a0a;
   font-size: 11px; letter-spacing: 0.4px;

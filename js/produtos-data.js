@@ -25,6 +25,7 @@
 
   /* ─── 2. CHAVES DE ARMAZENAMENTO ──────────────────────────── */
   var K_STOCK = 'inbarber.produtos_stock';        // ajustes de stock/reservado
+  var K_EXTRA = 'inbarber.produtos_extra';        // produtos criados no CRM
   var K_RES   = 'inbarber.reservas_produtos';     // reservas (localStorage)
   var K_SEQ   = 'inbarber.reservas_seq';          // contador de nº de reserva
   var K_CART  = 'inbarber.carrinho_produtos';     // carrinho (sessionStorage)
@@ -34,13 +35,18 @@
      Campos que o CRM vai gerir por produto:
        ativo       → visível na loja
        destaque    → entra na vitrine da landing
+       novo        → etiqueta "Novo" no CRM, na loja e na vitrine.
+                     É uma marcação manual do barbeiro: entra e sai
+                     quando ele quiser, não expira sozinha.
        precoPromo  → preço promocional; null = sem promoção.
                      O desconto em % é calculado, não guardado.
 
      img: null → usa a convenção 'assets/produtos/<id>.jpg' (4:3).
      Trocar a fotografia de um produto é substituir esse ficheiro;
-     pôr um caminho explícito em img também funciona. Se a imagem
-     falhar, o card cai no ícone desenhado da categoria.
+     pôr um caminho explícito em img também funciona — e é isso que
+     o CRM faz quando o barbeiro carrega uma foto no modal: guarda
+     um data URL já redimensionado. Se a imagem falhar, o card cai
+     no ícone desenhado da categoria.
   ──────────────────────────────────────────────────────────── */
   var CATALOGO = [
     {
@@ -53,7 +59,7 @@
       },
       preco: 45.00, precoPromo: 36.00, stock: 12, reservado: 2,
       categoria: 'pomadas', img: null,
-      destaque: true, ativo: true
+      destaque: true, ativo: true, novo: false
     },
     {
       id: 'prod_002',
@@ -65,7 +71,7 @@
       },
       preco: 38.00, precoPromo: null, stock: 8, reservado: 0,
       categoria: 'cabelo', img: null,
-      destaque: true, ativo: true
+      destaque: true, ativo: true, novo: false
     },
     {
       id: 'prod_003',
@@ -77,7 +83,7 @@
       },
       preco: 52.00, precoPromo: null, stock: 5, reservado: 1,
       categoria: 'barba', img: null,
-      destaque: true, ativo: true
+      destaque: true, ativo: true, novo: false
     },
     {
       id: 'prod_004',
@@ -89,7 +95,7 @@
       },
       preco: 35.00, precoPromo: null, stock: 15, reservado: 0,
       categoria: 'pomadas', img: null,
-      destaque: false, ativo: true
+      destaque: false, ativo: true, novo: false
     },
     {
       id: 'prod_005',
@@ -101,7 +107,7 @@
       },
       preco: 42.00, precoPromo: 33.00, stock: 6, reservado: 4,
       categoria: 'barba', img: null,
-      destaque: false, ativo: true
+      destaque: false, ativo: true, novo: false
     },
     {
       id: 'prod_006',
@@ -113,7 +119,7 @@
       },
       preco: 34.00, precoPromo: null, stock: 10, reservado: 3,
       categoria: 'cabelo', img: null,
-      destaque: false, ativo: true
+      destaque: false, ativo: true, novo: false
     },
     {
       id: 'prod_007',
@@ -125,7 +131,7 @@
       },
       preco: 28.00, precoPromo: null, stock: 20, reservado: 0,
       categoria: 'acessorios', img: null,
-      destaque: false, ativo: true
+      destaque: false, ativo: true, novo: false
     },
     {
       id: 'prod_008',
@@ -137,7 +143,7 @@
       },
       preco: 129.00, precoPromo: 99.00, stock: 4, reservado: 0,
       categoria: 'barba', img: null,
-      destaque: true, ativo: true
+      destaque: true, ativo: true, novo: true
     },
     {
       id: 'prod_009',
@@ -149,7 +155,7 @@
       },
       preco: 22.00, precoPromo: null, stock: 3, reservado: 3,   /* esgotado — sai da grelha */
       categoria: 'acessorios', img: null,
-      destaque: false, ativo: true
+      destaque: false, ativo: true, novo: false
     }
   ];
 
@@ -176,7 +182,23 @@
 
   /* Ajustes de stock por cima do catálogo base: { prod_001: {stock, reservado} } */
   function readAjustes()      { return readJSON(localStorage, K_STOCK, {}); }
-  function writeAjustes(a)    { writeJSON(localStorage, K_STOCK, a); }
+  /* Devolve false quando o localStorage recusa (quota cheia) — quem
+     guarda fotografias precisa de saber que a gravação não passou. */
+  function writeAjustes(a)    { return writeJSON(localStorage, K_STOCK, a); }
+
+  /* Produtos criados no CRM. Vivem à parte de CATALOGO (que é código)
+     e comportam-se exatamente como ele: os ajustes também lhes valem. */
+  function readExtras()       { var e = readJSON(localStorage, K_EXTRA, []); return Array.isArray(e) ? e : []; }
+  function writeExtras(e)     { return writeJSON(localStorage, K_EXTRA, e); }
+
+  /** Catálogo base = os 9 do código + os que o barbeiro criou. */
+  function baseTodos() {
+    return CATALOGO.concat(readExtras());
+  }
+
+  function baseDe(id) {
+    return baseTodos().filter(function (p) { return p.id === id; })[0] || null;
+  }
 
   function readReservas()     { return readJSON(localStorage, K_RES, []); }
   function writeReservas(r)   { writeJSON(localStorage, K_RES, r); }
@@ -211,7 +233,8 @@
       categoria:  'categoria'  in aj ? aj.categoria  : base.categoria,
       destaque:   'destaque'   in aj ? aj.destaque   : base.destaque,
       ativo:      'ativo'      in aj ? aj.ativo      : base.ativo,
-      img: base.img,
+      novo:       'novo'       in aj ? aj.novo       : base.novo,
+      img:        'img'        in aj ? aj.img        : base.img,
       i18n: base.i18n
     };
 
@@ -236,13 +259,14 @@
       categoria: base.categoria,
       img: base.img || ('assets/produtos/' + base.id + '.jpg'),
       destaque: base.destaque,
-      ativo: base.ativo
+      ativo: base.ativo,
+      novo: !!base.novo
     };
   }
 
   function catalogoHidratado() {
     var ajustes = readAjustes();
-    return CATALOGO.map(function (p) { return hidratar(p, ajustes); });
+    return baseTodos().map(function (p) { return hidratar(p, ajustes); });
   }
 
   function proximoNumero() {
@@ -253,6 +277,16 @@
 
   function genId(prefixo) {
     return prefixo + Math.random().toString(36).slice(2, 10);
+  }
+
+  /** prod_010, prod_011, … a seguir ao maior id numérico já existente. */
+  function novoIdProduto() {
+    var maior = 0;
+    baseTodos().forEach(function (p) {
+      var m = /^prod_(\d+)$/.exec(p.id);
+      if (m) maior = Math.max(maior, parseInt(m[1], 10));
+    });
+    return 'prod_' + String(maior + 1).padStart(3, '0');
   }
 
   /* Erro com o mesmo formato dos de js/api.js (.status + .data), para
@@ -267,7 +301,7 @@
   /* Aplica um delta a stock/reservado de um produto */
   function mexerStock(produtoId, deltaStock, deltaReservado) {
     var ajustes = readAjustes();
-    var base    = CATALOGO.filter(function (p) { return p.id === produtoId; })[0];
+    var base    = baseDe(produtoId);
     if (!base) return;
     var atual = ajustes[produtoId] || { stock: base.stock, reservado: base.reservado };
     atual.stock     = Math.max(0, atual.stock + deltaStock);
@@ -299,7 +333,7 @@
        que já está reservado. */
     atualizar: function (id, dados) {
       dados = dados || {};
-      var base = CATALOGO.filter(function (p) { return p.id === id; })[0];
+      var base = baseDe(id);
       if (!base) return Promise.reject(erro('Produto não encontrado.', 404));
 
       var ajustes = readAjustes();
@@ -332,14 +366,72 @@
       aj.reservado  = atual.reservado;
       if ('destaque'  in dados) aj.destaque  = !!dados.destaque;
       if ('ativo'     in dados) aj.ativo     = !!dados.ativo;
+      if ('novo'      in dados) aj.novo      = !!dados.novo;
       if ('nome'      in dados) aj.nome      = String(dados.nome || '').trim() || atual.nome;
       if ('descricao' in dados) aj.descricao = String(dados.descricao || '').trim();
       if ('categoria' in dados) aj.categoria = String(dados.categoria || '').trim() || atual.categoria;
+      /* img: string = nova fotografia (data URL ou caminho); null = voltar
+         à convenção assets/produtos/<id>.jpg. */
+      if ('img'       in dados) aj.img       = dados.img ? String(dados.img) : null;
 
       ajustes[id] = aj;
-      writeAjustes(ajustes);
+      if (!writeAjustes(ajustes)) {
+        return Promise.reject(erro('Não há espaço no navegador para guardar a fotografia. Use uma imagem mais pequena.', 507));
+      }
 
       return Promise.resolve(hidratar(base, ajustes));
+    },
+
+    /* CRM: criar um produto de raiz. No mock fica em localStorage; no
+       back-end é um POST /api/products. O id é gerado aqui para que a
+       demo funcione sem servidor — a API devolve o dela e ganha. */
+    criar: function (dados) {
+      dados = dados || {};
+
+      var nome  = String(dados.nome || '').trim();
+      var preco = Number(dados.preco);
+      var promo = dados.precoPromo === null || dados.precoPromo === '' || dados.precoPromo === undefined
+        ? null : Number(dados.precoPromo);
+      var stock = parseInt(dados.stock, 10);
+
+      if (!nome)                              return Promise.reject(erro('O nome é obrigatório.', 400));
+      if (isNaN(preco) || preco < 0)          return Promise.reject(erro('Preço inválido.', 400));
+      if (promo !== null && (isNaN(promo) || promo <= 0)) {
+        return Promise.reject(erro('Preço promocional inválido.', 400));
+      }
+      if (promo !== null && promo >= preco) {
+        return Promise.reject(erro('O preço promocional tem de ser menor que o preço de tabela.', 400));
+      }
+      if (isNaN(stock) || stock < 0)          return Promise.reject(erro('Stock inválido.', 400));
+
+      var categoria = String(dados.categoria || '').trim() || 'acessorios';
+      var valida = CATEGORIAS.some(function (c) { return c.id === categoria && c.id !== 'todos'; });
+      if (!valida)                            return Promise.reject(erro('Categoria inválida.', 400));
+
+      var produto = {
+        id: novoIdProduto(),
+        nome: nome,
+        descricao: String(dados.descricao || '').trim(),
+        i18n: null,                       /* criado pelo barbeiro: só em pt */
+        preco: preco,
+        precoPromo: promo,
+        stock: stock,
+        reservado: 0,
+        categoria: categoria,
+        img: dados.img ? String(dados.img) : null,
+        destaque: !!dados.destaque,
+        ativo: dados.ativo === undefined ? true : !!dados.ativo,
+        novo: dados.novo === undefined ? true : !!dados.novo,
+        criadoEm: new Date().toISOString()
+      };
+
+      var extras = readExtras();
+      extras.push(produto);
+      if (!writeExtras(extras)) {
+        return Promise.reject(erro('Não há espaço no navegador para guardar o produto. Use uma fotografia mais pequena.', 507));
+      }
+
+      return Promise.resolve(hidratar(produto, readAjustes()));
     },
 
     criarReserva: function (dados) {
@@ -468,6 +560,7 @@
     listarTodos:      function ()      { return API().listProducts().then(traduzirLista); },
     obter:            function (id)    { return API().getProduct(id).then(traduzir); },
     atualizar:        function (id, d) { return API().updateProduct(id, d).then(traduzir); },
+    criar:            function (d)     { return API().createProduct(d).then(traduzir); },
     criarReserva:     function (dados) { return API().createProductReservation(dados); },
     listarReservas:   function (e)     { return API().listProductReservations(e ? { estado: e } : {}); },
     obterReserva:     function (id)    { return API().getProductReservation(id); },
@@ -587,6 +680,7 @@
     listarTodos:      impl.listarTodos,
     obter:            impl.obter,
     atualizar:        impl.atualizar,
+    criar:            impl.criar,
     listarDestaques:  function () {
       return impl.listar().then(function (ps) {
         return ps.filter(function (p) { return p.destaque; });
@@ -642,6 +736,7 @@
     reset: function () {
       try {
         localStorage.removeItem(K_STOCK);
+        localStorage.removeItem(K_EXTRA);
         localStorage.removeItem(K_RES);
         localStorage.removeItem(K_SEQ);
         sessionStorage.removeItem(K_CART);

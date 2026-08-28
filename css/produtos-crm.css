@@ -681,6 +681,7 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 
 
 /* ─── 8. MODAL E FORMULÁRIO ─────────────────────────────── */
+.modal-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.75);
   z-index: 500;
@@ -689,6 +690,8 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   transition: opacity var(--dur) var(--ease-out);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  overflow-y: auto;
+}
 .modal-overlay:not([hidden]) { opacity: 1; }
 .modal-overlay[hidden] { display: none; }
 
@@ -1121,6 +1124,7 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 }
 .prod-tag--gold { background: var(--gold-bg); color: var(--gold-lt); }
 .prod-tag--off  { background: var(--bg-4);    color: var(--muted); }
+.prod-tag--new  { background: var(--green-bg); color: var(--green); }
 
 .prod-row__preco { display: flex; flex-direction: column; gap: 2px; }
 .prod-row__final  { font-size: 13.5px; font-weight: 700; color: var(--cream); }
@@ -1211,6 +1215,36 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
 }
 .prod-switch input:focus-visible + .prod-switch__track { outline: 2px solid var(--gold); outline-offset: 2px; }
 .prod-switch__label { font-size: 13px; color: var(--cream-2); }
+.prod-switch__hint {
+  display: block; font-size: 11px; color: var(--muted); margin-top: 2px;
+}
+
+/* ── Fotografia do produto ──
+   O ficheiro escolhido nunca sai do browser: é redimensionado num
+   canvas e guardado como data URL no campo img do produto. */
+.prod-foto { display: flex; align-items: flex-start; gap: 14px; }
+
+.prod-foto__preview {
+  width: 82px; height: 82px; flex-shrink: 0;
+  border-radius: var(--r-md); overflow: hidden;
+  background: var(--bg-3); border: 1px dashed var(--divider);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+}
+.prod-foto__preview.is-set { border-style: solid; border-color: rgba(0,71,255,0.3); }
+.prod-foto__preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.prod-foto__preview img[hidden] { display: none; }
+
+.prod-foto__acoes { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.prod-foto__acoes .btn-pipeline { padding: 8px 14px; font-size: 12.5px; }
+.prod-foto__acoes .form-hint { margin-top: 0; }
+
+.prod-foto__clear {
+  font-size: 11.5px; color: var(--muted); text-decoration: underline;
+  transition: color var(--dur);
+}
+.prod-foto__clear:hover { color: var(--red); }
+.prod-foto__clear[hidden] { display: none; }
 
 /* ── Responsivo ── */
 /* No dashboard os botões do header empilham a 100%; aqui são três

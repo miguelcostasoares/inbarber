@@ -369,7 +369,7 @@
           </button>
           <a
             href="produtos.html"
-            class="btn-primary"
+            class="prod-refresh"
             target="_blank"
             rel="noopener"
           >
@@ -395,6 +395,23 @@
             </svg>
             Ver loja
           </a>
+          <button class="btn-primary" id="prodNovo" data-acao="novo-produto">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 4v12M4 10h12"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+            </svg>
+            Novo produto
+          </button>
         </div>
       </header>
 
@@ -786,6 +803,70 @@
           ></p>
 
           <div class="form-group">
+            <span class="form-label">Fotografia</span>
+            <div class="prod-foto">
+              <div class="prod-foto__preview" id="prodFotoPreview">
+                <img id="prodFotoImg" alt="" hidden />
+                <svg
+                  class="prod-foto__ph"
+                  id="prodFotoPh"
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="3"
+                    y="5"
+                    width="18"
+                    height="14"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <circle
+                    cx="8.5"
+                    cy="10"
+                    r="1.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M4 17l4.5-4.5L12 16l3-2.5L20 18"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+              <div class="prod-foto__acoes">
+                <button type="button" class="btn-pipeline" id="prodFotoPick">
+                  Escolher ficheiro
+                </button>
+                <button
+                  type="button"
+                  class="prod-foto__clear"
+                  id="prodFotoClear"
+                  hidden
+                >
+                  Remover
+                </button>
+                <span class="form-hint" id="prodFotoHint"
+                  >JPG ou PNG. A imagem é reduzida para 640px antes de
+                  guardar.</span
+                >
+              </div>
+              <input
+                type="file"
+                id="prodFotoInput"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
             <label class="form-label" for="prodFieldNome">Nome</label>
             <input
               class="form-input"
@@ -866,6 +947,18 @@
                 ><span class="prod-switch__thumb"></span
               ></span>
               <span class="prod-switch__label">Em destaque na vitrine</span>
+            </label>
+            <label class="prod-switch">
+              <input type="checkbox" id="prodFieldNovo" />
+              <span class="prod-switch__track" aria-hidden="true"
+                ><span class="prod-switch__thumb"></span
+              ></span>
+              <span class="prod-switch__label"
+                >Marcar como novidade
+                <span class="prod-switch__hint"
+                  >mostra a etiqueta "Novo" na loja</span
+                ></span
+              >
             </label>
             <label class="prod-switch">
               <input type="checkbox" id="prodFieldAtivo" />

@@ -136,14 +136,14 @@ function initialsFrom(name) {
 /* ─── EQUIPE: RENDER ─────────────────────────────────────── */
 function renderEquipe() {
   const loading = document.getElementById("equipeLoading");
-  const empty   = document.getElementById("equipeEmpty");
-  const table   = document.getElementById("equipeTable");
-  const tbody   = document.getElementById("equipeTableBody");
+  const empty = document.getElementById("equipeEmpty");
+  const table = document.getElementById("equipeTable");
+  const tbody = document.getElementById("equipeTableBody");
 
   if (EQUIPE_STATE.loading) {
     loading.hidden = false;
-    empty.hidden   = true;
-    table.hidden   = true;
+    empty.hidden = true;
+    table.hidden = true;
     return;
   }
 
@@ -161,13 +161,14 @@ function renderEquipe() {
   tbody.innerHTML = "";
 
   EQUIPE_STATE.barbeiros.forEach((b) => {
-    const ativo    = !!b.ativo;
+    const ativo = !!b.ativo;
     const initials = initialsFrom(b.nome || b.name || "?");
-    const nome     = b.nome || b.name || "—";
+    const nome = b.nome || b.name || "—";
     const telefone = b.telefone || b.phone || "—";
 
     const tr = document.createElement("tr");
-    tr.className = "equipe-table__tr" + (ativo ? "" : " equipe-table__tr--inativo");
+    tr.className =
+      "equipe-table__tr" + (ativo ? "" : " equipe-table__tr--inativo");
     tr.dataset.id = b.id;
 
     tr.innerHTML = `
@@ -235,7 +236,9 @@ async function loadEquipe() {
   renderEquipe();
 
   try {
-    const lista = await window.InBarberAPI.listBarbers({ includeInactive: true });
+    const lista = await window.InBarberAPI.listBarbers({
+      includeInactive: true,
+    });
     EQUIPE_STATE.barbeiros = lista;
   } catch (err) {
     showToast("error", "Não foi possível carregar a equipe.");
@@ -248,25 +251,25 @@ async function loadEquipe() {
 
 /* ─── EQUIPE: MODAL ──────────────────────────────────────── */
 function openBarbeiroModal(barbeiro = null) {
-  const overlay  = document.getElementById("barbeiroModalOverlay");
-  const title    = document.getElementById("barbeiroModalTitle");
-  const idInput  = document.getElementById("barbeiroModalId");
+  const overlay = document.getElementById("barbeiroModalOverlay");
+  const title = document.getElementById("barbeiroModalTitle");
+  const idInput = document.getElementById("barbeiroModalId");
   const nomeInput = document.getElementById("barbeiroModalNome");
-  const telInput  = document.getElementById("barbeiroModalTelefone");
+  const telInput = document.getElementById("barbeiroModalTelefone");
   const statusSel = document.getElementById("barbeiroModalStatus");
 
   if (barbeiro) {
-    title.textContent    = "Editar Barbeiro";
-    idInput.value        = barbeiro.id;
-    nomeInput.value      = barbeiro.nome || barbeiro.name || "";
-    telInput.value       = barbeiro.telefone || barbeiro.phone || "";
-    statusSel.value      = barbeiro.ativo ? "1" : "0";
+    title.textContent = "Editar Barbeiro";
+    idInput.value = barbeiro.id;
+    nomeInput.value = barbeiro.nome || barbeiro.name || "";
+    telInput.value = barbeiro.telefone || barbeiro.phone || "";
+    statusSel.value = barbeiro.ativo ? "1" : "0";
   } else {
-    title.textContent    = "Novo Barbeiro";
-    idInput.value        = "";
-    nomeInput.value      = "";
-    telInput.value       = "";
-    statusSel.value      = "1";
+    title.textContent = "Novo Barbeiro";
+    idInput.value = "";
+    nomeInput.value = "";
+    telInput.value = "";
+    statusSel.value = "1";
   }
 
   overlay.hidden = false;
@@ -278,10 +281,10 @@ function closeBarbeiroModal() {
 }
 
 async function handleSalvarBarbeiro() {
-  const id     = document.getElementById("barbeiroModalId").value;
-  const nome   = document.getElementById("barbeiroModalNome").value.trim();
-  const tel    = document.getElementById("barbeiroModalTelefone").value.trim();
-  const ativo  = document.getElementById("barbeiroModalStatus").value === "1";
+  const id = document.getElementById("barbeiroModalId").value;
+  const nome = document.getElementById("barbeiroModalNome").value.trim();
+  const tel = document.getElementById("barbeiroModalTelefone").value.trim();
+  const ativo = document.getElementById("barbeiroModalStatus").value === "1";
 
   if (!nome) {
     flashInputError("barbeiroModalNome");
@@ -315,7 +318,7 @@ async function handleToggleBarbeiro(id, ativoAtual) {
     await window.InBarberAPI.toggleBarberStatus(id, novoStatus);
     showToast(
       "success",
-      novoStatus ? "Barbeiro ativado." : "Barbeiro desativado."
+      novoStatus ? "Barbeiro ativado." : "Barbeiro desativado.",
     );
     await loadEquipe();
   } catch (err) {
@@ -383,38 +386,36 @@ function initEquipeListeners() {
     });
 
   // Delegação de eventos na tabela (editar / toggle)
-  document
-    .getElementById("equipeTableBody")
-    ?.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-action]");
-      if (!btn) return;
+  document.getElementById("equipeTableBody")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
 
-      const action = btn.dataset.action;
-      const id     = btn.dataset.id;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
 
-      if (action === "editar") {
-        const barbeiro = EQUIPE_STATE.barbeiros.find((b) => b.id === id);
-        if (barbeiro) openBarbeiroModal(barbeiro);
-      }
+    if (action === "editar") {
+      const barbeiro = EQUIPE_STATE.barbeiros.find((b) => b.id === id);
+      if (barbeiro) openBarbeiroModal(barbeiro);
+    }
 
-      if (action === "toggle") {
-        const ativoAtual = btn.dataset.ativo === "1";
-        handleToggleBarbeiro(id, ativoAtual);
-      }
-    });
+    if (action === "toggle") {
+      const ativoAtual = btn.dataset.ativo === "1";
+      handleToggleBarbeiro(id, ativoAtual);
+    }
+  });
 }
 
 /* ─── SERVIÇOS: RENDER ───────────────────────────────────── */
 function formatarPreco(valor) {
-  return Number(valor).toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
+  return Number(valor).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
   });
 }
 
 function formatarDuracao(min) {
   const m = parseInt(min, 10);
-  if (!m) return '—';
+  if (!m) return "—";
   if (m < 60) return `${m} min`;
   const h = Math.floor(m / 60);
   const rest = m % 60;
@@ -422,15 +423,15 @@ function formatarDuracao(min) {
 }
 
 function renderServicos() {
-  const loading = document.getElementById('servicosLoading');
-  const empty   = document.getElementById('servicosEmpty');
-  const table   = document.getElementById('servicosTable');
-  const tbody   = document.getElementById('servicosTableBody');
+  const loading = document.getElementById("servicosLoading");
+  const empty = document.getElementById("servicosEmpty");
+  const table = document.getElementById("servicosTable");
+  const tbody = document.getElementById("servicosTableBody");
 
   if (SERVICOS_STATE.loading) {
     loading.hidden = false;
-    empty.hidden   = true;
-    table.hidden   = true;
+    empty.hidden = true;
+    table.hidden = true;
     return;
   }
 
@@ -445,14 +446,15 @@ function renderServicos() {
   empty.hidden = true;
   table.hidden = false;
 
-  tbody.innerHTML = '';
+  tbody.innerHTML = "";
 
   SERVICOS_STATE.servicos.forEach((s) => {
     const ativo = !!s.ativo;
-    const nome  = s.name || s.nome || '—';
+    const nome = s.name || s.nome || "—";
 
-    const tr = document.createElement('tr');
-    tr.className = 'equipe-table__tr' + (ativo ? '' : ' equipe-table__tr--inativo');
+    const tr = document.createElement("tr");
+    tr.className =
+      "equipe-table__tr" + (ativo ? "" : " equipe-table__tr--inativo");
     tr.dataset.id = s.id;
 
     tr.innerHTML = `
@@ -462,8 +464,8 @@ function renderServicos() {
       <td class="equipe-table__td">${escapeHtml(formatarDuracao(s.duration ?? s.duracao_min))}</td>
       <td class="equipe-table__td">${escapeHtml(formatarPreco(s.price ?? s.preco ?? 0))}</td>
       <td class="equipe-table__td">
-        <span class="badge-status ${ativo ? 'badge-status--ativo' : 'badge-status--inativo'}">
-          ${ativo ? 'Ativo' : 'Inativo'}
+        <span class="badge-status ${ativo ? "badge-status--ativo" : "badge-status--inativo"}">
+          ${ativo ? "Ativo" : "Inativo"}
         </span>
       </td>
       <td class="equipe-table__td equipe-table__td--actions">
@@ -482,19 +484,19 @@ function renderServicos() {
             Editar
           </button>
           <button
-            class="toggle-switch ${ativo ? 'toggle-switch--on' : ''}"
+            class="toggle-switch ${ativo ? "toggle-switch--on" : ""}"
             data-action="toggle-servico"
             data-id="${s.id}"
-            data-ativo="${ativo ? '1' : '0'}"
+            data-ativo="${ativo ? "1" : "0"}"
             type="button"
             role="switch"
-            aria-checked="${ativo ? 'true' : 'false'}"
-            aria-label="${ativo ? 'Desativar' : 'Ativar'} ${escapeHtml(nome)}"
+            aria-checked="${ativo ? "true" : "false"}"
+            aria-label="${ativo ? "Desativar" : "Ativar"} ${escapeHtml(nome)}"
           >
             <span class="toggle-switch__track" aria-hidden="true">
               <span class="toggle-switch__thumb"></span>
             </span>
-            <span class="toggle-switch__label">${ativo ? 'Ativo' : 'Inativo'}</span>
+            <span class="toggle-switch__label">${ativo ? "Ativo" : "Inativo"}</span>
           </button>
         </div>
       </td>
@@ -513,7 +515,7 @@ async function loadServicos() {
     const lista = await window.InBarberAPI.listServicesAdmin();
     SERVICOS_STATE.servicos = lista;
   } catch (err) {
-    showToast('error', 'Não foi possível carregar os serviços.');
+    showToast("error", "Não foi possível carregar os serviços.");
     SERVICOS_STATE.servicos = [];
   } finally {
     SERVICOS_STATE.loading = false;
@@ -523,28 +525,28 @@ async function loadServicos() {
 
 /* ─── SERVIÇOS: MODAL ────────────────────────────────────── */
 function openServicoModal(servico = null) {
-  const overlay  = document.getElementById('servicoModalOverlay');
-  const title    = document.getElementById('servicoModalTitle');
-  const idInput  = document.getElementById('servicoModalId');
-  const nomeInput    = document.getElementById('servicoModalNome');
-  const duracaoInput = document.getElementById('servicoModalDuracao');
-  const precoInput   = document.getElementById('servicoModalPreco');
-  const statusSel    = document.getElementById('servicoModalStatus');
+  const overlay = document.getElementById("servicoModalOverlay");
+  const title = document.getElementById("servicoModalTitle");
+  const idInput = document.getElementById("servicoModalId");
+  const nomeInput = document.getElementById("servicoModalNome");
+  const duracaoInput = document.getElementById("servicoModalDuracao");
+  const precoInput = document.getElementById("servicoModalPreco");
+  const statusSel = document.getElementById("servicoModalStatus");
 
   if (servico) {
-    title.textContent      = 'Editar Serviço';
-    idInput.value          = servico.id;
-    nomeInput.value        = servico.name || servico.nome || '';
-    duracaoInput.value     = servico.duration ?? servico.duracao_min ?? '';
-    precoInput.value       = servico.price ?? servico.preco ?? '';
-    statusSel.value        = servico.ativo ? '1' : '0';
+    title.textContent = "Editar Serviço";
+    idInput.value = servico.id;
+    nomeInput.value = servico.name || servico.nome || "";
+    duracaoInput.value = servico.duration ?? servico.duracao_min ?? "";
+    precoInput.value = servico.price ?? servico.preco ?? "";
+    statusSel.value = servico.ativo ? "1" : "0";
   } else {
-    title.textContent      = 'Novo Serviço';
-    idInput.value          = '';
-    nomeInput.value        = '';
-    duracaoInput.value     = '';
-    precoInput.value       = '';
-    statusSel.value        = '1';
+    title.textContent = "Novo Serviço";
+    idInput.value = "";
+    nomeInput.value = "";
+    duracaoInput.value = "";
+    precoInput.value = "";
+    statusSel.value = "1";
   }
 
   overlay.hidden = false;
@@ -552,49 +554,62 @@ function openServicoModal(servico = null) {
 }
 
 function closeServicoModal() {
-  document.getElementById('servicoModalOverlay').hidden = true;
+  document.getElementById("servicoModalOverlay").hidden = true;
 }
 
 async function handleSalvarServico() {
-  const id      = document.getElementById('servicoModalId').value;
-  const nome    = document.getElementById('servicoModalNome').value.trim();
-  const duracao = parseInt(document.getElementById('servicoModalDuracao').value, 10);
-  const preco   = parseFloat(document.getElementById('servicoModalPreco').value);
-  const ativo   = document.getElementById('servicoModalStatus').value === '1';
+  const id = document.getElementById("servicoModalId").value;
+  const nome = document.getElementById("servicoModalNome").value.trim();
+  const duracao = parseInt(
+    document.getElementById("servicoModalDuracao").value,
+    10,
+  );
+  const preco = parseFloat(document.getElementById("servicoModalPreco").value);
+  const ativo = document.getElementById("servicoModalStatus").value === "1";
 
   if (!nome) {
-    flashInputError('servicoModalNome');
-    showToast('error', 'O nome do serviço é obrigatório.');
+    flashInputError("servicoModalNome");
+    showToast("error", "O nome do serviço é obrigatório.");
     return;
   }
 
   if (!duracao || duracao < 1) {
-    flashInputError('servicoModalDuracao');
-    showToast('error', 'Informe uma duração válida em minutos.');
+    flashInputError("servicoModalDuracao");
+    showToast("error", "Informe uma duração válida em minutos.");
     return;
   }
 
   if (isNaN(preco) || preco < 0) {
-    flashInputError('servicoModalPreco');
-    showToast('error', 'Informe um preço válido.');
+    flashInputError("servicoModalPreco");
+    showToast("error", "Informe um preço válido.");
     return;
   }
 
-  const btnSalvar = document.getElementById('servicoModalSalvar');
+  const btnSalvar = document.getElementById("servicoModalSalvar");
   btnSalvar.disabled = true;
 
   try {
     if (id) {
-      await window.InBarberAPI.updateService(id, { nome, duracao_min: duracao, preco, ativo });
-      showToast('success', 'Serviço atualizado com sucesso!');
+      await window.InBarberAPI.updateService(id, {
+        nome,
+        duracao_min: duracao,
+        preco,
+        ativo,
+      });
+      showToast("success", "Serviço atualizado com sucesso!");
     } else {
-      await window.InBarberAPI.createService({ nome, duracao_min: duracao, preco, ativo });
-      showToast('success', 'Serviço criado com sucesso!');
+      await window.InBarberAPI.createService({
+        nome,
+        duracao_min: duracao,
+        preco,
+        ativo,
+      });
+      showToast("success", "Serviço criado com sucesso!");
     }
     closeServicoModal();
     await loadServicos();
   } catch (err) {
-    showToast('error', err.message || 'Erro ao salvar serviço.');
+    showToast("error", err.message || "Erro ao salvar serviço.");
   } finally {
     btnSalvar.disabled = false;
   }
@@ -604,66 +619,69 @@ async function handleToggleServico(id, ativoAtual) {
   const novoStatus = !ativoAtual;
   try {
     await window.InBarberAPI.toggleServiceStatus(id, novoStatus);
-    showToast('success', novoStatus ? 'Serviço ativado.' : 'Serviço desativado.');
+    showToast(
+      "success",
+      novoStatus ? "Serviço ativado." : "Serviço desativado.",
+    );
     await loadServicos();
   } catch (err) {
-    showToast('error', err.message || 'Erro ao alterar status.');
+    showToast("error", err.message || "Erro ao alterar status.");
   }
 }
 
 /* ─── SERVIÇOS: EVENT LISTENERS ─────────────────────────── */
 function initServicosListeners() {
   document
-    .getElementById('btnNovoServico')
-    ?.addEventListener('click', () => openServicoModal(null));
+    .getElementById("btnNovoServico")
+    ?.addEventListener("click", () => openServicoModal(null));
 
   document
-    .getElementById('btnNovoServicoEmpty')
-    ?.addEventListener('click', () => openServicoModal(null));
+    .getElementById("btnNovoServicoEmpty")
+    ?.addEventListener("click", () => openServicoModal(null));
 
   document
-    .getElementById('servicoModalClose')
-    ?.addEventListener('click', closeServicoModal);
+    .getElementById("servicoModalClose")
+    ?.addEventListener("click", closeServicoModal);
 
   document
-    .getElementById('servicoModalCancelar')
-    ?.addEventListener('click', closeServicoModal);
+    .getElementById("servicoModalCancelar")
+    ?.addEventListener("click", closeServicoModal);
 
   document
-    .getElementById('servicoModalOverlay')
-    ?.addEventListener('click', (e) => {
+    .getElementById("servicoModalOverlay")
+    ?.addEventListener("click", (e) => {
       if (e.target === e.currentTarget) closeServicoModal();
     });
 
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener("keydown", (e) => {
     if (
-      e.key === 'Escape' &&
-      !document.getElementById('servicoModalOverlay')?.hidden
+      e.key === "Escape" &&
+      !document.getElementById("servicoModalOverlay")?.hidden
     ) {
       closeServicoModal();
     }
   });
 
   document
-    .getElementById('servicoModalSalvar')
-    ?.addEventListener('click', handleSalvarServico);
+    .getElementById("servicoModalSalvar")
+    ?.addEventListener("click", handleSalvarServico);
 
   document
-    .getElementById('servicosTableBody')
-    ?.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action]');
+    .getElementById("servicosTableBody")
+    ?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
       if (!btn) return;
 
       const action = btn.dataset.action;
-      const id     = btn.dataset.id;
+      const id = btn.dataset.id;
 
-      if (action === 'editar-servico') {
+      if (action === "editar-servico") {
         const servico = SERVICOS_STATE.servicos.find((s) => s.id === id);
         if (servico) openServicoModal(servico);
       }
 
-      if (action === 'toggle-servico') {
-        const ativoAtual = btn.dataset.ativo === '1';
+      if (action === "toggle-servico") {
+        const ativoAtual = btn.dataset.ativo === "1";
         handleToggleServico(id, ativoAtual);
       }
     });
@@ -698,7 +716,10 @@ function produtosFiltrados() {
   const termo = PRODUTOS_STATE.busca.trim().toLowerCase();
 
   return PRODUTOS_STATE.produtos.filter((p) => {
-    if (PRODUTOS_STATE.categoria !== "todos" && p.categoria !== PRODUTOS_STATE.categoria) {
+    if (
+      PRODUTOS_STATE.categoria !== "todos" &&
+      p.categoria !== PRODUTOS_STATE.categoria
+    ) {
       return false;
     }
     if (!termo) return true;
@@ -712,9 +733,9 @@ function produtosFiltrados() {
 /* ─── PRODUTOS: RENDER ──────────────────────────────────── */
 function renderProdutos() {
   const loading = document.getElementById("produtosLoading");
-  const empty   = document.getElementById("produtosEmpty");
-  const table   = document.getElementById("produtosTable");
-  const tbody   = document.getElementById("produtosTableBody");
+  const empty = document.getElementById("produtosEmpty");
+  const table = document.getElementById("produtosTable");
+  const tbody = document.getElementById("produtosTableBody");
 
   if (!tbody) return;
 
@@ -751,12 +772,13 @@ function renderProdutos() {
 
   lista.forEach((p) => {
     const ativo = !!p.ativo;
-    const nome  = p.nome || "—";
+    const nome = p.nome || "—";
     const nivel = nivelStockProduto(p);
-    const img   = p.img || `assets/produtos/${p.id}.jpg`;
+    const img = p.img || `assets/produtos/${p.id}.jpg`;
 
     const tr = document.createElement("tr");
-    tr.className = "equipe-table__tr" + (ativo ? "" : " equipe-table__tr--inativo");
+    tr.className =
+      "equipe-table__tr" + (ativo ? "" : " equipe-table__tr--inativo");
     tr.dataset.id = p.id;
 
     tr.innerHTML = `
@@ -875,7 +897,10 @@ async function loadProdutos() {
     if (mock) {
       try {
         PRODUTOS_STATE.produtos = await mock.listarTodos();
-        showToast("info", "Servidor indisponível — a mostrar produtos de demonstração.");
+        showToast(
+          "info",
+          "Servidor indisponível — a mostrar produtos de demonstração.",
+        );
       } catch (_) {
         PRODUTOS_STATE.produtos = [];
         showToast("error", "Não foi possível carregar os produtos.");
@@ -898,15 +923,22 @@ function openProdutoModal(produto) {
   if (!overlay) return;
 
   document.getElementById("produtoModalTitle").textContent = "Editar Produto";
-  document.getElementById("produtoModalId").value        = produto.id;
-  document.getElementById("produtoModalNome").value      = produto.nome || "";
-  document.getElementById("produtoModalDescricao").value = produto.descricao || "";
-  document.getElementById("produtoModalPreco").value     = Number(produto.preco ?? 0).toFixed(2);
+  document.getElementById("produtoModalId").value = produto.id;
+  document.getElementById("produtoModalNome").value = produto.nome || "";
+  document.getElementById("produtoModalDescricao").value =
+    produto.descricao || "";
+  document.getElementById("produtoModalPreco").value = Number(
+    produto.preco ?? 0,
+  ).toFixed(2);
   document.getElementById("produtoModalPromo").value =
     produto.precoPromo != null ? Number(produto.precoPromo).toFixed(2) : "";
-  document.getElementById("produtoModalStock").value    = produto.stock ?? 0;
-  document.getElementById("produtoModalDestaque").value = produto.destaque ? "1" : "0";
-  document.getElementById("produtoModalStatus").value   = produto.ativo ? "1" : "0";
+  document.getElementById("produtoModalStock").value = produto.stock ?? 0;
+  document.getElementById("produtoModalDestaque").value = produto.destaque
+    ? "1"
+    : "0";
+  document.getElementById("produtoModalStatus").value = produto.ativo
+    ? "1"
+    : "0";
 
   // O stock não pode descer abaixo do que já está reservado — o
   // servidor recusa com 409, e aqui o utilizador vê isso antes.
@@ -922,7 +954,7 @@ function openProdutoModal(produto) {
     categoriaSel.innerHTML = PRODUTO_CATEGORIAS.filter((c) => c.id !== "todos")
       .map(
         (c) =>
-          `<option value="${c.id}"${c.id === produto.categoria ? " selected" : ""}>${c.label}</option>`
+          `<option value="${c.id}"${c.id === produto.categoria ? " selected" : ""}>${c.label}</option>`,
       )
       .join("");
   }
@@ -937,14 +969,18 @@ function closeProdutoModal() {
 }
 
 async function handleSalvarProduto() {
-  const id       = document.getElementById("produtoModalId").value;
-  const nome     = document.getElementById("produtoModalNome").value.trim();
-  const desc     = document.getElementById("produtoModalDescricao").value.trim();
-  const preco    = parseFloat(document.getElementById("produtoModalPreco").value);
+  const id = document.getElementById("produtoModalId").value;
+  const nome = document.getElementById("produtoModalNome").value.trim();
+  const desc = document.getElementById("produtoModalDescricao").value.trim();
+  const preco = parseFloat(document.getElementById("produtoModalPreco").value);
   const promoRaw = document.getElementById("produtoModalPromo").value.trim();
-  const stock    = parseInt(document.getElementById("produtoModalStock").value, 10);
-  const destaque = document.getElementById("produtoModalDestaque").value === "1";
-  const ativo    = document.getElementById("produtoModalStatus").value === "1";
+  const stock = parseInt(
+    document.getElementById("produtoModalStock").value,
+    10,
+  );
+  const destaque =
+    document.getElementById("produtoModalDestaque").value === "1";
+  const ativo = document.getElementById("produtoModalStatus").value === "1";
   const categoria = document.getElementById("produtoModalCategoria").value;
 
   const promo = promoRaw === "" ? null : parseFloat(promoRaw);
@@ -964,7 +1000,10 @@ async function handleSalvarProduto() {
 
   if (promo !== null && (isNaN(promo) || promo <= 0)) {
     flashInputError("produtoModalPromo");
-    showToast("error", "Informe um preço promocional válido ou deixe o campo vazio.");
+    showToast(
+      "error",
+      "Informe um preço promocional válido ou deixe o campo vazio.",
+    );
     return;
   }
 
@@ -984,7 +1023,7 @@ async function handleSalvarProduto() {
     flashInputError("produtoModalStock");
     showToast(
       "error",
-      `Já há ${atual.reservado} unidade(s) reservada(s): o stock não pode ficar abaixo disso.`
+      `Já há ${atual.reservado} unidade(s) reservada(s): o stock não pode ficar abaixo disso.`,
     );
     return;
   }
@@ -1017,7 +1056,10 @@ async function handleToggleProduto(id, ativoAtual) {
   const novoStatus = !ativoAtual;
   try {
     await PRODUTOS_FONTE.atualizar(id, { ativo: novoStatus });
-    showToast("success", novoStatus ? "Produto visível na loja." : "Produto oculto na loja.");
+    showToast(
+      "success",
+      novoStatus ? "Produto visível na loja." : "Produto oculto na loja.",
+    );
     await loadProdutos();
   } catch (err) {
     showToast("error", err.message || "Erro ao alterar status.");
@@ -1035,7 +1077,7 @@ async function handleStockProduto(id, delta) {
   if (novo < produto.reservado) {
     showToast(
       "error",
-      `Já há ${produto.reservado} unidade(s) reservada(s): o stock não pode ficar abaixo disso.`
+      `Já há ${produto.reservado} unidade(s) reservada(s): o stock não pode ficar abaixo disso.`,
     );
     return;
   }
@@ -1044,7 +1086,7 @@ async function handleStockProduto(id, delta) {
     const atualizado = await PRODUTOS_FONTE.atualizar(id, { stock: novo });
     // Troca só a linha mexida, para a tabela não piscar toda.
     PRODUTOS_STATE.produtos = PRODUTOS_STATE.produtos.map((p) =>
-      p.id === id ? atualizado : p
+      p.id === id ? atualizado : p,
     );
     renderProdutos();
   } catch (err) {
@@ -1063,7 +1105,7 @@ function initProdutosListeners() {
   const filtro = document.getElementById("produtosFiltroCategoria");
   if (filtro) {
     filtro.innerHTML = PRODUTO_CATEGORIAS.map(
-      (c) => `<option value="${c.id}">${c.label}</option>`
+      (c) => `<option value="${c.id}">${c.label}</option>`,
     ).join("");
 
     filtro.addEventListener("change", (e) => {
@@ -1074,16 +1116,14 @@ function initProdutosListeners() {
 
   // Busca por nome
   let buscaTimer;
-  document
-    .getElementById("produtosBusca")
-    ?.addEventListener("input", (e) => {
-      const valor = e.target.value;
-      clearTimeout(buscaTimer);
-      buscaTimer = setTimeout(() => {
-        PRODUTOS_STATE.busca = valor;
-        renderProdutos();
-      }, 180);
-    });
+  document.getElementById("produtosBusca")?.addEventListener("input", (e) => {
+    const valor = e.target.value;
+    clearTimeout(buscaTimer);
+    buscaTimer = setTimeout(() => {
+      PRODUTOS_STATE.busca = valor;
+      renderProdutos();
+    }, 180);
+  });
 
   // Modal
   document
@@ -1121,7 +1161,7 @@ function initProdutosListeners() {
       if (!btn) return;
 
       const action = btn.dataset.action;
-      const id     = btn.dataset.id;
+      const id = btn.dataset.id;
 
       if (action === "editar-produto") {
         const produto = PRODUTOS_STATE.produtos.find((p) => p.id === id);
@@ -1228,22 +1268,38 @@ function initTabs() {
       if (panel) panel.hidden = false;
 
       // Carrega equipe na primeira visita
-      if (target === 'equipe' && !EQUIPE_STATE.barbeiros.length && !EQUIPE_STATE.loading) {
+      if (
+        target === "equipe" &&
+        !EQUIPE_STATE.barbeiros.length &&
+        !EQUIPE_STATE.loading
+      ) {
         loadEquipe();
       }
 
       // Carrega serviços na primeira visita
-      if (target === 'servicos' && !SERVICOS_STATE.servicos.length && !SERVICOS_STATE.loading) {
+      if (
+        target === "servicos" &&
+        !SERVICOS_STATE.servicos.length &&
+        !SERVICOS_STATE.loading
+      ) {
         loadServicos();
       }
 
       // Carrega produtos na primeira visita
-      if (target === 'produtos' && !PRODUTOS_STATE.produtos.length && !PRODUTOS_STATE.loading) {
+      if (
+        target === "produtos" &&
+        !PRODUTOS_STATE.produtos.length &&
+        !PRODUTOS_STATE.loading
+      ) {
         loadProdutos();
       }
 
       // Carrega preferências na primeira visita
-      if (target === 'preferencias' && !PREF_STATE.dados && !PREF_STATE.loading) {
+      if (
+        target === "preferencias" &&
+        !PREF_STATE.dados &&
+        !PREF_STATE.loading
+      ) {
         loadPreferencias();
       }
     });
@@ -1368,10 +1424,9 @@ function checkDirty() {
 }
 
 /* ─── 10. SALVAR ────────────────────────────────────────── */
-function handleSave() {
+async function handleSave() {
   const data = readForm();
 
-  // Validação mínima
   if (!data.nome) {
     flashInputError("barbNome");
     showToast("error", "O nome da barbearia é obrigatório.");
@@ -1384,32 +1439,36 @@ function handleSave() {
     return;
   }
 
-  // Persiste
-  STATE.saved = { ...data };
-  STATE.current = { ...data };
-  STATE.dirty = false;
+  const btnSalvar = document.getElementById("btnSalvar");
+  btnSalvar.disabled = true;
 
-  saveToStorage(STATE.saved);
+  try {
+    await window.InBarberAPI.saveBarbershop(data);
 
-  // Atualiza UI
-  const badge = document.getElementById("changesBadge");
-  const badgeTxt = document.getElementById("changesBadgeText");
+    STATE.saved = { ...data };
+    STATE.current = { ...data };
+    STATE.dirty = false;
 
-  badge.hidden = false;
-  badge.className = "changes-badge changes-badge--saved";
-  badgeTxt.textContent = "Salvo";
+    saveToStorage(STATE.saved);
 
-  document.getElementById("btnSalvar").disabled = true;
-  document.getElementById("btnDescartar").disabled = true;
+    const badge = document.getElementById("changesBadge");
+    const badgeTxt = document.getElementById("changesBadgeText");
 
-  updatePreview();
+    badge.hidden = false;
+    badge.className = "changes-badge changes-badge--saved";
+    badgeTxt.textContent = "Salvo";
 
-  showToast("success", "Configurações salvas com sucesso!");
+    document.getElementById("btnDescartar").disabled = true;
+    updatePreview();
+    showToast("success", "Configurações salvas com sucesso!");
 
-  // Volta badge a hidden após 3s
-  setTimeout(() => {
-    badge.hidden = true;
-  }, 3000);
+    setTimeout(() => {
+      badge.hidden = true;
+    }, 3000);
+  } catch (err) {
+    showToast("error", err.message || "Erro ao salvar configurações.");
+    btnSalvar.disabled = false;
+  }
 }
 
 /* ─── 11. DESCARTAR ─────────────────────────────────────── */
@@ -1487,62 +1546,62 @@ function initFormListeners() {
 
 /* ─── 14. PREFERÊNCIAS: CONFIG ──────────────────────────── */
 const DIAS_SEMANA = [
-  { key: 'seg', label: 'Segunda' },
-  { key: 'ter', label: 'Terça' },
-  { key: 'qua', label: 'Quarta' },
-  { key: 'qui', label: 'Quinta' },
-  { key: 'sex', label: 'Sexta' },
-  { key: 'sab', label: 'Sábado' },
-  { key: 'dom', label: 'Domingo' },
+  { key: "seg", label: "Segunda" },
+  { key: "ter", label: "Terça" },
+  { key: "qua", label: "Quarta" },
+  { key: "qui", label: "Quinta" },
+  { key: "sex", label: "Sexta" },
+  { key: "sab", label: "Sábado" },
+  { key: "dom", label: "Domingo" },
 ];
 
 const PREF_DEFAULTS = {
   horarios: {
-    seg: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
-    ter: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
-    qua: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
-    qui: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
-    sex: { aberto: true,  abertura: '08:00', fechamento: '18:00' },
-    sab: { aberto: true,  abertura: '09:00', fechamento: '17:00' },
-    dom: { aberto: false, abertura: '09:00', fechamento: '14:00' },
+    seg: { aberto: true, abertura: "08:00", fechamento: "18:00" },
+    ter: { aberto: true, abertura: "08:00", fechamento: "18:00" },
+    qua: { aberto: true, abertura: "08:00", fechamento: "18:00" },
+    qui: { aberto: true, abertura: "08:00", fechamento: "18:00" },
+    sex: { aberto: true, abertura: "08:00", fechamento: "18:00" },
+    sab: { aberto: true, abertura: "09:00", fechamento: "17:00" },
+    dom: { aberto: false, abertura: "09:00", fechamento: "14:00" },
   },
   almoco: {
-    ativo:  false,
-    inicio: '12:00',
-    fim:    '13:00',
+    ativo: false,
+    inicio: "12:00",
+    fim: "13:00",
   },
 };
 
 const PREF_STATE = {
   loading: false,
-  dados:   null,
+  dados: null,
 };
 
 /* ─── 15. PREFERÊNCIAS: RENDER DOS DIAS ─────────────────── */
 function initPrefDias(horarios) {
-  const container = document.getElementById('prefDias');
+  const container = document.getElementById("prefDias");
   if (!container) return;
 
-  container.innerHTML = '';
+  container.innerHTML = "";
 
   DIAS_SEMANA.forEach(({ key, label }) => {
     const diaData = (horarios && horarios[key]) || PREF_DEFAULTS.horarios[key];
-    const aberto  = !!diaData.aberto;
+    const aberto = !!diaData.aberto;
 
-    const row = document.createElement('div');
-    row.className = 'pref-dia-row' + (aberto ? '' : ' pref-dia-row--fechado');
+    const row = document.createElement("div");
+    row.className = "pref-dia-row" + (aberto ? "" : " pref-dia-row--fechado");
     row.dataset.dia = key;
 
     row.innerHTML = `
       <div class="pref-dia-label">
         <button
-          class="toggle-switch ${aberto ? 'toggle-switch--on' : ''}"
+          class="toggle-switch ${aberto ? "toggle-switch--on" : ""}"
           data-action="toggle-dia"
           data-dia="${key}"
           type="button"
           role="switch"
-          aria-checked="${aberto ? 'true' : 'false'}"
-          aria-label="${aberto ? 'Fechar' : 'Abrir'} ${label}"
+          aria-checked="${aberto ? "true" : "false"}"
+          aria-label="${aberto ? "Fechar" : "Abrir"} ${label}"
         >
           <span class="toggle-switch__track" aria-hidden="true">
             <span class="toggle-switch__thumb"></span>
@@ -1563,9 +1622,9 @@ function initPrefDias(horarios) {
             class="form-input form-input--icon pref-time-input"
             id="pref-${key}-abertura"
             type="time"
-            value="${diaData.abertura || '08:00'}"
+            value="${diaData.abertura || "08:00"}"
             aria-label="Abertura ${label}"
-            ${aberto ? '' : 'tabindex="-1"'}
+            ${aberto ? "" : 'tabindex="-1"'}
           />
         </div>
       </div>
@@ -1582,9 +1641,9 @@ function initPrefDias(horarios) {
             class="form-input form-input--icon pref-time-input"
             id="pref-${key}-fechamento"
             type="time"
-            value="${diaData.fechamento || '18:00'}"
+            value="${diaData.fechamento || "18:00"}"
             aria-label="Fechamento ${label}"
-            ${aberto ? '' : 'tabindex="-1"'}
+            ${aberto ? "" : 'tabindex="-1"'}
           />
         </div>
       </div>
@@ -1598,22 +1657,26 @@ function initPrefDias(horarios) {
 
 /* ─── 15b. PREFERÊNCIAS: RESUMO DA SIDEBAR ──────────────── */
 function updatePrefSummary() {
-  const diasAbertosEl = document.getElementById('summaryDiasAbertos');
-  const almocoEl      = document.getElementById('summaryAlmoco');
+  const diasAbertosEl = document.getElementById("summaryDiasAbertos");
+  const almocoEl = document.getElementById("summaryAlmoco");
 
   if (diasAbertosEl) {
-    const total = document.querySelectorAll('.pref-dia-row:not(.pref-dia-row--fechado)').length;
-    diasAbertosEl.textContent = total > 0 ? `${total} de 7` : 'Nenhum';
+    const total = document.querySelectorAll(
+      ".pref-dia-row:not(.pref-dia-row--fechado)",
+    ).length;
+    diasAbertosEl.textContent = total > 0 ? `${total} de 7` : "Nenhum";
   }
 
   if (almocoEl) {
-    const ativo = document.getElementById('toggleAlmoco')?.classList.contains('toggle-switch--on');
+    const ativo = document
+      .getElementById("toggleAlmoco")
+      ?.classList.contains("toggle-switch--on");
     if (ativo) {
-      const ini = document.getElementById('almocoInicio')?.value || '12:00';
-      const fim = document.getElementById('almocoFim')?.value    || '13:00';
+      const ini = document.getElementById("almocoInicio")?.value || "12:00";
+      const fim = document.getElementById("almocoFim")?.value || "13:00";
       almocoEl.textContent = `${ini} – ${fim}`;
     } else {
-      almocoEl.textContent = 'Inativo';
+      almocoEl.textContent = "Inativo";
     }
   }
 }
@@ -1623,22 +1686,25 @@ function toggleDia(key) {
   const row = document.querySelector(`.pref-dia-row[data-dia="${key}"]`);
   if (!row) return;
 
-  const isOpen   = !row.classList.contains('pref-dia-row--fechado');
+  const isOpen = !row.classList.contains("pref-dia-row--fechado");
   const novoOpen = !isOpen;
 
-  row.classList.toggle('pref-dia-row--fechado', !novoOpen);
+  row.classList.toggle("pref-dia-row--fechado", !novoOpen);
 
   const btn = row.querySelector('[data-action="toggle-dia"]');
   if (btn) {
-    btn.classList.toggle('toggle-switch--on', novoOpen);
-    btn.setAttribute('aria-checked', novoOpen ? 'true' : 'false');
+    btn.classList.toggle("toggle-switch--on", novoOpen);
+    btn.setAttribute("aria-checked", novoOpen ? "true" : "false");
     const dia = DIAS_SEMANA.find((d) => d.key === key);
-    btn.setAttribute('aria-label', `${novoOpen ? 'Fechar' : 'Abrir'} ${dia?.label || key}`);
+    btn.setAttribute(
+      "aria-label",
+      `${novoOpen ? "Fechar" : "Abrir"} ${dia?.label || key}`,
+    );
   }
 
-  const inputs = row.querySelectorAll('.pref-time-input');
+  const inputs = row.querySelectorAll(".pref-time-input");
   inputs.forEach((inp) => {
-    inp.setAttribute('tabindex', novoOpen ? '0' : '-1');
+    inp.setAttribute("tabindex", novoOpen ? "0" : "-1");
   });
 
   updatePrefSummary();
@@ -1646,16 +1712,19 @@ function toggleDia(key) {
 
 /* ─── 17. PREFERÊNCIAS: TOGGLE ALMOÇO ───────────────────── */
 function syncAlmocoUI(ativo) {
-  const btn       = document.getElementById('toggleAlmoco');
-  const horarios  = document.getElementById('prefAlmocoHorarios');
+  const btn = document.getElementById("toggleAlmoco");
+  const horarios = document.getElementById("prefAlmocoHorarios");
   if (!btn || !horarios) return;
 
-  btn.classList.toggle('toggle-switch--on', ativo);
-  btn.setAttribute('aria-checked', ativo ? 'true' : 'false');
-  btn.setAttribute('aria-label', ativo ? 'Desativar bloqueio de almoço' : 'Ativar bloqueio de almoço');
+  btn.classList.toggle("toggle-switch--on", ativo);
+  btn.setAttribute("aria-checked", ativo ? "true" : "false");
+  btn.setAttribute(
+    "aria-label",
+    ativo ? "Desativar bloqueio de almoço" : "Ativar bloqueio de almoço",
+  );
 
-  const labelEl = btn.querySelector('.toggle-switch__label');
-  if (labelEl) labelEl.textContent = ativo ? 'Ativo' : 'Inativo';
+  const labelEl = btn.querySelector(".toggle-switch__label");
+  if (labelEl) labelEl.textContent = ativo ? "Ativo" : "Inativo";
 
   horarios.hidden = !ativo;
 
@@ -1667,36 +1736,42 @@ function readPrefForm() {
   const horarios = {};
 
   DIAS_SEMANA.forEach(({ key }) => {
-    const row    = document.querySelector(`.pref-dia-row[data-dia="${key}"]`);
-    const aberto = row && !row.classList.contains('pref-dia-row--fechado');
-    const abertura   = document.getElementById(`pref-${key}-abertura`)?.value   || '08:00';
-    const fechamento = document.getElementById(`pref-${key}-fechamento`)?.value || '18:00';
+    const row = document.querySelector(`.pref-dia-row[data-dia="${key}"]`);
+    const aberto = row && !row.classList.contains("pref-dia-row--fechado");
+    const abertura =
+      document.getElementById(`pref-${key}-abertura`)?.value || "08:00";
+    const fechamento =
+      document.getElementById(`pref-${key}-fechamento`)?.value || "18:00";
     horarios[key] = { aberto, abertura, fechamento };
   });
 
-  const almocoAtivo = document.getElementById('toggleAlmoco')?.classList.contains('toggle-switch--on') || false;
-  const almocoInicio = document.getElementById('almocoInicio')?.value || '12:00';
-  const almocoFim    = document.getElementById('almocoFim')?.value    || '13:00';
+  const almocoAtivo =
+    document
+      .getElementById("toggleAlmoco")
+      ?.classList.contains("toggle-switch--on") || false;
+  const almocoInicio =
+    document.getElementById("almocoInicio")?.value || "12:00";
+  const almocoFim = document.getElementById("almocoFim")?.value || "13:00";
 
   return {
     horarios,
     almoco: {
-      ativo:  almocoAtivo,
+      ativo: almocoAtivo,
       inicio: almocoInicio,
-      fim:    almocoFim,
+      fim: almocoFim,
     },
   };
 }
 
 /* ─── 19. PREFERÊNCIAS: LOAD ─────────────────────────────── */
 async function loadPreferencias() {
-  const loading = document.getElementById('prefLoading');
-  const body    = document.getElementById('prefBody');
+  const loading = document.getElementById("prefLoading");
+  const body = document.getElementById("prefBody");
   if (!loading || !body) return;
 
   PREF_STATE.loading = true;
   loading.hidden = false;
-  body.hidden    = true;
+  body.hidden = true;
 
   try {
     const dados = await window.InBarberAPI.getPreferences();
@@ -1707,10 +1782,10 @@ async function loadPreferencias() {
     syncAlmocoUI(almocoAtivo);
 
     if (dados.almoco) {
-      const ini = document.getElementById('almocoInicio');
-      const fim = document.getElementById('almocoFim');
+      const ini = document.getElementById("almocoInicio");
+      const fim = document.getElementById("almocoFim");
       if (ini && dados.almoco.inicio) ini.value = dados.almoco.inicio;
-      if (fim && dados.almoco.fim)    fim.value = dados.almoco.fim;
+      if (fim && dados.almoco.fim) fim.value = dados.almoco.fim;
     }
   } catch (_err) {
     // Backend ainda não existe ou houve erro: usa defaults sem toast
@@ -1720,7 +1795,7 @@ async function loadPreferencias() {
   } finally {
     PREF_STATE.loading = false;
     loading.hidden = true;
-    body.hidden    = false;
+    body.hidden = false;
   }
 }
 
@@ -1731,9 +1806,12 @@ async function handleSalvarPreferencias() {
   // Validação: almoço ativo → início < fim
   if (dados.almoco.ativo) {
     if (dados.almoco.inicio >= dados.almoco.fim) {
-      flashInputError('almocoInicio');
-      flashInputError('almocoFim');
-      showToast('error', 'O horário de início do almoço deve ser anterior ao fim.');
+      flashInputError("almocoInicio");
+      flashInputError("almocoFim");
+      showToast(
+        "error",
+        "O horário de início do almoço deve ser anterior ao fim.",
+      );
       return;
     }
   }
@@ -1744,20 +1822,23 @@ async function handleSalvarPreferencias() {
     if (d.aberto && d.abertura >= d.fechamento) {
       flashInputError(`pref-${key}-abertura`);
       flashInputError(`pref-${key}-fechamento`);
-      showToast('error', `${label}: o horário de abertura deve ser anterior ao fechamento.`);
+      showToast(
+        "error",
+        `${label}: o horário de abertura deve ser anterior ao fechamento.`,
+      );
       return;
     }
   }
 
-  const btn = document.getElementById('btnSalvarPreferencias');
+  const btn = document.getElementById("btnSalvarPreferencias");
   if (btn) btn.disabled = true;
 
   try {
     await window.InBarberAPI.savePreferences(dados);
     PREF_STATE.dados = dados;
-    showToast('success', 'Preferências salvas com sucesso!');
+    showToast("success", "Preferências salvas com sucesso!");
   } catch (err) {
-    showToast('error', err.message || 'Erro ao salvar preferências.');
+    showToast("error", err.message || "Erro ao salvar preferências.");
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -1767,34 +1848,122 @@ async function handleSalvarPreferencias() {
 function initPreferenciasListeners() {
   // Salvar
   document
-    .getElementById('btnSalvarPreferencias')
-    ?.addEventListener('click', handleSalvarPreferencias);
+    .getElementById("btnSalvarPreferencias")
+    ?.addEventListener("click", handleSalvarPreferencias);
 
   // Toggle almoço
-  document
-    .getElementById('toggleAlmoco')
-    ?.addEventListener('click', () => {
-      const ativo = !document.getElementById('toggleAlmoco').classList.contains('toggle-switch--on');
-      syncAlmocoUI(ativo);
-    });
+  document.getElementById("toggleAlmoco")?.addEventListener("click", () => {
+    const ativo = !document
+      .getElementById("toggleAlmoco")
+      .classList.contains("toggle-switch--on");
+    syncAlmocoUI(ativo);
+  });
 
   // Atualiza resumo ao mudar horários de almoço
   document
-    .getElementById('almocoInicio')
-    ?.addEventListener('change', updatePrefSummary);
+    .getElementById("almocoInicio")
+    ?.addEventListener("change", updatePrefSummary);
 
   document
-    .getElementById('almocoFim')
-    ?.addEventListener('change', updatePrefSummary);
+    .getElementById("almocoFim")
+    ?.addEventListener("change", updatePrefSummary);
 
   // Delegação: toggles de dia dentro de #prefDias
-  document
-    .getElementById('prefDias')
-    ?.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-action="toggle-dia"]');
-      if (!btn) return;
-      toggleDia(btn.dataset.dia);
-    });
+  document.getElementById("prefDias")?.addEventListener("click", (e) => {
+    const btn = e.target.closest('[data-action="toggle-dia"]');
+    if (!btn) return;
+    toggleDia(btn.dataset.dia);
+  });
+}
+
+async function loadBarbershopFromAPI() {
+  try {
+    const dados = await window.InBarberAPI.getBarbershop();
+
+    // Sobrepõe o localStorage com o que veio do banco
+    STATE.saved = {
+      nome: dados.nome || "",
+      telefone: dados.telefone || "",
+      endereco: dados.endereco || "",
+    };
+    STATE.current = { ...STATE.saved };
+
+    saveToStorage(STATE.saved);
+    populateForm();
+    updatePreview();
+    checkDirty();
+
+    // Exibe logo salvo no círculo, se houver
+    if (dados.logoUrl) {
+      applyLogoPreview(
+        `${window.InBarberAPI._baseUrl || "http://127.0.0.1:8000"}${dados.logoUrl}`,
+      );
+    }
+  } catch (_err) {
+    // Backend indisponível — mantém o que estava no localStorage
+  }
+}
+
+/* ─── BARBEARIA: AVATAR / UPLOAD DE LOGO ───────────────── */
+function applyLogoPreview(src) {
+  const ring = document.getElementById("avatarRing");
+  const iconEl = ring.querySelector(".avatar-ring__icon");
+  let preview = ring.querySelector(".avatar-ring__preview");
+
+  if (!preview) {
+    preview = document.createElement("img");
+    preview.className = "avatar-ring__preview";
+    preview.alt = "Logo da barbearia";
+    ring.insertBefore(preview, ring.firstChild);
+  }
+
+  preview.src = src;
+  preview.hidden = false;
+  if (iconEl) iconEl.hidden = true;
+}
+
+function initAvatarUpload() {
+  const ring = document.getElementById("avatarRing");
+  const fileInput = document.getElementById("avatarFileInput");
+
+  if (!ring || !fileInput) return;
+
+  // Clique no anel abre o seletor de arquivos
+  ring.addEventListener("click", () => fileInput.click());
+
+  // Teclas acessíveis
+  ring.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    // Preview imediato antes do upload
+    const localUrl = URL.createObjectURL(file);
+    applyLogoPreview(localUrl);
+
+    try {
+      const result = await window.InBarberAPI.uploadBarbershopLogo(file);
+      showToast("success", "Logo atualizado com sucesso!");
+
+      // Troca URL temporária pela definitiva do servidor
+      const ring = document.getElementById("avatarRing");
+      const preview = ring.querySelector(".avatar-ring__preview");
+      if (preview && result.logoUrl) {
+        preview.src = `http://127.0.0.1:8000${result.logoUrl}`;
+      }
+    } catch (err) {
+      showToast("error", err.message || "Erro ao enviar logo.");
+    } finally {
+      URL.revokeObjectURL(localUrl);
+      fileInput.value = "";
+    }
+  });
 }
 
 /* ─── 22. BOOT ──────────────────────────────────────────── */
@@ -1811,9 +1980,13 @@ function boot() {
   initServicosListeners();
   initProdutosListeners();
   initPreferenciasListeners();
+  initAvatarUpload();
 
   // Dispara checkDirty uma vez para sincronizar estado inicial dos botões
   checkDirty();
+
+  // Carrega dados reais do backend e sobrepõe o localStorage
+  loadBarbershopFromAPI();
 
   console.log("[InBarber Configurações] Inicializado com sucesso.");
 }

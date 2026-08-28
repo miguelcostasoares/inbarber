@@ -46,6 +46,9 @@
   }
 
   function selo(p) {
+    if (p.novo) {
+      return '<span class="shop-badge new">' + esc(t('prod.new')) + '</span>';
+    }
     if (p.emPromocao) {
       return '<span class="shop-badge promo">−' + p.descontoPct + '%</span>';
     }

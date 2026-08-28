@@ -56,8 +56,20 @@
     buscaProdutos: '',
     abertas: {},          // reservaId -> true (linha expandida)
     ocupado: {},          // id -> true (pedido a decorrer nessa linha)
-    editando: null,       // produto aberto no modal
+    editando: null,       // produto aberto no modal (null quando se cria)
+    criando: false,       // true = modal em modo "novo produto"
+    foto: null,           // data URL / caminho mostrado na pré-visualização
+    fotoMexida: false,    // só mandamos img ao servidor se o barbeiro lhe tocou
   };
+
+
+  /* Fotografia: o ficheiro nunca sai do browser. É reduzido num canvas
+     para no máximo FOTO_MAX_PX no lado maior e guardado como data URL
+     no campo img do produto — cabe no localStorage do mockup e vai
+     inteiro no JSON do PATCH/POST quando há back-end. */
+  const FOTO_MAX_PX = 640;
+  const FOTO_MAX_MB = 8;
+  const FOTO_QUALIDADE = 0.82;
 
 
   /* ─── 3. UTILS ──────────────────────────────────────────── */
@@ -496,7 +508,13 @@
 
     const lista = produtosFiltrados();
     if (!lista.length) {
-      alvo.innerHTML = vazioHTML('Nenhum produto com estes filtros.');
+      /* Catálogo vazio de raiz é outra coisa que um filtro sem
+         resultados: no primeiro caso o que falta é criar produtos. */
+      const vazioDeTodo = !STATE.produtos.length;
+      alvo.innerHTML = vazioHTML(
+        vazioDeTodo ? 'Ainda não há produtos no catálogo.' : 'Nenhum produto com estes filtros.',
+        vazioDeTodo ? 'Criar o primeiro produto' : null
+      );
       return;
     }
 
@@ -524,6 +542,7 @@
         <span class="prod-row__info">
           <span class="prod-row__nome">
             ${esc(p.nome)}
+            ${p.novo ? '<span class="prod-tag prod-tag--new">Novo</span>' : ''}
             ${p.destaque ? '<span class="prod-tag prod-tag--gold">Destaque</span>' : ''}
             ${p.ativo ? '' : '<span class="prod-tag prod-tag--off">Oculto</span>'}
           </span>
@@ -618,8 +637,10 @@
     return Array.from({ length: n }, () => `<div class="prod-skel ${classe}"></div>`).join('');
   }
 
-  function vazioHTML(mensagem) {
-    return `<div class="prod-vazio">${SVG.caixa}<span>${esc(mensagem)}</span></div>`;
+  function vazioHTML(mensagem, cta) {
+    return `<div class="prod-vazio">${SVG.caixa}<span>${esc(mensagem)}</span>` +
+      (cta ? `<button class="btn-pipeline" data-acao="novo-produto">${esc(cta)}</button>` : '') +
+      `</div>`;
   }
 
 
@@ -672,31 +693,57 @@
   }
 
 
-  /* ─── 8. MODAL DE EDIÇÃO ────────────────────────────────── */
+  /* ─── 8. MODAL DE PRODUTO (criar e editar) ──────────────── */
+
+  /* O mesmo modal serve os dois casos. A diferença vive em
+     STATE.criando: a criar não há produto de partida, o stock não
+     tem reservas para respeitar e o botão diz outra coisa. */
 
   function abrirModal(id) {
     const p = produtoPorId(id);
+    if (!p) return;
+    prepararModal(p);
+  }
+
+  function abrirModalCriar() {
+    prepararModal(null);
+  }
+
+  function prepararModal(p) {
     const overlay = $('prodModalOverlay');
-    if (!p || !overlay) return;
+    if (!overlay) return;
 
     STATE.editando = p;
+    STATE.criando = !p;
 
-    $('prodModalTitle').textContent = p.nome;
-    $('prodFieldNome').value = p.nome;
-    $('prodFieldDescricao').value = p.descricao || '';
-    $('prodFieldPreco').value = Number(p.preco).toFixed(2);
-    $('prodFieldPromo').value = p.precoPromo != null ? Number(p.precoPromo).toFixed(2) : '';
-    $('prodFieldStock').value = p.stock;
-    $('prodFieldStockHint').textContent = p.reservado
-      ? `${plural(p.reservado, 'unidade reservada', 'unidades reservadas')} — o stock não pode descer abaixo disso`
-      : 'nada reservado neste momento';
-    $('prodFieldDestaque').checked = !!p.destaque;
-    $('prodFieldAtivo').checked = !!p.ativo;
+    $('prodModalTitle').textContent = p ? p.nome : 'Novo produto';
+    $('prodModalSave').textContent = p ? 'Guardar' : 'Criar produto';
+
+    $('prodFieldNome').value = p ? p.nome : '';
+    $('prodFieldDescricao').value = p ? (p.descricao || '') : '';
+    $('prodFieldPreco').value = p ? Number(p.preco).toFixed(2) : '';
+    $('prodFieldPromo').value = p && p.precoPromo != null ? Number(p.precoPromo).toFixed(2) : '';
+    $('prodFieldStock').value = p ? p.stock : '';
+    $('prodFieldStockHint').textContent = !p
+      ? 'quantas unidades entram já para o balcão'
+      : (p.reservado
+          ? `${plural(p.reservado, 'unidade reservada', 'unidades reservadas')} — o stock não pode descer abaixo disso`
+          : 'nada reservado neste momento');
+
+    $('prodFieldDestaque').checked = p ? !!p.destaque : false;
+    $('prodFieldAtivo').checked = p ? !!p.ativo : true;
+    /* Um produto acabado de criar é, por definição, novidade —
+       mas continua a ser uma escolha, não uma regra automática. */
+    $('prodFieldNovo').checked = p ? !!p.novo : true;
+
+    mostrarFoto(p ? p.img : null);
+    STATE.fotoMexida = false;
 
     const select = $('prodFieldCategoria');
     const categorias = (window.ProdutosData.categorias() || []).filter(c => c.id !== 'todos');
+    const escolhida = p ? p.categoria : categorias[0] && categorias[0].id;
     select.innerHTML = categorias.map(c =>
-      `<option value="${esc(c.id)}"${c.id === p.categoria ? ' selected' : ''}>${esc(c.id)}</option>`).join('');
+      `<option value="${esc(c.id)}"${c.id === escolhida ? ' selected' : ''}>${esc(c.id)}</option>`).join('');
 
     erroModal(null);
     overlay.hidden = false;
@@ -710,6 +757,11 @@
     overlay.hidden = true;
     document.body.style.overflow = '';
     STATE.editando = null;
+    STATE.criando = false;
+    STATE.foto = null;
+    STATE.fotoMexida = false;
+    const input = $('prodFotoInput');
+    if (input) input.value = '';
   }
 
   function erroModal(mensagem) {
@@ -719,44 +771,164 @@
     el.textContent = mensagem || '';
   }
 
-  function guardarModal() {
-    const p = STATE.editando;
-    if (!p) return;
 
+  /* ── Fotografia ── */
+
+  /** Põe (ou tira) a imagem da pré-visualização. url null = placeholder. */
+  function mostrarFoto(url) {
+    STATE.foto = url || null;
+
+    const caixa = $('prodFotoPreview');
+    const img = $('prodFotoImg');
+    const ph = $('prodFotoPh');
+    const limpar = $('prodFotoClear');
+    if (!caixa || !img) return;
+
+    if (url) {
+      img.src = url;
+      img.hidden = false;
+      if (ph) ph.style.display = 'none';
+      caixa.classList.add('is-set');
+      if (limpar) limpar.hidden = false;
+    } else {
+      img.removeAttribute('src');
+      img.hidden = true;
+      if (ph) ph.style.display = '';
+      caixa.classList.remove('is-set');
+      if (limpar) limpar.hidden = true;
+    }
+  }
+
+  /* A convenção assets/produtos/<id>.jpg pode não ter ficheiro; nesse
+     caso a pré-visualização volta ao placeholder em vez de ficar um
+     ícone de imagem partida. */
+  function fotoFalhou() {
+    if (!STATE.fotoMexida) mostrarFoto(null);
+  }
+
+  /** Ficheiro → data URL reduzido. Rejeita com mensagem para o utilizador. */
+  function lerFotoReduzida(ficheiro) {
+    return new Promise((resolve, reject) => {
+      if (!ficheiro) return reject(new Error('Nenhum ficheiro escolhido.'));
+      if (!/^image\/(png|jpeg|webp)$/.test(ficheiro.type)) {
+        return reject(new Error('Formato não suportado — use JPG, PNG ou WebP.'));
+      }
+      if (ficheiro.size > FOTO_MAX_MB * 1024 * 1024) {
+        return reject(new Error(`Imagem demasiado grande (máximo ${FOTO_MAX_MB} MB).`));
+      }
+
+      const leitor = new FileReader();
+      leitor.onerror = () => reject(new Error('Não foi possível ler o ficheiro.'));
+      leitor.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('O ficheiro não é uma imagem válida.'));
+        img.onload = () => {
+          const escala = Math.min(1, FOTO_MAX_PX / Math.max(img.width, img.height));
+          const w = Math.max(1, Math.round(img.width * escala));
+          const h = Math.max(1, Math.round(img.height * escala));
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          /* PNG com transparência sobre JPEG daria fundo preto. */
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+
+          try {
+            resolve(canvas.toDataURL('image/jpeg', FOTO_QUALIDADE));
+          } catch (_) {
+            reject(new Error('Não foi possível processar a imagem.'));
+          }
+        };
+        img.src = leitor.result;
+      };
+      leitor.readAsDataURL(ficheiro);
+    });
+  }
+
+  function escolherFoto(ficheiro) {
+    lerFotoReduzida(ficheiro)
+      .then(dataUrl => {
+        mostrarFoto(dataUrl);
+        STATE.fotoMexida = true;
+        erroModal(null);
+      })
+      .catch(err => erroModal(err.message));
+  }
+
+
+  /* ── Guardar ── */
+
+  /** Lê o formulário e valida o óbvio; a regra a sério é a do servidor. */
+  function lerFormulario() {
     const promoRaw = $('prodFieldPromo').value.trim();
     const dados = {
-      nome:      $('prodFieldNome').value.trim(),
-      descricao: $('prodFieldDescricao').value.trim(),
-      preco:     Number($('prodFieldPreco').value),
+      nome:       $('prodFieldNome').value.trim(),
+      descricao:  $('prodFieldDescricao').value.trim(),
+      preco:      Number($('prodFieldPreco').value),
       precoPromo: promoRaw === '' ? null : Number(promoRaw),
-      stock:     parseInt($('prodFieldStock').value, 10),
-      categoria: $('prodFieldCategoria').value,
-      destaque:  $('prodFieldDestaque').checked,
-      ativo:     $('prodFieldAtivo').checked,
+      stock:      parseInt($('prodFieldStock').value, 10),
+      categoria:  $('prodFieldCategoria').value,
+      destaque:   $('prodFieldDestaque').checked,
+      ativo:      $('prodFieldAtivo').checked,
+      novo:       $('prodFieldNovo').checked,
     };
 
-    // Validação local só para o óbvio; a regra a sério é a do servidor.
-    if (!dados.nome)                       return erroModal('O nome não pode ficar vazio.');
-    if (!(dados.preco >= 0))               return erroModal('Preço de tabela inválido.');
+    if (!dados.nome)         return { erro: 'O nome não pode ficar vazio.' };
+    if (!(dados.preco >= 0)) return { erro: 'Preço de tabela inválido.' };
     if (dados.precoPromo !== null && !(dados.precoPromo > 0)) {
-      return erroModal('Preço promocional inválido.');
+      return { erro: 'Preço promocional inválido.' };
     }
     if (dados.precoPromo !== null && dados.precoPromo >= dados.preco) {
-      return erroModal('A promoção tem de ser menor que o preço de tabela.');
+      return { erro: 'A promoção tem de ser menor que o preço de tabela.' };
     }
-    if (!(dados.stock >= 0))               return erroModal('Stock inválido.');
+    if (!(dados.stock >= 0)) return { erro: 'Stock inválido.' };
+
+    /* Só mandamos img se o barbeiro mexeu na fotografia — assim um
+       produto com foto no disco não a perde por se editar o preço. */
+    if (STATE.fotoMexida) dados.img = STATE.foto;
+
+    return { dados };
+  }
+
+  function guardarModal() {
+    const lido = lerFormulario();
+    if (lido.erro) return erroModal(lido.erro);
 
     const btn = $('prodModalSave');
     btn.disabled = true;
     erroModal(null);
 
-    fonte().atualizar(p.id, dados)
+    const pedido = STATE.criando
+      ? fonte().criar(lido.dados)
+      : fonte().atualizar(STATE.editando.id, lido.dados);
+
+    const eraNovo = STATE.criando;
+
+    pedido
       .then(produto => {
-        STATE.produtos = STATE.produtos.map(x => (x.id === produto.id ? produto : x));
+        STATE.produtos = eraNovo
+          ? STATE.produtos.concat([produto])
+          : STATE.produtos.map(x => (x.id === produto.id ? produto : x));
+
         btn.disabled = false;
         fecharModal();
+
+        if (eraNovo) {
+          /* Leva o barbeiro ao produto que acabou de criar, em vez de
+             o deixar à procura dele no meio do catálogo. */
+          STATE.tab = 'catalogo';
+          STATE.categoria = 'todos';
+          STATE.buscaProdutos = '';
+          const campo = $('prodBuscaProdutos');
+          if (campo) campo.value = '';
+          renderTabs();
+        }
+
         render();
-        toast('Produto atualizado.', 'success');
+        toast(eraNovo ? 'Produto criado.' : 'Produto atualizado.', 'success');
       })
       .catch(err => {
         btn.disabled = false;
@@ -839,6 +1011,9 @@
         case 'editar':
           abrirModal(id);
           break;
+        case 'novo-produto':
+          abrirModalCriar();
+          break;
         case 'ir-produto': {
           const p = produtoPorId(id);
           if (!p) break;
@@ -890,6 +1065,23 @@
       $('prodModalClose').addEventListener('click', fecharModal);
       $('prodModalCancel').addEventListener('click', fecharModal);
       $('prodModalSave').addEventListener('click', guardarModal);
+
+      /* Fotografia: o clique na pré-visualização ou no botão abre o
+         seletor de ficheiros; o input em si fica escondido. */
+      const fotoInput = $('prodFotoInput');
+      const abrirSeletor = () => fotoInput && fotoInput.click();
+      $('prodFotoPick').addEventListener('click', abrirSeletor);
+      $('prodFotoPreview').addEventListener('click', abrirSeletor);
+      $('prodFotoClear').addEventListener('click', () => {
+        mostrarFoto(null);
+        STATE.fotoMexida = true;
+      });
+      $('prodFotoImg').addEventListener('error', fotoFalhou);
+      if (fotoInput) fotoInput.addEventListener('change', (e) => {
+        const ficheiro = e.target.files && e.target.files[0];
+        if (ficheiro) escolherFoto(ficheiro);
+        e.target.value = '';        // permite reescolher o mesmo ficheiro
+      });
       overlay.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); guardarModal(); }
       });

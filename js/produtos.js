@@ -83,7 +83,8 @@
 
     /* Um selo de cada vez, por ordem de interesse para quem compra */
     var flag = '';
-    if (p.emPromocao)        flag = '<span class="prod-flag promo">−' + p.descontoPct + '%</span>';
+    if (p.novo)              flag = '<span class="prod-flag new">' + esc(t('prod.new')) + '</span>';
+    else if (p.emPromocao)   flag = '<span class="prod-flag promo">−' + p.descontoPct + '%</span>';
     else if (nivel === 'baixo') flag = '<span class="prod-flag low">' + esc(t('prod.low_stock')) + '</span>';
     else if (p.destaque)     flag = '<span class="prod-flag">' + esc(t('prod.featured')) + '</span>';
 

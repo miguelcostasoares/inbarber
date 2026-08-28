@@ -240,6 +240,7 @@ button, input, textarea { font: inherit; color: inherit; }
   background: var(--gold); color: var(--white);
 }
 .prod-flag.low { background: var(--red); }
+.prod-flag.new { background: var(--green, #00d68f); color: #06120d; }
 .prod-flag.promo {
   background: #fff; color: #0a0a0a;
   font-size: 11px; letter-spacing: 0.4px;

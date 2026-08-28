@@ -1,7 +1,7 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from dotenv import load_dotenv
 import mysql.connector
-import os
+import os as _os
 import bcrypt
 import uuid
 import json
@@ -17,11 +17,11 @@ CORS(app)
 
 def get_db():
     conn = mysql.connector.connect(
-        host=os.getenv('DB_HOST'),
-        port=int(os.getenv('DB_PORT')),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        database=os.getenv('DB_NAME')
+        host=_os.getenv('DB_HOST'),
+        port=int(_os.getenv('DB_PORT')),
+        user=_os.getenv('DB_USER'),
+        password=_os.getenv('DB_PASSWORD'),
+        database=_os.getenv('DB_NAME')
     )
     return conn
 
@@ -499,6 +499,19 @@ def atualizar_servico(servico_id):
             campos.append('ativo = %s')
             params.append(int(bool(data['ativo'])))
 
+        if 'novo' in data:
+            campos.append('novo = %s')
+            params.append(int(bool(data['novo'])))
+
+        # img: string = fotografia (data URL vindo do CRM ou caminho em
+        # assets/produtos/); null = voltar à convenção assets/produtos/<id>.jpg.
+        if 'img' in data:
+            img = _validar_img(data['img'])
+            if isinstance(img, tuple):
+                return img
+            campos.append('img = %s')
+            params.append(img)
+
         if not campos:
             return jsonify({'error': 'Nenhum campo para atualizar.'}), 400
 
@@ -892,7 +905,11 @@ def deletar_cliente(cliente_id):
 ESTADOS_RESERVA = {'reservado', 'confirmado', 'libertado'}
 
 PRODUTO_COLS = '''id, nome, descricao, i18n, preco, preco_promo,
-                  stock, reservado, categoria, img, destaque, ativo'''
+                  stock, reservado, categoria, img, destaque, ativo, novo'''
+
+# Categorias aceites pelo catálogo — as mesmas de CATEGORIAS em
+# js/produtos-data.js. 'todos' é só um filtro da UI, não uma categoria.
+CATEGORIAS_PRODUTO = {'pomadas', 'cabelo', 'barba', 'acessorios'}
 
 RESERVA_COLS = '''id, numero, cliente_nome, cliente_telefone, cliente_telefone_e164,
                   cliente_pais, agendamento_id, estado, observacoes, total, poupanca,
@@ -901,6 +918,42 @@ RESERVA_COLS = '''id, numero, cliente_nome, cliente_telefone, cliente_telefone_e
 
 def gerar_produto_reserva_id():
     return 'res_' + uuid.uuid4().hex[:12]
+
+
+# A fotografia chega do CRM como data URL já reduzido pelo browser
+# (640px, JPEG). Guardamos a string tal como vem, do mesmo modo que
+# guardaríamos um caminho para assets/produtos/ — mas com tecto, para
+# ninguém encher a tabela com um bitmap de 20 MB.
+IMG_MAX_BYTES = 3 * 1024 * 1024
+
+
+def _validar_img(valor):
+    """Devolve a string a guardar (ou None). Em caso de erro devolve o
+    par (resposta, código) pronto a fazer return na rota."""
+    if valor in (None, '', False):
+        return None
+    if not isinstance(valor, str):
+        return jsonify({'error': 'Imagem inválida.'}), 400
+    valor = valor.strip()
+    if len(valor.encode('utf-8')) > IMG_MAX_BYTES:
+        return jsonify({'error': 'Imagem demasiado grande.'}), 413
+    if not (valor.startswith('data:image/') or valor.startswith('assets/')
+            or valor.startswith('http://') or valor.startswith('https://')):
+        return jsonify({'error': 'Imagem inválida.'}), 400
+    return valor
+
+
+def proximo_produto_id(cursor):
+    """prod_010, prod_011, … a seguir ao maior id numérico já usado.
+    Mantém a convenção do catálogo original em vez de gerar um uuid."""
+    cursor.execute(
+        r"""SELECT MAX(CAST(SUBSTRING(id, 6) AS UNSIGNED)) AS n
+            FROM produtos
+            WHERE id REGEXP '^prod_[0-9]+$'"""
+    )
+    linha = cursor.fetchone()
+    n = int((linha or {}).get('n') or 0) + 1
+    return 'prod_' + str(n).zfill(3)
 
 
 def _json_col(valor):
@@ -967,6 +1020,8 @@ def serializar_produto(row):
         'img':         row['img'] or f"assets/produtos/{row['id']}.jpg",
         'destaque':    bool(row['destaque']),
         'ativo':       bool(row['ativo']),
+        # Marcação manual do barbeiro; não expira sozinha.
+        'novo':        bool(row['novo']),
     }
 
 
@@ -1115,10 +1170,98 @@ def buscar_produto(produto_id):
         conn.close()
 
 
+@app.route('/api/products', methods=['POST'])
+def criar_produto():
+    """Cria um produto a partir do CRM.
+
+    Espelha mock.criar() de js/produtos-data.js: as mesmas validações
+    e o mesmo objeto de resposta, para que o front não precise de saber
+    de onde veio o produto. 'reservado' começa sempre a zero — quem o
+    mexe são as reservas.
+    """
+    data = request.get_json(silent=True) or {}
+
+    nome = (data.get('nome') or '').strip()
+    if not nome:
+        return jsonify({'error': 'O nome é obrigatório.'}), 400
+
+    try:
+        preco = float(data.get('preco'))
+        if preco < 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Preço inválido.'}), 400
+
+    promo = data.get('precoPromo')
+    if promo in (None, '', False):
+        promo = None
+    else:
+        try:
+            promo = float(promo)
+            if promo <= 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Preço promocional inválido.'}), 400
+        if promo >= preco:
+            return jsonify({'error': 'O preço promocional tem de ser menor que o preço de tabela.'}), 400
+
+    try:
+        stock = int(data.get('stock', 0))
+        if stock < 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Stock inválido.'}), 400
+
+    categoria = (data.get('categoria') or '').strip()
+    if categoria not in CATEGORIAS_PRODUTO:
+        return jsonify({'error': 'Categoria inválida.'}), 400
+
+    img = _validar_img(data.get('img'))
+    if isinstance(img, tuple):
+        return img
+
+    descricao = (data.get('descricao') or '').strip() or None
+    i18n = data.get('i18n')
+    destaque = int(bool(data.get('destaque')))
+    ativo = int(bool(data.get('ativo', True)))
+    # Um produto criado agora é novidade por omissão, mas continua a ser
+    # uma escolha do barbeiro: se ele desligar o switch, fica desligado.
+    novo = int(bool(data.get('novo', True)))
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        produto_id = proximo_produto_id(cursor)
+        cursor.execute(
+            '''INSERT INTO produtos
+                 (id, nome, descricao, i18n, preco, preco_promo, stock,
+                  reservado, categoria, img, destaque, ativo, novo)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, 0, %s, %s, %s, %s, %s)''',
+            (produto_id, nome, descricao,
+             json.dumps(i18n, ensure_ascii=False) if i18n else None,
+             _q2(preco), _q2(promo) if promo is not None else None, stock,
+             categoria, img, destaque, ativo, novo)
+        )
+        conn.commit()
+
+        cursor.execute(
+            f'SELECT {PRODUTO_COLS} FROM produtos WHERE id = %s',
+            (produto_id,)
+        )
+        return jsonify(serializar_produto(cursor.fetchone())), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao criar produto: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
 @app.route('/api/products/<produto_id>', methods=['PUT', 'PATCH'])
 def atualizar_produto(produto_id):
-    """Campos que o CRM gere: ativo, destaque, precoPromo, preco e stock.
-    Enviar precoPromo: null tira o produto de promoção."""
+    """Campos que o CRM gere: ativo, destaque, novo, precoPromo, preco,
+    stock e img. Enviar precoPromo: null tira o produto de promoção;
+    img: null repõe a convenção assets/produtos/<id>.jpg."""
     data = request.get_json(silent=True) or {}
 
     conn = get_db()
@@ -1640,7 +1783,115 @@ def salvar_preferencias():
         cursor.close()
         conn.close()
 
+LOGO_FOLDER = _os.path.join(_os.path.dirname(__file__), 'uploads', 'logo')
+LOGO_ALLOWED_EXT = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
 
+def _ext_permitida(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in LOGO_ALLOWED_EXT
+
+def serializar_barbearia(row):
+    return {
+        'nome': row['nome'] or '',
+        'telefone': row['telefone'] or '',
+        'endereco': row['endereco'] or '',
+        'logoUrl': row['logo_url'] or None,
+    }
+
+@app.route('/api/barbershop', methods=['GET'])
+def buscar_barbearia():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT nome, telefone, endereco, logo_url, FROM barbearia WHERE id = 'default'"
+        )
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({'nome': '', 'telefone': '', 'endereco': '', 'logoUrl': None}), 200
+        return jsonify(serializar_barbearia(row)),200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao buscar dados da barbearia: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/barbershop', methods=['PUT'])
+def salvar_barbearia():
+    data = request.get_json(silent=True) or {}
+
+    nome     = (data.get('nome')     or '').strip()
+    telefone = (data.get('telefone') or '').strip()
+    endereco = (data.get('endereco') or '').strip()
+
+    if not nome:
+        return jsonify({'error': 'O nome da barbearia é obrigatório.'}), 400
+    if not telefone:
+        return jsonify({'error': 'O telefone é obrigatório.'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            """INSERT INTO barbearia (id, nome, telefone, endereco)
+               VALUES ('default', %s, %s, %s)
+               ON DUPLICATE KEY UPDATE
+                 nome     = VALUES(nome),
+                 telefone = VALUES(telefone),
+                 endereco = VALUES(endereco)""",
+            (nome, telefone, endereco or None)
+        )
+        conn.commit()
+        cursor.execute(
+            "SELECT nome, telefone, endereco, logo_url FROM barbearia WHERE id = 'default'"
+        )
+        return jsonify(serializar_barbearia(cursor.fetchone())), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao salvar dados da barbearia: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/barbershop/logo', methods=['POST'])
+def upload_logo():
+    if 'logo' not in request.files:
+        return jsonify({'error': 'Nenhum arquivo enviado.'}), 400
+
+    arquivo = request.files['logo']
+    if not arquivo.filename:
+        return jsonify({'error': 'Nome de arquivo inválido.'}), 400
+    if not _ext_permitida(arquivo.filename):
+        return jsonify({'error': 'Formato não suportado. Use PNG, JPG, WEBP ou GIF.'}), 400
+
+    _os.makedirs(LOGO_FOLDER, exist_ok=True)
+    ext      = arquivo.filename.rsplit('.', 1)[1].lower()
+    filename = f'logo.{ext}'
+    caminho  = _os.path.join(LOGO_FOLDER, filename)
+    arquivo.save(caminho)
+
+    logo_url = f'/uploads/logo/{filename}'
+
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            """INSERT INTO barbearia (id, logo_url)
+               VALUES ('default', %s)
+               ON DUPLICATE KEY UPDATE logo_url = VALUES(logo_url)""",
+            (logo_url,)
+        )
+        conn.commit()
+        return jsonify({'logoUrl': logo_url}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao salvar logo: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/uploads/logo/<filename>')
+def servir_logo(filename):
+    return send_from_directory(LOGO_FOLDER, filename)
 if __name__ == '__main__':
     try:
         conn = get_db()
@@ -1649,4 +1900,4 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"❌ Erro ao conectar ao banco: {e}")
     
-    app.run(debug=True, port=int(os.getenv('APP_PORT', 8000)))
+    app.run(debug=True, port=int(_os.getenv('APP_PORT', 8000)))

@@ -187,17 +187,45 @@ function renderEquipe() {
       <td class="equipe-table__td equipe-table__td--actions">
         <div class="equipe-actions">
           <button
-            class="btn-table"
+            class="btn-icon"
+            data-action="visualizar"
+            data-id="${b.id}"
+            type="button"
+            aria-label="Visualizar ${escapeHtml(nome)}"
+            title="Visualizar"
+          >
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <path
+                d="M1 7.5C1 7.5 3.5 2.5 7.5 2.5S14 7.5 14 7.5s-2.5 5-6.5 5S1 7.5 1 7.5z"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linejoin="round"
+              />
+              <circle
+                cx="7.5"
+                cy="7.5"
+                r="2"
+                stroke="currentColor"
+                stroke-width="1.4"
+              />
+            </svg>
+          </button>
+          <button
+            class="btn-icon"
             data-action="editar"
             data-id="${b.id}"
             type="button"
             aria-label="Editar ${escapeHtml(nome)}"
+            title="Editar"
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M8.5 1.5l2 2L4 10H2V8L8.5 1.5z" stroke="currentColor" stroke-width="1.4"
-                stroke-linejoin="round"/>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <path
+                d="M10.5 1.5l3 3L5 13H2v-3L10.5 1.5z"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linejoin="round"
+              />
             </svg>
-            Editar
           </button>
           <button
             class="toggle-switch ${ativo ? "toggle-switch--on" : ""}"
@@ -256,20 +284,29 @@ function openBarbeiroModal(barbeiro = null) {
   const idInput = document.getElementById("barbeiroModalId");
   const nomeInput = document.getElementById("barbeiroModalNome");
   const telInput = document.getElementById("barbeiroModalTelefone");
+  const emailInput = document.getElementById("barbeiroModalEmail");
   const statusSel = document.getElementById("barbeiroModalStatus");
+  const nascInput = document.getElementById("barbeiroModalNascimento");
+  const endInput = document.getElementById("barbeiroModalEndereco");
 
   if (barbeiro) {
     title.textContent = "Editar Barbeiro";
     idInput.value = barbeiro.id;
     nomeInput.value = barbeiro.nome || barbeiro.name || "";
     telInput.value = barbeiro.telefone || barbeiro.phone || "";
+    emailInput.value = barbeiro.email || "";
     statusSel.value = barbeiro.ativo ? "1" : "0";
+    nascInput.value = barbeiro.data_nascimento || "";
+    endInput.value = barbeiro.endereco || "";
   } else {
     title.textContent = "Novo Barbeiro";
     idInput.value = "";
     nomeInput.value = "";
     telInput.value = "";
+    emailInput.value = "";
     statusSel.value = "1";
+    nascInput.value = "";
+    endInput.value = "";
   }
 
   overlay.hidden = false;
@@ -280,11 +317,57 @@ function closeBarbeiroModal() {
   document.getElementById("barbeiroModalOverlay").hidden = true;
 }
 
+/* ─── EQUIPE: MODAL VISUALIZAR ───────────────────────────── */
+function openBarbeiroView(barbeiro) {
+  const overlay = document.getElementById("barbeiroViewOverlay");
+  const title = document.getElementById("barbeiroViewTitle");
+  const avatar = document.getElementById("barbeiroViewAvatar");
+  const nome = document.getElementById("barbeiroViewNome");
+  const badge = document.getElementById("barbeiroViewBadge");
+  const telefone = document.getElementById("barbeiroViewTelefone");
+  const email = document.getElementById("barbeiroViewEmail");
+  const nascimento = document.getElementById("barbeiroViewNascimento");
+  const endereco = document.getElementById("barbeiroViewEndereco");
+  const btnEditar = document.getElementById("barbeiroViewEditar");
+
+  const nomeStr = barbeiro.nome || barbeiro.name || "—";
+  const ativo = !!barbeiro.ativo;
+
+  title.textContent = nomeStr;
+  avatar.textContent = initialsFrom(nomeStr);
+  nome.textContent = nomeStr;
+
+  badge.innerHTML = `<span class="badge-status ${ativo ? "badge-status--ativo" : "badge-status--inativo"}">${ativo ? "Ativo" : "Inativo"}</span>`;
+
+  telefone.textContent = barbeiro.telefone || barbeiro.phone || "—";
+  email.textContent = barbeiro.email || "—";
+
+  if (barbeiro.data_nascimento) {
+    const [ano, mes, dia] = barbeiro.data_nascimento.split("-");
+    nascimento.textContent = `${dia}/${mes}/${ano}`;
+  } else {
+    nascimento.textContent = "—";
+  }
+
+  endereco.textContent = barbeiro.endereco || "—";
+
+  btnEditar.dataset.id = barbeiro.id;
+
+  overlay.hidden = false;
+}
+
+function closeBarbeiroView() {
+  document.getElementById("barbeiroViewOverlay").hidden = true;
+}
+
 async function handleSalvarBarbeiro() {
   const id = document.getElementById("barbeiroModalId").value;
   const nome = document.getElementById("barbeiroModalNome").value.trim();
   const tel = document.getElementById("barbeiroModalTelefone").value.trim();
+  const email = document.getElementById("barbeiroModalEmail").value.trim();
   const ativo = document.getElementById("barbeiroModalStatus").value === "1";
+  const nascimento = document.getElementById("barbeiroModalNascimento").value;
+  const endereco = document.getElementById("barbeiroModalEndereco").value.trim();
 
   if (!nome) {
     flashInputError("barbeiroModalNome");
@@ -292,15 +375,36 @@ async function handleSalvarBarbeiro() {
     return;
   }
 
+  if (!tel) {
+    flashInputError("barbeiroModalTelefone");
+    showToast("error", "O telefone do barbeiro é obrigatório.");
+    return;
+  }
+
+  if (!email) {
+    flashInputError("barbeiroModalEmail");
+    showToast("error", "O e-mail do barbeiro é obrigatório.");
+    return;
+  }
+
   const btnSalvar = document.getElementById("barbeiroModalSalvar");
   btnSalvar.disabled = true;
 
+  const payload = {
+    nome,
+    telefone: tel,
+    email,
+    ativo,
+    data_nascimento: nascimento || null,
+    endereco: endereco || null,
+  };
+
   try {
     if (id) {
-      await window.InBarberAPI.updateBarber(id, { nome, telefone: tel, ativo });
+      await window.InBarberAPI.updateBarber(id, payload);
       showToast("success", "Barbeiro atualizado com sucesso!");
     } else {
-      await window.InBarberAPI.createBarber({ nome, telefone: tel, ativo });
+      await window.InBarberAPI.createBarber(payload);
       showToast("success", "Barbeiro criado com sucesso!");
     }
     closeBarbeiroModal();
@@ -338,7 +442,7 @@ function initEquipeListeners() {
     .getElementById("btnNovoBarbeiroEmpty")
     ?.addEventListener("click", () => openBarbeiroModal(null));
 
-  // Fechar modal
+  // Fechar modal de edição
   document
     .getElementById("barbeiroModalClose")
     ?.addEventListener("click", closeBarbeiroModal);
@@ -347,24 +451,54 @@ function initEquipeListeners() {
     .getElementById("barbeiroModalCancelar")
     ?.addEventListener("click", closeBarbeiroModal);
 
-  // Fechar ao clicar fora do modal
+  // Fechar ao clicar fora do modal de edição
   document
     .getElementById("barbeiroModalOverlay")
     ?.addEventListener("click", (e) => {
       if (e.target === e.currentTarget) closeBarbeiroModal();
     });
 
-  // Fechar com Escape
+  // Fechar modal de visualização
+  document
+    .getElementById("barbeiroViewClose")
+    ?.addEventListener("click", closeBarbeiroView);
+
+  document
+    .getElementById("barbeiroViewFechar")
+    ?.addEventListener("click", closeBarbeiroView);
+
+  // Fechar ao clicar fora do modal de visualização
+  document
+    .getElementById("barbeiroViewOverlay")
+    ?.addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeBarbeiroView();
+    });
+
+  // Botão "Editar" dentro do modal de visualização
+  document
+    .getElementById("barbeiroViewEditar")
+    ?.addEventListener("click", () => {
+      const id = document.getElementById("barbeiroViewEditar").dataset.id;
+      const barbeiro = EQUIPE_STATE.barbeiros.find((b) => b.id === id);
+      if (barbeiro) {
+        closeBarbeiroView();
+        openBarbeiroModal(barbeiro);
+      }
+    });
+
+  // Fechar com Escape (ambos os modais)
   document.addEventListener("keydown", (e) => {
-    if (
-      e.key === "Escape" &&
-      !document.getElementById("barbeiroModalOverlay")?.hidden
-    ) {
-      closeBarbeiroModal();
+    if (e.key === "Escape") {
+      if (!document.getElementById("barbeiroModalOverlay")?.hidden) {
+        closeBarbeiroModal();
+      }
+      if (!document.getElementById("barbeiroViewOverlay")?.hidden) {
+        closeBarbeiroView();
+      }
     }
   });
 
-  // Salvar modal
+  // Salvar modal de edição
   document
     .getElementById("barbeiroModalSalvar")
     ?.addEventListener("click", handleSalvarBarbeiro);
@@ -385,13 +519,18 @@ function initEquipeListeners() {
       }
     });
 
-  // Delegação de eventos na tabela (editar / toggle)
+  // Delegação de eventos na tabela (visualizar / editar / toggle)
   document.getElementById("equipeTableBody")?.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-action]");
     if (!btn) return;
 
     const action = btn.dataset.action;
     const id = btn.dataset.id;
+
+    if (action === "visualizar") {
+      const barbeiro = EQUIPE_STATE.barbeiros.find((b) => b.id === id);
+      if (barbeiro) openBarbeiroView(barbeiro);
+    }
 
     if (action === "editar") {
       const barbeiro = EQUIPE_STATE.barbeiros.find((b) => b.id === id);
@@ -420,6 +559,21 @@ function formatarDuracao(min) {
   const h = Math.floor(m / 60);
   const rest = m % 60;
   return rest ? `${h}h ${rest}min` : `${h}h`;
+}
+
+function formatarValidadePlano(dias) {
+  const d = parseInt(dias, 10);
+  if (!d) return "—";
+  if (d === 1) return "1 dia";
+  if (d < 30) return `${d} dias`;
+  if (d === 30) return "1 mês";
+  if (d < 365) {
+    const meses = Math.floor(d / 30);
+    return meses === 1 ? "1 mês" : `${meses} meses`;
+  }
+  if (d === 365) return "1 ano";
+  const anos = Math.floor(d / 365);
+  return anos === 1 ? "1 ano" : `${anos} anos`;
 }
 
 function renderServicos() {
@@ -451,6 +605,10 @@ function renderServicos() {
   SERVICOS_STATE.servicos.forEach((s) => {
     const ativo = !!s.ativo;
     const nome = s.name || s.nome || "—";
+    const tipo = s.tipo || "padrao";
+
+    const TIPO_LABELS = { padrao: "Padrão", combo: "Combo", plano: "Plano" };
+    const tipoLabel = TIPO_LABELS[tipo] || "Padrão";
 
     const tr = document.createElement("tr");
     tr.className =
@@ -461,7 +619,14 @@ function renderServicos() {
       <td class="equipe-table__td">
         <span class="equipe-nome-text">${escapeHtml(nome)}</span>
       </td>
-      <td class="equipe-table__td">${escapeHtml(formatarDuracao(s.duration ?? s.duracao_min))}</td>
+      <td class="equipe-table__td">
+        <span class="badge-tipo badge-tipo--${escapeHtml(tipo)}">${escapeHtml(tipoLabel)}</span>
+      </td>
+      <td class="equipe-table__td">${
+        tipo === "plano" 
+          ? formatarValidadePlano(s.plano_validade_dias)
+          : escapeHtml(formatarDuracao(s.duration ?? s.duracao_min))
+      }</td>
       <td class="equipe-table__td">${escapeHtml(formatarPreco(s.price ?? s.preco ?? 0))}</td>
       <td class="equipe-table__td">
         <span class="badge-status ${ativo ? "badge-status--ativo" : "badge-status--inativo"}">
@@ -524,30 +689,233 @@ async function loadServicos() {
 }
 
 /* ─── SERVIÇOS: MODAL ────────────────────────────────────── */
+
+/* Estado interno do modal de serviço */
+const SERVICO_MODAL_STATE = {
+  tipo: "padrao",
+  comboItens: [],   // [{ id, nome, duracao_min, preco }]
+  planoItens: [],   // [{ id, nome, duracao_min, preco }]
+};
+
+function servicoModalSetTipo(tipo) {
+  SERVICO_MODAL_STATE.tipo = tipo;
+  document.getElementById("servicoModalTipo").value = tipo;
+
+  // Atualiza botões do seletor
+  document.querySelectorAll(".servico-tipo-btn").forEach((btn) => {
+    btn.classList.toggle("servico-tipo-btn--active", btn.dataset.tipo === tipo);
+  });
+
+  // Mostra/esconde blocos de campos
+  document.getElementById("servicoCamposPadrao").hidden = tipo !== "padrao";
+  document.getElementById("servicoCamposCombo").hidden = tipo !== "combo";
+  document.getElementById("servicoCamposPlano").hidden = tipo !== "plano";
+
+  // Ajusta placeholder do nome
+  const nomePlaceholders = {
+    padrao: "Ex: Corte de Cabelo",
+    combo: "Ex: Corte + Barba",
+    plano: "Ex: Plano Mensal",
+  };
+  document.getElementById("servicoModalNome").placeholder =
+    nomePlaceholders[tipo] || "Nome";
+
+  // Ajusta label do preço
+  const precoLabels = {
+    padrao: "Preço (R$)",
+    combo: "Preço do Combo (R$)",
+    plano: "Preço do Plano (R$)",
+  };
+  document.getElementById("servicoModalPrecoLabel").textContent =
+    precoLabels[tipo] || "Preço (R$)";
+}
+
+/* ── Pills: renderiza a lista de serviços selecionados ── */
+function renderPills(containerId, addBtnId, itens, onRemove) {
+  const container = document.getElementById(containerId);
+  const addBtn = document.getElementById(addBtnId);
+  if (!container || !addBtn) return;
+
+  // Remove todas as pills existentes (mantém só o botão +)
+  container.querySelectorAll(".servico-pill").forEach((el) => el.remove());
+
+  // Insere pills antes do botão +
+  itens.forEach((item, idx) => {
+    const pill = document.createElement("div");
+    pill.className = "servico-pill";
+    pill.innerHTML = `
+      <div class="servico-pill__info">
+        <span class="servico-pill__nome">${escapeHtml(item.nome)}</span>
+        <span class="servico-pill__meta">${formatarDuracao(item.duracao_min)} · ${formatarPreco(item.preco)}</span>
+      </div>
+      <button class="servico-pill__remove" type="button" aria-label="Remover ${escapeHtml(item.nome)}">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+          <path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+    `;
+    pill.querySelector(".servico-pill__remove").addEventListener("click", () => {
+      onRemove(idx);
+    });
+    container.insertBefore(pill, addBtn);
+  });
+}
+
+/* ── Recalcula duração total do combo ── */
+function recalcularDuracaoCombo() {
+  const total = SERVICO_MODAL_STATE.comboItens.reduce(
+    (acc, item) => acc + (parseInt(item.duracao_min, 10) || 0),
+    0,
+  );
+  const input = document.getElementById("servicoModalDuracaoCombo");
+  if (input) input.value = total || "";
+}
+
+/* ── Abre o dropdown de seleção de serviços ── */
+function abrirDropdownServicos(dropdownId, listId, itensAtivos, onSelect) {
+  const dropdown = document.getElementById(dropdownId);
+  const list = document.getElementById(listId);
+  if (!dropdown || !list) return;
+
+  const servicosPadrao = SERVICOS_STATE.servicos.filter(
+    (s) => (!s.tipo || s.tipo === "padrao") && s.ativo,
+  );
+
+  list.innerHTML = "";
+
+  if (!servicosPadrao.length) {
+    list.innerHTML = `<p style="padding:12px 14px;font-size:13px;color:var(--muted)">Nenhum serviço padrão cadastrado.</p>`;
+  } else {
+    servicosPadrao.forEach((s) => {
+      const jaAdicionado = itensAtivos.some((i) => i.id === s.id);
+      const btn = document.createElement("button");
+      btn.className =
+        "servico-dropdown__item" +
+        (jaAdicionado ? " servico-dropdown__item--disabled" : "");
+      btn.type = "button";
+      btn.disabled = jaAdicionado;
+      btn.innerHTML = `
+        <span class="servico-dropdown__nome">${escapeHtml(s.name || s.nome)}</span>
+        <span class="servico-dropdown__meta">${formatarDuracao(s.duration ?? s.duracao_min)} · ${formatarPreco(s.price ?? s.preco ?? 0)}</span>
+      `;
+      btn.addEventListener("click", () => {
+        onSelect({
+          id: s.id,
+          nome: s.name || s.nome,
+          duracao_min: s.duration ?? s.duracao_min ?? 0,
+          preco: s.price ?? s.preco ?? 0,
+        });
+        dropdown.hidden = true;
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  dropdown.hidden = false;
+}
+
 function openServicoModal(servico = null) {
   const overlay = document.getElementById("servicoModalOverlay");
   const title = document.getElementById("servicoModalTitle");
   const idInput = document.getElementById("servicoModalId");
   const nomeInput = document.getElementById("servicoModalNome");
-  const duracaoInput = document.getElementById("servicoModalDuracao");
   const precoInput = document.getElementById("servicoModalPreco");
   const statusSel = document.getElementById("servicoModalStatus");
+
+  // Reseta itens
+  SERVICO_MODAL_STATE.comboItens = [];
+  SERVICO_MODAL_STATE.planoItens = [];
 
   if (servico) {
     title.textContent = "Editar Serviço";
     idInput.value = servico.id;
     nomeInput.value = servico.name || servico.nome || "";
-    duracaoInput.value = servico.duration ?? servico.duracao_min ?? "";
     precoInput.value = servico.price ?? servico.preco ?? "";
     statusSel.value = servico.ativo ? "1" : "0";
+
+    const tipo = servico.tipo || "padrao";
+    servicoModalSetTipo(tipo);
+
+    if (tipo === "padrao") {
+      document.getElementById("servicoModalDuracao").value =
+        servico.duration ?? servico.duracao_min ?? "";
+    }
+
+    if (tipo === "combo") {
+      SERVICO_MODAL_STATE.comboItens = (servico.itens || []).map((i) => ({
+        id: i.item_id || i.id,
+        nome: i.nome || i.name || "",
+        duracao_min: i.duracao_min || 0,
+        preco: i.preco || 0,
+      }));
+      renderPills(
+        "comboPillsContainer",
+        "comboPillAdd",
+        SERVICO_MODAL_STATE.comboItens,
+        (idx) => {
+          SERVICO_MODAL_STATE.comboItens.splice(idx, 1);
+          renderPills(
+            "comboPillsContainer",
+            "comboPillAdd",
+            SERVICO_MODAL_STATE.comboItens,
+            arguments.callee,
+          );
+          recalcularDuracaoCombo();
+        },
+      );
+      document.getElementById("servicoModalDuracaoCombo").value =
+        servico.duration ?? servico.duracao_min ?? "";
+    }
+
+    if (tipo === "plano") {
+      SERVICO_MODAL_STATE.planoItens = (servico.itens || []).map((i) => ({
+        id: i.item_id || i.id,
+        nome: i.nome || i.name || "",
+        duracao_min: i.duracao_min || 0,
+        preco: i.preco || 0,
+      }));
+      renderPills(
+        "planoPillsContainer",
+        "planoPillAdd",
+        SERVICO_MODAL_STATE.planoItens,
+        (idx) => {
+          SERVICO_MODAL_STATE.planoItens.splice(idx, 1);
+          renderPills(
+            "planoPillsContainer",
+            "planoPillAdd",
+            SERVICO_MODAL_STATE.planoItens,
+            arguments.callee,
+          );
+        },
+      );
+      document.getElementById("servicoModalPlanoCobranca").value =
+        servico.plano_cobranca || "mensal";
+      document.getElementById("servicoModalPlanoUsos").value =
+        servico.plano_usos ?? "";
+      document.getElementById("servicoModalPlanoValidade").value =
+        servico.plano_validade_dias ?? "";
+    }
   } else {
     title.textContent = "Novo Serviço";
     idInput.value = "";
     nomeInput.value = "";
-    duracaoInput.value = "";
     precoInput.value = "";
     statusSel.value = "1";
+    document.getElementById("servicoModalDuracao").value = "";
+    document.getElementById("servicoModalDuracaoCombo").value = "";
+    document.getElementById("servicoModalPlanoCobranca").value = "mensal";
+    document.getElementById("servicoModalPlanoUsos").value = "";
+    document.getElementById("servicoModalPlanoValidade").value = "";
+
+    servicoModalSetTipo("padrao");
+
+    renderPills("comboPillsContainer", "comboPillAdd", [], () => {});
+    renderPills("planoPillsContainer", "planoPillAdd", [], () => {});
   }
+
+  // Fecha dropdown aberto (se houver)
+  document.getElementById("comboDropdown").hidden = true;
+  document.getElementById("planoDropdown").hidden = true;
 
   overlay.hidden = false;
   nomeInput.focus();
@@ -555,15 +923,14 @@ function openServicoModal(servico = null) {
 
 function closeServicoModal() {
   document.getElementById("servicoModalOverlay").hidden = true;
+  document.getElementById("comboDropdown").hidden = true;
+  document.getElementById("planoDropdown").hidden = true;
 }
 
 async function handleSalvarServico() {
   const id = document.getElementById("servicoModalId").value;
+  const tipo = document.getElementById("servicoModalTipo").value || "padrao";
   const nome = document.getElementById("servicoModalNome").value.trim();
-  const duracao = parseInt(
-    document.getElementById("servicoModalDuracao").value,
-    10,
-  );
   const preco = parseFloat(document.getElementById("servicoModalPreco").value);
   const ativo = document.getElementById("servicoModalStatus").value === "1";
 
@@ -573,16 +940,75 @@ async function handleSalvarServico() {
     return;
   }
 
-  if (!duracao || duracao < 1) {
-    flashInputError("servicoModalDuracao");
-    showToast("error", "Informe uma duração válida em minutos.");
-    return;
-  }
-
   if (isNaN(preco) || preco < 0) {
     flashInputError("servicoModalPreco");
     showToast("error", "Informe um preço válido.");
     return;
+  }
+
+  const payload = { nome, preco, ativo, tipo };
+
+  if (tipo === "padrao") {
+    const duracao = parseInt(
+      document.getElementById("servicoModalDuracao").value,
+      10,
+    );
+    if (!duracao || duracao < 1) {
+      flashInputError("servicoModalDuracao");
+      showToast("error", "Informe uma duração válida em minutos.");
+      return;
+    }
+    payload.duracao_min = duracao;
+  }
+
+  if (tipo === "combo") {
+    if (!SERVICO_MODAL_STATE.comboItens.length) {
+      showToast("error", "Adicione pelo menos um serviço ao combo.");
+      return;
+    }
+    const duracaoCombo = parseInt(
+      document.getElementById("servicoModalDuracaoCombo").value,
+      10,
+    );
+    if (!duracaoCombo || duracaoCombo < 1) {
+      flashInputError("servicoModalDuracaoCombo");
+      showToast("error", "Informe uma duração total válida.");
+      return;
+    }
+    payload.duracao_min = duracaoCombo;
+    payload.itens = SERVICO_MODAL_STATE.comboItens.map((i) => i.id);
+  }
+
+  if (tipo === "plano") {
+    if (!SERVICO_MODAL_STATE.planoItens.length) {
+      showToast("error", "Adicione pelo menos um serviço ao plano.");
+      return;
+    }
+    const cobranca = document.getElementById(
+      "servicoModalPlanoCobranca",
+    ).value;
+    const usos = parseInt(
+      document.getElementById("servicoModalPlanoUsos").value,
+      10,
+    );
+    const validade = parseInt(
+      document.getElementById("servicoModalPlanoValidade").value,
+      10,
+    );
+    if (!usos || usos < 1) {
+      flashInputError("servicoModalPlanoUsos");
+      showToast("error", "Informe a quantidade de usos do plano.");
+      return;
+    }
+    if (!validade || validade < 1) {
+      flashInputError("servicoModalPlanoValidade");
+      showToast("error", "Informe a validade do plano em dias.");
+      return;
+    }
+    payload.plano_cobranca = cobranca;
+    payload.plano_usos = usos;
+    payload.plano_validade_dias = validade;
+    payload.itens = SERVICO_MODAL_STATE.planoItens.map((i) => i.id);
   }
 
   const btnSalvar = document.getElementById("servicoModalSalvar");
@@ -590,20 +1016,10 @@ async function handleSalvarServico() {
 
   try {
     if (id) {
-      await window.InBarberAPI.updateService(id, {
-        nome,
-        duracao_min: duracao,
-        preco,
-        ativo,
-      });
+      await window.InBarberAPI.updateService(id, payload);
       showToast("success", "Serviço atualizado com sucesso!");
     } else {
-      await window.InBarberAPI.createService({
-        nome,
-        duracao_min: duracao,
-        preco,
-        ativo,
-      });
+      await window.InBarberAPI.createService(payload);
       showToast("success", "Serviço criado com sucesso!");
     }
     closeServicoModal();
@@ -665,6 +1081,92 @@ function initServicosListeners() {
   document
     .getElementById("servicoModalSalvar")
     ?.addEventListener("click", handleSalvarServico);
+
+  // Seletor de tipo (Padrão / Combo / Plano)
+  document
+    .getElementById("servicoModalOverlay")
+    ?.addEventListener("click", (e) => {
+      const btn = e.target.closest(".servico-tipo-btn");
+      if (btn) servicoModalSetTipo(btn.dataset.tipo);
+    });
+
+  // Botão + do combo: abre dropdown
+  document.getElementById("comboPillAdd")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const dropdownVisible = !document.getElementById("comboDropdown").hidden;
+    if (dropdownVisible) {
+      document.getElementById("comboDropdown").hidden = true;
+      return;
+    }
+    abrirDropdownServicos(
+      "comboDropdown",
+      "comboDropdownList",
+      SERVICO_MODAL_STATE.comboItens,
+      (item) => {
+        SERVICO_MODAL_STATE.comboItens.push(item);
+        renderPills(
+          "comboPillsContainer",
+          "comboPillAdd",
+          SERVICO_MODAL_STATE.comboItens,
+          (idx) => {
+            SERVICO_MODAL_STATE.comboItens.splice(idx, 1);
+            renderPills(
+              "comboPillsContainer",
+              "comboPillAdd",
+              SERVICO_MODAL_STATE.comboItens,
+              () => {},
+            );
+            recalcularDuracaoCombo();
+          },
+        );
+        recalcularDuracaoCombo();
+      },
+    );
+  });
+
+  // Botão + do plano: abre dropdown
+  document.getElementById("planoPillAdd")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const dropdownVisible = !document.getElementById("planoDropdown").hidden;
+    if (dropdownVisible) {
+      document.getElementById("planoDropdown").hidden = true;
+      return;
+    }
+    abrirDropdownServicos(
+      "planoDropdown",
+      "planoDropdownList",
+      SERVICO_MODAL_STATE.planoItens,
+      (item) => {
+        SERVICO_MODAL_STATE.planoItens.push(item);
+        renderPills(
+          "planoPillsContainer",
+          "planoPillAdd",
+          SERVICO_MODAL_STATE.planoItens,
+          (idx) => {
+            SERVICO_MODAL_STATE.planoItens.splice(idx, 1);
+            renderPills(
+              "planoPillsContainer",
+              "planoPillAdd",
+              SERVICO_MODAL_STATE.planoItens,
+              () => {},
+            );
+          },
+        );
+      },
+    );
+  });
+
+  // Fecha dropdowns ao clicar fora
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("#comboPillsContainer") &&
+        !e.target.closest("#comboDropdown")) {
+      document.getElementById("comboDropdown").hidden = true;
+    }
+    if (!e.target.closest("#planoPillsContainer") &&
+        !e.target.closest("#planoDropdown")) {
+      document.getElementById("planoDropdown").hidden = true;
+    }
+  });
 
   document
     .getElementById("servicosTableBody")

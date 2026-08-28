@@ -1519,6 +1519,109 @@ textarea {
   border-color: var(--green-border);
 }
 
+/* Botão ícone (olho / lápis) na tabela */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--divider);
+  color: var(--muted);
+  transition:
+    background var(--dur),
+    color var(--dur),
+    border-color var(--dur);
+  flex-shrink: 0;
+}
+
+.btn-icon:hover {
+  background: var(--bg-4);
+  color: var(--cream);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Modal de visualização de barbeiro */
+.barbeiro-view__hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.barbeiro-view__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-4);
+  border: 1px solid var(--divider);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.barbeiro-view__hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.barbeiro-view__nome {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barbeiro-view__badge {
+  display: inline-flex;
+}
+
+.barbeiro-view__dl {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.barbeiro-view__row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.barbeiro-view__row:last-child {
+  border-bottom: none;
+}
+
+.barbeiro-view__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-width: 88px;
+  flex-shrink: 0;
+}
+
+.barbeiro-view__value {
+  font-size: 13px;
+  color: var(--cream);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
 /* Toggle switch de status */
 .toggle-switch {
   display: inline-flex;
@@ -2036,6 +2139,213 @@ textarea {
   flex-shrink: 0;
   margin-top: 1px;
   color: var(--muted);
+}
+
+/* ─── SERVIÇOS: SELETOR DE TIPO ─────────────────────────── */
+.modal--servico {
+  max-width: 520px;
+}
+
+.servico-tipo-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--divider);
+  background: var(--bg-3);
+}
+
+.servico-tipo-btn {
+  flex: 1;
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  transition:
+    background var(--dur),
+    color var(--dur);
+  text-align: center;
+}
+
+.servico-tipo-btn:hover {
+  background: var(--bg-4);
+  color: var(--cream);
+}
+
+.servico-tipo-btn--active {
+  background: var(--gold-bg);
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* ─── SERVIÇOS: PILLS DE ITENS INCLUSOS ─────────────────── */
+.servico-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 10px;
+  background: var(--bg-3);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-md);
+}
+
+.servico-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 10px;
+  background: var(--gold-bg);
+  border: 1px solid rgba(0, 71, 255, 0.18);
+  border-radius: var(--r-full);
+  font-size: 12px;
+  color: var(--cream);
+  white-space: nowrap;
+}
+
+.servico-pill__info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.servico-pill__nome {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.servico-pill__meta {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.servico-pill__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-full);
+  color: var(--muted);
+  flex-shrink: 0;
+  transition:
+    background var(--dur),
+    color var(--dur);
+}
+
+.servico-pill__remove:hover {
+  background: rgba(255, 77, 106, 0.15);
+  color: var(--red);
+}
+
+.servico-pill-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  border: 1.5px dashed var(--muted);
+  color: var(--muted);
+  flex-shrink: 0;
+  transition:
+    border-color var(--dur),
+    color var(--dur),
+    background var(--dur);
+}
+
+.servico-pill-add:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-bg);
+}
+
+/* ─── SERVIÇOS: DROPDOWN DE SELEÇÃO ─────────────────────── */
+.servico-dropdown {
+  margin-top: 6px;
+  background: var(--bg-2);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  animation: cfFadeIn 160ms var(--ease-out) both;
+}
+
+.servico-dropdown[hidden] {
+  display: none;
+}
+
+.servico-dropdown__inner {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.servico-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--cream);
+  text-align: left;
+  transition: background var(--dur);
+}
+
+.servico-dropdown__item:hover {
+  background: var(--bg-3);
+}
+
+.servico-dropdown__item--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.servico-dropdown__nome {
+  font-weight: 500;
+}
+
+.servico-dropdown__meta {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ─── SERVIÇOS: BADGE DE TIPO NA TABELA ─────────────────── */
+.badge-tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--r-full);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge-tipo--padrao {
+  background: var(--bg-4);
+  color: var(--cream-2);
+  border: 1px solid var(--divider);
+}
+
+.badge-tipo--combo {
+  background: var(--blue-bg);
+  color: var(--blue);
+  border: 1px solid var(--blue-border);
+}
+
+.badge-tipo--plano {
+  background: var(--gold-bg);
+  color: var(--gold);
+  border: 1px solid rgba(0, 71, 255, 0.22);
 }
 
 @media (max-width: 1100px) {

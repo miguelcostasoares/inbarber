@@ -2264,6 +2264,108 @@ input[type="date"].saidas-form-input::-webkit-calendar-picker-indicator {
   will-change: opacity, transform;
 }
 
+/* ─── Barra flutuante de salvar Metas & Comissões ──────────── */
+.metas-save-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 800;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 32px;
+    background: var(--bg-3);
+    border-top: 1px solid rgba(0, 71, 255, 0.3);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.55);
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        transform 260ms var(--ease-out),
+        opacity 260ms var(--ease-out);
+}
+
+.metas-save-bar.is-visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.metas-save-bar__msg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cream-2);
+    flex-shrink: 0;
+}
+
+.metas-save-bar__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.metas-save-bar__btn {
+    font-family: var(--ff-b);
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--r-sm);
+    padding: 8px 20px;
+    cursor: pointer;
+    transition:
+        background 160ms var(--ease-out),
+        opacity 160ms var(--ease-out),
+        transform 120ms var(--ease-out);
+    line-height: 1;
+}
+
+.metas-save-bar__btn:active {
+    transform: scale(0.97);
+}
+
+.metas-save-bar__btn--cancel {
+    background: var(--bg-4);
+    color: var(--cream-2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metas-save-bar__btn--cancel:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--cream);
+}
+
+.metas-save-bar__btn--save {
+    background: var(--gold);
+    color: var(--white);
+}
+
+.metas-save-bar__btn--save:hover {
+    background: var(--gold-dim);
+}
+
+.metas-save-bar__btn--save:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .metas-save-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 14px 20px;
+    }
+
+    .metas-save-bar__actions {
+        justify-content: flex-end;
+    }
+}
+
 /* ── Barra de progresso das payment cards:
       a animação real vem do JS (animatePaymentBars).
       Esta transition é um fallback. ─────────────────────── */

@@ -187,9 +187,14 @@ function listServicesAdmin() {
  * Cria um novo serviço.
  * @param {Object} data
  * @param {string} data.nome
- * @param {number} data.duracao_min
+ * @param {string} [data.tipo]              - 'padrao' | 'combo' | 'plano'
+ * @param {number} [data.duracao_min]       - obrigatório para padrao e combo
  * @param {number} data.preco
  * @param {boolean} [data.ativo]
+ * @param {string[]} [data.itens]           - ids dos serviços padrão inclusos (combo/plano)
+ * @param {string} [data.plano_cobranca]    - 'mensal' | 'trimestral' | 'avulso'
+ * @param {number} [data.plano_usos]
+ * @param {number} [data.plano_validade_dias]
  * @returns {Promise<Object>} serviço criado
  */
 function createService(data) {
@@ -202,7 +207,16 @@ function createService(data) {
 /**
  * Atualiza um serviço existente.
  * @param {string} id
- * @param {Object} data - { nome?, duracao_min?, preco?, ativo? }
+ * @param {Object} data
+ * @param {string} [data.nome]
+ * @param {string} [data.tipo]              - 'padrao' | 'combo' | 'plano'
+ * @param {number} [data.duracao_min]
+ * @param {number} [data.preco]
+ * @param {boolean} [data.ativo]
+ * @param {string[]} [data.itens]           - ids dos serviços padrão inclusos
+ * @param {string} [data.plano_cobranca]
+ * @param {number} [data.plano_usos]
+ * @param {number} [data.plano_validade_dias]
  * @returns {Promise<Object>} serviço atualizado
  */
 function updateService(id, data) {
@@ -245,8 +259,11 @@ function listBarbers(options = {}) {
  * Cria um novo barbeiro.
  * @param {Object} data
  * @param {string} data.nome
- * @param {string} [data.telefone]
+ * @param {string} data.telefone
+ * @param {string} data.email
  * @param {boolean} [data.ativo]
+ * @param {string} [data.data_nascimento] - formato YYYY-MM-DD
+ * @param {string} [data.endereco]
  * @returns {Promise<Object>} barbeiro criado
  */
 function createBarber(data) {
@@ -262,7 +279,10 @@ function createBarber(data) {
  * @param {Object} data
  * @param {string} [data.nome]
  * @param {string} [data.telefone]
+ * @param {string} [data.email]
  * @param {boolean} [data.ativo]
+ * @param {string} [data.data_nascimento] - formato YYYY-MM-DD
+ * @param {string} [data.endereco]
  * @returns {Promise<Object>} barbeiro atualizado
  */
 function updateBarber(id, data) {

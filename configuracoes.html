@@ -1047,6 +1047,7 @@
             <thead>
               <tr>
                 <th class="equipe-table__th">Nome</th>
+                <th class="equipe-table__th">Tipo</th>
                 <th class="equipe-table__th">Duração</th>
                 <th class="equipe-table__th">Preço</th>
                 <th class="equipe-table__th">Status</th>
@@ -1432,52 +1433,164 @@
               </div>
             </div>
 
-            <!-- Telefone -->
+            <!-- Telefone + E-mail -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="barbeiroModalTelefone">
+                  Telefone
+                  <span class="form-required" aria-label="Obrigatório">*</span>
+                </label>
+                <div class="form-input-wrap">
+                  <div class="form-input-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <path
+                        d="M2.5 2.5c0 5.523 4.477 10 10 10v-3l-2.5-.5-1 1.5C7 9 4.5 6.5 3.5 4.5L5 3.5 4.5 1H2.5v1.5z"
+                        stroke="currentColor"
+                        stroke-width="1.3"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    class="form-input form-input--icon"
+                    id="barbeiroModalTelefone"
+                    type="tel"
+                    placeholder="(84) 99999-0000"
+                    maxlength="20"
+                    aria-required="true"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="barbeiroModalEmail">
+                  E-mail
+                  <span class="form-required" aria-label="Obrigatório">*</span>
+                </label>
+                <div class="form-input-wrap">
+                  <div class="form-input-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <rect
+                        x="1.5"
+                        y="3.5"
+                        width="12"
+                        height="8"
+                        rx="1.5"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                      />
+                      <path
+                        d="M1.5 5l6 4 6-4"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    class="form-input form-input--icon"
+                    id="barbeiroModalEmail"
+                    type="email"
+                    placeholder="joao@email.com"
+                    maxlength="120"
+                    aria-required="true"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Status + Data de nascimento -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="barbeiroModalStatus">
+                  Status
+                  <span class="form-required" aria-label="Obrigatório">*</span>
+                </label>
+                <div class="form-select-wrap">
+                  <select class="form-input form-select" id="barbeiroModalStatus">
+                    <option value="1">Ativo</option>
+                    <option value="0">Inativo</option>
+                  </select>
+                  <div class="form-select-arrow" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path
+                        d="M3 4.5l3 3 3-3"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="barbeiroModalNascimento">
+                  Data de Nascimento
+                  <span class="form-label__optional">(opcional)</span>
+                </label>
+                <div class="form-input-wrap">
+                  <div class="form-input-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <rect
+                        x="1.5"
+                        y="2.5"
+                        width="12"
+                        height="11"
+                        rx="1.5"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                      />
+                      <path
+                        d="M5 1v3M10 1v3M1.5 6.5h12"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    class="form-input form-input--icon"
+                    id="barbeiroModalNascimento"
+                    type="date"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Endereço -->
             <div class="form-group">
-              <label class="form-label" for="barbeiroModalTelefone">
-                Telefone
+              <label class="form-label" for="barbeiroModalEndereco">
+                Endereço
                 <span class="form-label__optional">(opcional)</span>
               </label>
               <div class="form-input-wrap">
                 <div class="form-input-icon" aria-hidden="true">
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
                     <path
-                      d="M2.5 2.5c0 5.523 4.477 10 10 10v-3l-2.5-.5-1 1.5C7 9 4.5 6.5 3.5 4.5L5 3.5 4.5 1H2.5v1.5z"
+                      d="M7.5 1.5C5.015 1.5 3 3.515 3 6c0 3.75 4.5 7.5 4.5 7.5S12 9.75 12 6c0-2.485-2.015-4.5-4.5-4.5z"
                       stroke="currentColor"
-                      stroke-width="1.3"
+                      stroke-width="1.4"
                       stroke-linejoin="round"
+                    />
+                    <circle
+                      cx="7.5"
+                      cy="6"
+                      r="1.5"
+                      stroke="currentColor"
+                      stroke-width="1.4"
                     />
                   </svg>
                 </div>
                 <input
                   class="form-input form-input--icon"
-                  id="barbeiroModalTelefone"
-                  type="tel"
-                  placeholder="(84) 99999-0000"
-                  maxlength="20"
+                  id="barbeiroModalEndereco"
+                  type="text"
+                  placeholder="Rua, número, bairro"
+                  maxlength="200"
                 />
-              </div>
-            </div>
-
-            <!-- Status -->
-            <div class="form-group">
-              <label class="form-label" for="barbeiroModalStatus">Status</label>
-              <div class="form-select-wrap">
-                <select class="form-input form-select" id="barbeiroModalStatus">
-                  <option value="1">Ativo</option>
-                  <option value="0">Inativo</option>
-                </select>
-                <div class="form-select-arrow" aria-hidden="true">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path
-                      d="M3 4.5l3 3 3-3"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
               </div>
             </div>
           </div>
@@ -1511,6 +1624,103 @@
       <!-- /barbeiroModal -->
 
       <!-- ════════════════════════════════════════════
+         MODAL: BARBEIRO (visualizar)
+      ════════════════════════════════════════════ -->
+      <div
+        class="modal-overlay"
+        id="barbeiroViewOverlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="barbeiroViewTitle"
+        hidden
+      >
+        <div class="modal">
+          <!-- Cabeçalho do modal -->
+          <div class="modal__head">
+            <h3 class="modal__title" id="barbeiroViewTitle">Barbeiro</h3>
+            <button
+              class="modal__close"
+              id="barbeiroViewClose"
+              type="button"
+              aria-label="Fechar visualização"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 2l10 10M12 2L2 12"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Corpo do modal -->
+          <div class="modal__body">
+            <!-- Identificação -->
+            <div class="barbeiro-view__hero">
+              <div class="barbeiro-view__avatar" id="barbeiroViewAvatar"></div>
+              <div class="barbeiro-view__hero-info">
+                <span class="barbeiro-view__nome" id="barbeiroViewNome">—</span>
+                <span class="barbeiro-view__badge" id="barbeiroViewBadge"></span>
+              </div>
+            </div>
+
+            <!-- Campos -->
+            <dl class="barbeiro-view__dl">
+              <div class="barbeiro-view__row">
+                <dt class="barbeiro-view__label">Telefone</dt>
+                <dd class="barbeiro-view__value" id="barbeiroViewTelefone">—</dd>
+              </div>
+              <div class="barbeiro-view__row">
+                <dt class="barbeiro-view__label">E-mail</dt>
+                <dd class="barbeiro-view__value" id="barbeiroViewEmail">—</dd>
+              </div>
+              <div class="barbeiro-view__row">
+                <dt class="barbeiro-view__label">Nascimento</dt>
+                <dd class="barbeiro-view__value" id="barbeiroViewNascimento">—</dd>
+              </div>
+              <div class="barbeiro-view__row">
+                <dt class="barbeiro-view__label">Endereço</dt>
+                <dd class="barbeiro-view__value" id="barbeiroViewEndereco">—</dd>
+              </div>
+            </dl>
+          </div>
+
+          <!-- Rodapé -->
+          <div class="modal__footer">
+            <button class="btn-ghost" id="barbeiroViewFechar" type="button">
+              Fechar
+            </button>
+            <button class="btn-primary" id="barbeiroViewEditar" type="button">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M9.5 1.5l3 3L5 12H2V9L9.5 1.5z"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Editar
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- /barbeiroViewModal -->
+
+      <!-- ════════════════════════════════════════════
          MODAL: SERVIÇO (criar / editar)
       ════════════════════════════════════════════ -->
       <div
@@ -1521,7 +1731,7 @@
         aria-labelledby="servicoModalTitle"
         hidden
       >
-        <div class="modal">
+        <div class="modal modal--servico">
           <!-- Cabeçalho do modal -->
           <div class="modal__head">
             <h3 class="modal__title" id="servicoModalTitle">Novo Serviço</h3>
@@ -1548,14 +1758,34 @@
             </button>
           </div>
 
+          <!-- Seletor de tipo -->
+          <div class="servico-tipo-bar" role="group" aria-label="Tipo de serviço">
+            <button
+              class="servico-tipo-btn servico-tipo-btn--active"
+              data-tipo="padrao"
+              type="button"
+            >Padrão</button>
+            <button
+              class="servico-tipo-btn"
+              data-tipo="combo"
+              type="button"
+            >Combo</button>
+            <button
+              class="servico-tipo-btn"
+              data-tipo="plano"
+              type="button"
+            >Plano</button>
+          </div>
+
           <!-- Corpo do modal -->
           <div class="modal__body">
             <input type="hidden" id="servicoModalId" />
+            <input type="hidden" id="servicoModalTipo" value="padrao" />
 
-            <!-- Nome -->
+            <!-- Nome (comum a todos os tipos) -->
             <div class="form-group">
               <label class="form-label" for="servicoModalNome">
-                Nome
+                <span id="servicoModalNomeLabel">Nome</span>
                 <span class="form-required" aria-label="Obrigatório">*</span>
               </label>
               <div class="form-input-wrap">
@@ -1580,49 +1810,188 @@
               </div>
             </div>
 
-            <!-- Duração -->
-            <div class="form-group">
-              <label class="form-label" for="servicoModalDuracao">
-                Duração
-                <span class="form-required" aria-label="Obrigatório">*</span>
-              </label>
-              <div class="form-input-wrap">
-                <div class="form-input-icon" aria-hidden="true">
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <circle
-                      cx="7.5"
-                      cy="7.5"
-                      r="5.5"
-                      stroke="currentColor"
-                      stroke-width="1.4"
-                    />
-                    <path
-                      d="M7.5 4.5v3.5l2 2"
-                      stroke="currentColor"
-                      stroke-width="1.4"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
+            <!-- ── CAMPOS EXCLUSIVOS: PADRÃO ── -->
+            <div id="servicoCamposPadrao">
+              <!-- Duração -->
+              <div class="form-group">
+                <label class="form-label" for="servicoModalDuracao">
+                  Duração
+                  <span class="form-required" aria-label="Obrigatório">*</span>
+                </label>
+                <div class="form-input-wrap">
+                  <div class="form-input-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.4" />
+                      <path d="M7.5 4.5v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <input
+                    class="form-input form-input--icon"
+                    id="servicoModalDuracao"
+                    type="number"
+                    min="1"
+                    max="480"
+                    placeholder="30"
+                    aria-describedby="servicoDuracaoHint"
+                  />
                 </div>
-                <input
-                  class="form-input form-input--icon servico-duracao-input"
-                  id="servicoModalDuracao"
-                  type="number"
-                  min="1"
-                  max="480"
-                  placeholder="30"
-                  aria-required="true"
-                  aria-describedby="servicoDuracaoHint"
-                />
+                <p class="form-hint" id="servicoDuracaoHint">Tempo em minutos.</p>
               </div>
-              <p class="form-hint" id="servicoDuracaoHint">Tempo em minutos.</p>
             </div>
+            <!-- /servicoCamposPadrao -->
 
-            <!-- Preço -->
+            <!-- ── CAMPOS EXCLUSIVOS: COMBO ── -->
+            <div id="servicoCamposCombo" hidden>
+              <!-- Serviços inclusos -->
+              <div class="form-group">
+                <label class="form-label">
+                  Serviços Inclusos
+                  <span class="form-required" aria-label="Obrigatório">*</span>
+                </label>
+                <div class="servico-pills" id="comboPillsContainer" aria-label="Serviços selecionados para o combo">
+                  <button
+                    class="servico-pill-add"
+                    id="comboPillAdd"
+                    type="button"
+                    aria-label="Adicionar serviço ao combo"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                  </button>
+                </div>
+                <!-- Dropdown de seleção -->
+                <div class="servico-dropdown" id="comboDropdown" hidden>
+                  <div class="servico-dropdown__inner" id="comboDropdownList"></div>
+                </div>
+              </div>
+
+              <!-- Duração total (auto + editável) -->
+              <div class="form-group">
+                <label class="form-label" for="servicoModalDuracaoCombo">
+                  Duração Total
+                  <span class="form-required" aria-label="Obrigatório">*</span>
+                </label>
+                <div class="form-input-wrap">
+                  <div class="form-input-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.4" />
+                      <path d="M7.5 4.5v3.5l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <input
+                    class="form-input form-input--icon"
+                    id="servicoModalDuracaoCombo"
+                    type="number"
+                    min="1"
+                    max="960"
+                    placeholder="0"
+                    aria-describedby="servicoDuracaoComboHint"
+                  />
+                </div>
+                <p class="form-hint" id="servicoDuracaoComboHint">Calculado automaticamente pela soma dos serviços. Você pode editar.</p>
+              </div>
+            </div>
+            <!-- /servicoCamposCombo -->
+
+            <!-- ── CAMPOS EXCLUSIVOS: PLANO ── -->
+            <div id="servicoCamposPlano" hidden>
+              <!-- Tipo de cobrança -->
+              <div class="form-group">
+                <label class="form-label" for="servicoModalPlanoCobranca">
+                  Tipo de Cobrança
+                  <span class="form-required" aria-label="Obrigatório">*</span>
+                </label>
+                <div class="form-select-wrap">
+                  <select class="form-input form-select" id="servicoModalPlanoCobranca">
+                    <option value="mensal">Mensal</option>
+                    <option value="trimestral">Trimestral</option>
+                    <option value="avulso">Avulso</option>
+                  </select>
+                  <div class="form-select-arrow" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Qtd de usos + Validade -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="servicoModalPlanoUsos">
+                    Qtd. de Usos
+                    <span class="form-required" aria-label="Obrigatório">*</span>
+                  </label>
+                  <div class="form-input-wrap">
+                    <div class="form-input-icon" aria-hidden="true">
+                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                        <path d="M7.5 1L2 4v7l5.5 3L13 11V4L7.5 1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+                        <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.4" />
+                      </svg>
+                    </div>
+                    <input
+                      class="form-input form-input--icon"
+                      id="servicoModalPlanoUsos"
+                      type="number"
+                      min="1"
+                      placeholder="4"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="servicoModalPlanoValidade">
+                    Validade (dias)
+                    <span class="form-required" aria-label="Obrigatório">*</span>
+                  </label>
+                  <div class="form-input-wrap">
+                    <div class="form-input-icon" aria-hidden="true">
+                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                        <rect x="1.5" y="2.5" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4" />
+                        <path d="M5 1v3M10 1v3M1.5 6.5h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                      </svg>
+                    </div>
+                    <input
+                      class="form-input form-input--icon"
+                      id="servicoModalPlanoValidade"
+                      type="number"
+                      min="1"
+                      placeholder="30"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Serviços inclusos no plano -->
+              <div class="form-group">
+                <label class="form-label">
+                  Serviços Inclusos
+                  <span class="form-required" aria-label="Obrigatório">*</span>
+                </label>
+                <div class="servico-pills" id="planoPillsContainer" aria-label="Serviços selecionados para o plano">
+                  <button
+                    class="servico-pill-add"
+                    id="planoPillAdd"
+                    type="button"
+                    aria-label="Adicionar serviço ao plano"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                  </button>
+                </div>
+                <!-- Dropdown de seleção -->
+                <div class="servico-dropdown" id="planoDropdown" hidden>
+                  <div class="servico-dropdown__inner" id="planoDropdownList"></div>
+                </div>
+              </div>
+            </div>
+            <!-- /servicoCamposPlano -->
+
+            <!-- Preço (comum a todos os tipos) -->
             <div class="form-group">
               <label class="form-label" for="servicoModalPreco">
-                Preço (R$)
+                <span id="servicoModalPrecoLabel">Preço (R$)</span>
                 <span class="form-required" aria-label="Obrigatório">*</span>
               </label>
               <div class="form-input-wrap">
@@ -1648,7 +2017,7 @@
               </div>
             </div>
 
-            <!-- Status -->
+            <!-- Status (comum a todos os tipos) -->
             <div class="form-group">
               <label class="form-label" for="servicoModalStatus">Status</label>
               <div class="form-select-wrap">

@@ -650,6 +650,7 @@ function renderMetasTable(state) {
             if (!raw) { input.value = ''; return; }
             const num = parseInt(raw, 10) / 100;
             input.value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            metasSaveBarShow();
         });
 
         input.addEventListener('change', () => {
@@ -660,6 +661,7 @@ function renderMetasTable(state) {
             const m = METAS_DATA.find(x => x.id === id);
             if (m) m.meta = val;
             refreshMetas();
+            metasSaveBarShow();
         });
     });
 }
@@ -696,6 +698,10 @@ function renderComissoesTable(state) {
 
     // Listener de edição de comissão
     tbody.querySelectorAll('input[data-field="comissao"]').forEach(input => {
+        input.addEventListener('input', () => {
+            metasSaveBarShow();
+        });
+
         input.addEventListener('change', () => {
             const id = input.dataset.id;
             const val = parseFloat(input.value);
@@ -703,8 +709,111 @@ function renderComissoesTable(state) {
             const m = METAS_DATA.find(x => x.id === id);
             if (m) m.comissaoPct = val;
             refreshMetas();
+            metasSaveBarShow();
         });
     });
+}
+
+/* ─── METAS SAVE BAR ────────────────────────────────────── */
+
+// Snapshot dos valores originais antes de qualquer edição
+let _metasSnapshot = null;
+let _metasSaveBarActive = false;
+
+function metasSaveBarGetSnapshot() {
+    return METAS_DATA.map(m => ({ id: m.id, meta: m.meta, comissaoPct: m.comissaoPct }));
+}
+
+function metasSaveBarShow() {
+    if (_metasSaveBarActive) return;
+    _metasSaveBarActive = true;
+
+    // Captura o snapshot na primeira mudança detectada
+    if (!_metasSnapshot) {
+        _metasSnapshot = metasSaveBarGetSnapshot();
+    }
+
+    const bar = document.getElementById('metasSaveBar');
+    if (!bar) return;
+    bar.setAttribute('aria-hidden', 'false');
+    // Força reflow antes de adicionar a classe para garantir a animação
+    void bar.offsetHeight;
+    bar.classList.add('is-visible');
+}
+
+function metasSaveBarHide() {
+    _metasSaveBarActive = false;
+    _metasSnapshot = null;
+
+    const bar = document.getElementById('metasSaveBar');
+    if (!bar) return;
+    bar.classList.remove('is-visible');
+    bar.setAttribute('aria-hidden', 'true');
+}
+
+function metasSaveBarCancel() {
+    if (!_metasSnapshot) {
+        metasSaveBarHide();
+        return;
+    }
+
+    // Restaura os valores do snapshot
+    _metasSnapshot.forEach(snap => {
+        const m = METAS_DATA.find(x => x.id === snap.id);
+        if (m) {
+            m.meta = snap.meta;
+            m.comissaoPct = snap.comissaoPct;
+        }
+    });
+
+    metasSaveBarHide();
+    refreshMetas();
+}
+
+async function metasSaveBarSave() {
+    const btn = document.getElementById('metasBtnSave');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Salvando…';
+    }
+
+    try {
+        await salvarMetasEComissoes(METAS_DATA);
+        metasSaveBarHide();
+        showToast('Metas e comissões salvas com sucesso.', 'success');
+    } catch (err) {
+        showToast('Erro ao salvar. Tente novamente.', 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Salvar alterações';
+        }
+    }
+}
+
+async function salvarMetasEComissoes(metasData) {
+    const promises = metasData.map(m =>
+        fetch(`/api/barbers/${m.id}/metas-comissao`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                meta_valor: m.meta,
+                comissao_pct: m.comissaoPct,
+            }),
+        }).then(res => {
+            if (!res.ok) throw new Error(`Erro ao salvar barbeiro ${m.id}: ${res.status}`);
+            return res.json();
+        })
+    );
+    return Promise.all(promises);
+}
+
+function initMetasSaveBar() {
+    const btnCancel = document.getElementById('metasBtnCancel');
+    const btnSave   = document.getElementById('metasBtnSave');
+
+    if (btnCancel) btnCancel.addEventListener('click', metasSaveBarCancel);
+    if (btnSave)   btnSave.addEventListener('click', metasSaveBarSave);
 }
 
 function refreshMetas() {
@@ -1269,6 +1378,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
     initTooltipHide();
     refreshMetas();
+    initMetasSaveBar();
     refreshSaidas();
     initSaidasModals();
 

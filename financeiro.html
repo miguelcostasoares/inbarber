@@ -1200,6 +1200,40 @@
       <div class="chart-tooltip__inner" id="chartTooltipInner"></div>
     </div>
 
+    <!-- Barra de salvar Metas & Comissões -->
+    <div
+      class="metas-save-bar"
+      id="metasSaveBar"
+      role="region"
+      aria-label="Alterações pendentes"
+      aria-hidden="true"
+    >
+      <span class="metas-save-bar__msg">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="8" cy="8" r="7" stroke="var(--orange)" stroke-width="1.5"/>
+          <path d="M8 5v3.5" stroke="var(--orange)" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="8" cy="11" r=".75" fill="var(--orange)"/>
+        </svg>
+        Você tem alterações não salvas
+      </span>
+      <div class="metas-save-bar__actions">
+        <button
+          class="metas-save-bar__btn metas-save-bar__btn--cancel"
+          id="metasBtnCancel"
+          type="button"
+        >
+          Cancelar
+        </button>
+        <button
+          class="metas-save-bar__btn metas-save-bar__btn--save"
+          id="metasBtnSave"
+          type="button"
+        >
+          Salvar alterações
+        </button>
+      </div>
+    </div>
+
     <!-- Toast container -->
     <div
       class="toast-container"

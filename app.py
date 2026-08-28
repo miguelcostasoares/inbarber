@@ -366,16 +366,21 @@ def deletar_agendamento(agendamento_id):
 # SERVIÇOS
 # ═══════════════════════════════════════════════════════════
 
-def serializar_servico(row):
+def serializar_servico(row, itens=None):
     return {
-        'id':          row['id'],
-        'name':        row['nome'],
-        'nome':        row['nome'],
-        'price':       float(row['preco']) if row['preco'] is not None else 0.0,
-        'preco':       float(row['preco']) if row['preco'] is not None else 0.0,
-        'duration':    row['duracao_min'],
-        'duracao_min': row['duracao_min'],
-        'ativo':       bool(row['ativo']),
+        'id':                  row['id'],
+        'name':                row['nome'],
+        'nome':                row['nome'],
+        'price':               float(row['preco']) if row['preco'] is not None else 0.0,
+        'preco':               float(row['preco']) if row['preco'] is not None else 0.0,
+        'duration':            row['duracao_min'],
+        'duracao_min':         row['duracao_min'],
+        'ativo':               bool(row['ativo']),
+        'tipo':                row.get('tipo', 'padrao') or 'padrao',
+        'plano_cobranca':      row.get('plano_cobranca'),
+        'plano_usos':          row.get('plano_usos'),
+        'plano_validade_dias': row.get('plano_validade_dias'),
+        'itens':               itens or [],
     }
 
 
@@ -387,19 +392,47 @@ def listar_servicos():
     try:
         if include_all:
             cursor.execute(
-                '''SELECT id, nome, preco, duracao_min, ativo
+                '''SELECT id, nome, preco, duracao_min, ativo,
+                          tipo, plano_cobranca, plano_usos, plano_validade_dias
                    FROM servicos
                    ORDER BY nome ASC'''
             )
         else:
             cursor.execute(
-                '''SELECT id, nome, preco, duracao_min, ativo
+                '''SELECT id, nome, preco, duracao_min, ativo,
+                          tipo, plano_cobranca, plano_usos, plano_validade_dias
                    FROM servicos
                    WHERE ativo = 1
                    ORDER BY nome ASC'''
             )
         rows = cursor.fetchall()
-        return jsonify([serializar_servico(r) for r in rows]), 200
+
+        # Carrega itens de combo/plano de uma só vez
+        ids = [r['id'] for r in rows]
+        itens_map = {}
+        if ids:
+            placeholders = ', '.join(['%s'] * len(ids))
+            cursor.execute(
+                f'''SELECT si.servico_id, si.item_id, si.ordem,
+                           s.nome, s.duracao_min, s.preco
+                    FROM servico_itens si
+                    JOIN servicos s ON s.id = si.item_id
+                    WHERE si.servico_id IN ({placeholders})
+                    ORDER BY si.servico_id, si.ordem''',
+                ids
+            )
+            for item in cursor.fetchall():
+                itens_map.setdefault(item['servico_id'], []).append({
+                    'item_id':    item['item_id'],
+                    'nome':       item['nome'],
+                    'duracao_min': item['duracao_min'],
+                    'preco':      float(item['preco']) if item['preco'] else 0.0,
+                })
+
+        return jsonify([
+            serializar_servico(r, itens_map.get(r['id'], []))
+            for r in rows
+        ]), 200
     except Exception as e:
         return jsonify({'error': f'Erro ao listar serviços: {e}'}), 500
     finally:
@@ -415,12 +448,9 @@ def criar_servico():
     if not nome:
         return jsonify({'error': 'O nome é obrigatório.'}), 400
 
-    try:
-        duracao_min = int(data.get('duracao_min', 0))
-        if duracao_min < 1:
-            raise ValueError
-    except (ValueError, TypeError):
-        return jsonify({'error': 'Duração inválida. Informe um número inteiro positivo.'}), 400
+    tipo = data.get('tipo', 'padrao')
+    if tipo not in ('padrao', 'combo', 'plano'):
+        return jsonify({'error': 'Tipo inválido. Use padrao, combo ou plano.'}), 400
 
     try:
         preco = float(data.get('preco', 0))
@@ -429,6 +459,61 @@ def criar_servico():
     except (ValueError, TypeError):
         return jsonify({'error': 'Preço inválido.'}), 400
 
+    duracao_min = None
+    if tipo in ('padrao', 'combo'):
+        try:
+            duracao_min = int(data.get('duracao_min', 0))
+            if duracao_min < 1:
+                raise ValueError
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Duração inválida. Informe um número inteiro positivo.'}), 400
+
+    # Para planos, calcular duracao_min automaticamente somando a duração dos itens
+    if tipo == 'plano':
+        itens_ids = data.get('itens', [])
+        duracao_total = 0
+        conn_temp = get_db()
+        cursor_temp = conn_temp.cursor(dictionary=True)
+        try:
+            for item_id in itens_ids:
+                cursor_temp.execute(
+                    'SELECT duracao_min FROM servicos WHERE id = %s AND tipo = "padrao"',
+                    (item_id,)
+                )
+                item = cursor_temp.fetchone()
+                if item and item['duracao_min']:
+                    duracao_total += int(item['duracao_min'])
+            duracao_min = duracao_total if duracao_total > 0 else 30  # fallback de 30 minutos
+        except Exception as e:
+            duracao_min = 30  # fallback em caso de erro
+        finally:
+            cursor_temp.close()
+            conn_temp.close()
+
+    plano_cobranca      = None
+    plano_usos          = None
+    plano_validade_dias = None
+    if tipo == 'plano':
+        plano_cobranca = data.get('plano_cobranca', 'mensal')
+        if plano_cobranca not in ('mensal', 'trimestral', 'avulso'):
+            return jsonify({'error': 'Tipo de cobrança inválido.'}), 400
+        try:
+            plano_usos = int(data.get('plano_usos', 0))
+            if plano_usos < 1:
+                raise ValueError
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Quantidade de usos inválida.'}), 400
+        try:
+            plano_validade_dias = int(data.get('plano_validade_dias', 0))
+            if plano_validade_dias < 1:
+                raise ValueError
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Validade inválida.'}), 400
+
+    itens_ids = data.get('itens', [])
+    if tipo in ('combo', 'plano') and not itens_ids:
+        return jsonify({'error': 'Adicione pelo menos um serviço ao ' + tipo + '.'}), 400
+
     ativo   = bool(data.get('ativo', True))
     novo_id = 's' + uuid.uuid4().hex[:12]
 
@@ -436,16 +521,44 @@ def criar_servico():
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            '''INSERT INTO servicos (id, nome, preco, duracao_min, ativo)
-               VALUES (%s, %s, %s, %s, %s)''',
-            (novo_id, nome, preco, duracao_min, int(ativo))
+            '''INSERT INTO servicos
+               (id, nome, preco, duracao_min, ativo, tipo,
+                plano_cobranca, plano_usos, plano_validade_dias)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+            (novo_id, nome, preco, duracao_min, int(ativo), tipo,
+             plano_cobranca, plano_usos, plano_validade_dias)
         )
+
+        itens_inseridos = []
+        for ordem, item_id in enumerate(itens_ids):
+            cursor.execute('SELECT id FROM servicos WHERE id = %s AND tipo = "padrao"', (item_id,))
+            if not cursor.fetchone():
+                conn.rollback()
+                return jsonify({'error': f'Serviço item "{item_id}" não encontrado ou não é do tipo padrão.'}), 400
+            item_uuid = 'si' + uuid.uuid4().hex[:10]
+            cursor.execute(
+                'INSERT INTO servico_itens (id, servico_id, item_id, ordem) VALUES (%s, %s, %s, %s)',
+                (item_uuid, novo_id, item_id, ordem)
+            )
+            cursor.execute(
+                'SELECT nome, duracao_min, preco FROM servicos WHERE id = %s', (item_id,)
+            )
+            s = cursor.fetchone()
+            itens_inseridos.append({
+                'item_id':    item_id,
+                'nome':       s['nome'],
+                'duracao_min': s['duracao_min'],
+                'preco':      float(s['preco']) if s['preco'] else 0.0,
+            })
+
         conn.commit()
         cursor.execute(
-            'SELECT id, nome, preco, duracao_min, ativo FROM servicos WHERE id = %s',
+            '''SELECT id, nome, preco, duracao_min, ativo,
+                      tipo, plano_cobranca, plano_usos, plano_validade_dias
+               FROM servicos WHERE id = %s''',
             (novo_id,)
         )
-        return jsonify(serializar_servico(cursor.fetchone())), 201
+        return jsonify(serializar_servico(cursor.fetchone(), itens_inseridos)), 201
     except Exception as e:
         conn.rollback()
         return jsonify({'error': f'Erro ao criar serviço: {e}'}), 500
@@ -461,9 +574,15 @@ def atualizar_servico(servico_id):
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
     try:
-        cursor.execute('SELECT id FROM servicos WHERE id = %s', (servico_id,))
-        if not cursor.fetchone():
+        cursor.execute(
+            '''SELECT id, tipo FROM servicos WHERE id = %s''',
+            (servico_id,)
+        )
+        servico_atual = cursor.fetchone()
+        if not servico_atual:
             return jsonify({'error': 'Serviço não encontrado.'}), 404
+
+        tipo_atual = servico_atual.get('tipo', 'padrao') or 'padrao'
 
         campos = []
         params = []
@@ -475,6 +594,14 @@ def atualizar_servico(servico_id):
             campos.append('nome = %s')
             params.append(nome)
 
+        if 'tipo' in data:
+            tipo_novo = data['tipo']
+            if tipo_novo not in ('padrao', 'combo', 'plano'):
+                return jsonify({'error': 'Tipo inválido.'}), 400
+            campos.append('tipo = %s')
+            params.append(tipo_novo)
+            tipo_atual = tipo_novo
+
         if 'duracao_min' in data:
             try:
                 duracao = int(data['duracao_min'])
@@ -484,6 +611,23 @@ def atualizar_servico(servico_id):
                 return jsonify({'error': 'Duração inválida.'}), 400
             campos.append('duracao_min = %s')
             params.append(duracao)
+
+        # Se for plano e tiver itens, recalcular duracao_min automaticamente
+        if tipo_atual == 'plano' and 'itens' in data:
+            itens_ids = data['itens']
+            duracao_total = 0
+            for item_id in itens_ids:
+                cursor.execute(
+                    'SELECT duracao_min FROM servicos WHERE id = %s AND tipo = "padrao"',
+                    (item_id,)
+                )
+                item = cursor.fetchone()
+                if item and item['duracao_min']:
+                    duracao_total += int(item['duracao_min'])
+            
+            duracao_calculada = duracao_total if duracao_total > 0 else 30
+            campos.append('duracao_min = %s')
+            params.append(duracao_calculada)
 
         if 'preco' in data:
             try:
@@ -499,12 +643,37 @@ def atualizar_servico(servico_id):
             campos.append('ativo = %s')
             params.append(int(bool(data['ativo'])))
 
+        if 'plano_cobranca' in data:
+            pc = data['plano_cobranca']
+            if pc not in ('mensal', 'trimestral', 'avulso'):
+                return jsonify({'error': 'Tipo de cobrança inválido.'}), 400
+            campos.append('plano_cobranca = %s')
+            params.append(pc)
+
+        if 'plano_usos' in data:
+            try:
+                usos = int(data['plano_usos'])
+                if usos < 1:
+                    raise ValueError
+            except (ValueError, TypeError):
+                return jsonify({'error': 'Quantidade de usos inválida.'}), 400
+            campos.append('plano_usos = %s')
+            params.append(usos)
+
+        if 'plano_validade_dias' in data:
+            try:
+                val = int(data['plano_validade_dias'])
+                if val < 1:
+                    raise ValueError
+            except (ValueError, TypeError):
+                return jsonify({'error': 'Validade inválida.'}), 400
+            campos.append('plano_validade_dias = %s')
+            params.append(val)
+
         if 'novo' in data:
             campos.append('novo = %s')
             params.append(int(bool(data['novo'])))
 
-        # img: string = fotografia (data URL vindo do CRM ou caminho em
-        # assets/produtos/); null = voltar à convenção assets/produtos/<id>.jpg.
         if 'img' in data:
             img = _validar_img(data['img'])
             if isinstance(img, tuple):
@@ -512,21 +681,62 @@ def atualizar_servico(servico_id):
             campos.append('img = %s')
             params.append(img)
 
-        if not campos:
+        if campos:
+            params.append(servico_id)
+            cursor.execute(
+                f"UPDATE servicos SET {', '.join(campos)} WHERE id = %s",
+                tuple(params)
+            )
+
+        # Atualiza itens se enviados
+        if 'itens' in data and tipo_atual in ('combo', 'plano'):
+            itens_ids = data['itens']
+            cursor.execute(
+                'DELETE FROM servico_itens WHERE servico_id = %s', (servico_id,)
+            )
+            for ordem, item_id in enumerate(itens_ids):
+                cursor.execute(
+                    'SELECT id FROM servicos WHERE id = %s AND tipo = "padrao"',
+                    (item_id,)
+                )
+                if not cursor.fetchone():
+                    conn.rollback()
+                    return jsonify({'error': f'Serviço item "{item_id}" não encontrado ou não é do tipo padrão.'}), 400
+                item_uuid = 'si' + uuid.uuid4().hex[:10]
+                cursor.execute(
+                    'INSERT INTO servico_itens (id, servico_id, item_id, ordem) VALUES (%s, %s, %s, %s)',
+                    (item_uuid, servico_id, item_id, ordem)
+                )
+
+        if not campos and 'itens' not in data:
             return jsonify({'error': 'Nenhum campo para atualizar.'}), 400
 
-        params.append(servico_id)
-        cursor.execute(
-            f"UPDATE servicos SET {', '.join(campos)} WHERE id = %s",
-            tuple(params)
-        )
         conn.commit()
 
         cursor.execute(
-            'SELECT id, nome, preco, duracao_min, ativo FROM servicos WHERE id = %s',
+            '''SELECT id, nome, preco, duracao_min, ativo,
+                      tipo, plano_cobranca, plano_usos, plano_validade_dias
+               FROM servicos WHERE id = %s''',
             (servico_id,)
         )
-        return jsonify(serializar_servico(cursor.fetchone())), 200
+        row = cursor.fetchone()
+
+        cursor.execute(
+            '''SELECT si.item_id, s.nome, s.duracao_min, s.preco
+               FROM servico_itens si
+               JOIN servicos s ON s.id = si.item_id
+               WHERE si.servico_id = %s
+               ORDER BY si.ordem''',
+            (servico_id,)
+        )
+        itens = [{
+            'item_id':    i['item_id'],
+            'nome':       i['nome'],
+            'duracao_min': i['duracao_min'],
+            'preco':      float(i['preco']) if i['preco'] else 0.0,
+        } for i in cursor.fetchall()]
+
+        return jsonify(serializar_servico(row, itens)), 200
     except Exception as e:
         conn.rollback()
         return jsonify({'error': f'Erro ao atualizar serviço: {e}'}), 500
@@ -558,7 +768,9 @@ def toggle_servico_status(servico_id):
         conn.commit()
 
         cursor.execute(
-            'SELECT id, nome, preco, duracao_min, ativo FROM servicos WHERE id = %s',
+            '''SELECT id, nome, preco, duracao_min, ativo,
+                      tipo, plano_cobranca, plano_usos, plano_validade_dias
+               FROM servicos WHERE id = %s''',
             (servico_id,)
         )
         return jsonify(serializar_servico(cursor.fetchone())), 200
@@ -575,13 +787,16 @@ def toggle_servico_status(servico_id):
 
 def serializar_barbeiro(row):
     return {
-        'id':       row['id'],
-        'nome':     row['nome'],
-        'name':     row['nome'],
-        'telefone': row['telefone'] or '',
-        'phone':    row['telefone'] or '',
-        'avatar':   row.get('avatar'),
-        'ativo':    bool(row['ativo']),
+        'id':              row['id'],
+        'nome':            row['nome'],
+        'name':            row['nome'],
+        'telefone':        row['telefone'] or '',
+        'phone':           row['telefone'] or '',
+        'email':           row['email'] or '',
+        'data_nascimento': str(row['data_nascimento']) if row.get('data_nascimento') else None,
+        'endereco':        row['endereco'] or '',
+        'avatar':          row.get('avatar'),
+        'ativo':           bool(row['ativo']),
     }
 
 
@@ -593,13 +808,13 @@ def listar_barbeiros():
     try:
         if include_inactive:
             cursor.execute(
-                '''SELECT id, nome, telefone, avatar, ativo
+                '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
                    FROM barbeiros
                    ORDER BY nome ASC'''
             )
         else:
             cursor.execute(
-                '''SELECT id, nome, telefone, avatar, ativo
+                '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
                    FROM barbeiros
                    WHERE ativo = 1
                    ORDER BY nome ASC'''
@@ -622,20 +837,30 @@ def criar_barbeiro():
         return jsonify({'error': 'O nome é obrigatório.'}), 400
 
     telefone = (data.get('telefone') or '').strip() or None
-    ativo    = bool(data.get('ativo', True))
-    novo_id  = 'b' + uuid.uuid4().hex[:12]
+    if not telefone:
+        return jsonify({'error': 'O telefone é obrigatório.'}), 400
+
+    email = (data.get('email') or '').strip() or None
+    if not email:
+        return jsonify({'error': 'O e-mail é obrigatório.'}), 400
+
+    ativo           = bool(data.get('ativo', True))
+    data_nascimento = (data.get('data_nascimento') or '').strip() or None
+    endereco        = (data.get('endereco') or '').strip() or None
+    novo_id         = 'b' + uuid.uuid4().hex[:12]
 
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            '''INSERT INTO barbeiros (id, nome, telefone, ativo)
-               VALUES (%s, %s, %s, %s)''',
-            (novo_id, nome, telefone, int(ativo))
+            '''INSERT INTO barbeiros (id, nome, telefone, email, data_nascimento, endereco, ativo)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+            (novo_id, nome, telefone, email, data_nascimento, endereco, int(ativo))
         )
         conn.commit()
         cursor.execute(
-            'SELECT id, nome, telefone, avatar, ativo FROM barbeiros WHERE id = %s',
+            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
+               FROM barbeiros WHERE id = %s''',
             (novo_id,)
         )
         return jsonify(serializar_barbeiro(cursor.fetchone())), 201
@@ -669,8 +894,23 @@ def atualizar_barbeiro(barbeiro_id):
             params.append(nome)
 
         if 'telefone' in data:
+            telefone = data['telefone']
             campos.append('telefone = %s')
-            params.append(data['telefone'].strip() or None)
+            params.append(telefone.strip() if telefone else None)
+
+        if 'email' in data:
+            email = data['email']
+            campos.append('email = %s')
+            params.append(email.strip() if email else None)
+
+        if 'data_nascimento' in data:
+            campos.append('data_nascimento = %s')
+            params.append(data['data_nascimento'] or None)
+
+        if 'endereco' in data:
+            endereco = data['endereco']
+            campos.append('endereco = %s')
+            params.append(endereco.strip() if endereco else None)
 
         if 'ativo' in data:
             campos.append('ativo = %s')
@@ -687,7 +927,8 @@ def atualizar_barbeiro(barbeiro_id):
         conn.commit()
 
         cursor.execute(
-            'SELECT id, nome, telefone, avatar, ativo FROM barbeiros WHERE id = %s',
+            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
+               FROM barbeiros WHERE id = %s''',
             (barbeiro_id,)
         )
         return jsonify(serializar_barbeiro(cursor.fetchone())), 200
@@ -722,7 +963,8 @@ def toggle_barbeiro_status(barbeiro_id):
         conn.commit()
 
         cursor.execute(
-            'SELECT id, nome, telefone, avatar, ativo FROM barbeiros WHERE id = %s',
+            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
+               FROM barbeiros WHERE id = %s''',
             (barbeiro_id,)
         )
         return jsonify(serializar_barbeiro(cursor.fetchone())), 200
@@ -1803,7 +2045,7 @@ def buscar_barbearia():
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            "SELECT nome, telefone, endereco, logo_url, FROM barbearia WHERE id = 'default'"
+            "SELECT nome, telefone, endereco, logo_url FROM barbearia WHERE id = 1"
         )
         row = cursor.fetchone()
         if not row:
@@ -1833,7 +2075,7 @@ def salvar_barbearia():
     try:
         cursor.execute(
             """INSERT INTO barbearia (id, nome, telefone, endereco)
-               VALUES ('default', %s, %s, %s)
+               VALUES (1, %s, %s, %s)
                ON DUPLICATE KEY UPDATE
                  nome     = VALUES(nome),
                  telefone = VALUES(telefone),
@@ -1842,7 +2084,7 @@ def salvar_barbearia():
         )
         conn.commit()
         cursor.execute(
-            "SELECT nome, telefone, endereco, logo_url FROM barbearia WHERE id = 'default'"
+            "SELECT nome, telefone, endereco, logo_url FROM barbearia WHERE id = 1"
         )
         return jsonify(serializar_barbearia(cursor.fetchone())), 200
     except Exception as e:
@@ -1875,8 +2117,8 @@ def upload_logo():
     cursor = conn.cursor()
     try:
         cursor.execute(
-            """INSERT INTO barbearia (id, logo_url)
-               VALUES ('default', %s)
+            """INSERT INTO barbearia (id, nome, telefone, logo_url)
+               VALUES (1, '', '', %s)
                ON DUPLICATE KEY UPDATE logo_url = VALUES(logo_url)""",
             (logo_url,)
         )

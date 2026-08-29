@@ -7,14 +7,24 @@
 'use strict';
 
 /* ─── 1. CONFIG ─────────────────────────────────────────── */
+// Nenhum valor de negócio fica fixo aqui: nome da barbearia, horário de
+// funcionamento e intervalo de almoço vêm de /api/barbershop e
+// /api/preferences (ver loadBusinessConfig(), chamado no boot()).
+// slotMinutes é a única constante de UI legítima (granularidade do
+// <select> de horário), sem relação com dados da barbearia.
 const CFG = {
-  barbershopName: 'Barbearia do Rafael',
-  ownerName: 'Rafael',
+  barbershopName: '',
+  ownerName: '',
   openHour: 8,
   closeHour: 20,
   slotMinutes: 30,
   currency: 'BRL',
 };
+
+// Intervalo de almoço ativo, carregado de /api/preferences.almoco.
+// null = almoço desativado (nenhum horário bloqueado por almoço).
+// Formato: { startMin, endMin, startLabel, endLabel } (minutos desde 00:00).
+let LUNCH = null;
 
 
 /* ─── 2. DADOS DINÂMICOS (populados via API no boot) ────── */
@@ -27,6 +37,10 @@ let SERVICES = [];
 // GET /api/barbers
 let BARBERS = [];
 
+// GET /api/saidas/pgto — mesma tabela formas_pagamento usada em Saídas,
+// reaproveitada aqui para o seletor de forma de pagamento do agendamento.
+let FORMAS_PAGAMENTO = [];
+
 // GET /api/clients?search=<q>  — buscado sob demanda no autocomplete
 
 // Populado via API (InBarberAPI.listAppointments) — ver reloadAppointments().
@@ -35,12 +49,8 @@ let BARBERS = [];
 // pois é o que api.js devolve já mapeado a partir do back-end.
 let APPOINTMENTS = [];
 
-// GET /api/blocks (bloqueios de horário)
-let BLOCKS = [
-  { id: 'b001', date: getTodayStr(), startTime: '12:00', endTime: '13:00', barberId: 'marcos', reason: 'almoco' },
-  { id: 'b002', date: getTodayStr(), startTime: '12:00', endTime: '13:00', barberId: 'joao', reason: 'almoco' },
-  { id: 'b003', date: getTodayStr(), startTime: '12:00', endTime: '13:00', barberId: 'andre', reason: 'almoco' },
-];
+// GET /api/blocks (bloqueios de horário) — ver reloadBlocks().
+let BLOCKS = [];
 
 
 /* ─── 3. STATE ──────────────────────────────────────────── */
@@ -54,6 +64,7 @@ const STATE = {
   listSort: { field: 'time', dir: 'asc' },
   listDate: getTodayStr(),
   listStatus: '',
+  kanbanDate: getTodayStr(),
   dragging: null,   // { id, fromStatus }
   editingId: null,   // null = criando, string = editando
 };
@@ -89,12 +100,38 @@ function formatPhone(phone) {
   return phone;
 }
 
-function genId() {
-  return 'x' + Math.random().toString(36).slice(2, 9);
-}
-
 function getService(id) { return SERVICES.find(s => s.id === id) || null; }
 function getBarber(id) { return BARBERS.find(b => b.id === id) || null; }
+
+// Paleta fixa de cores para avatares/indicadores de barbeiro. Como os IDs
+// reais vêm do banco (uuids), não dá pra ter uma classe CSS por barbeiro
+// (como era com os mocks "marcos"/"joao"/"andre") — em vez disso, cada
+// barbeiro recebe uma cor determinística da paleta via hash do próprio id,
+// aplicada inline (style), e sempre a mesma para o mesmo barbeiro.
+const BARBER_COLOR_PALETTE = [
+  { bg: 'rgba(191,160,106,0.2)', fg: 'var(--gold-lt)' },
+  { bg: 'var(--blue-bg)', fg: 'var(--blue)' },
+  { bg: 'var(--green-bg)', fg: 'var(--green)' },
+  { bg: 'rgba(224,84,84,0.16)', fg: 'var(--red, #E05454)' },
+  { bg: 'rgba(155,114,207,0.18)', fg: '#9B72CF' },
+  { bg: 'rgba(224,146,74,0.18)', fg: '#E0924A' },
+];
+
+function getBarberColor(id) {
+  if (!id) return BARBER_COLOR_PALETTE[0];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return BARBER_COLOR_PALETTE[hash % BARBER_COLOR_PALETTE.length];
+}
+
+// Retorna o atributo style="" pronto para os elementos de avatar/indicador
+// de um barbeiro, substituindo as antigas classes fixas kanban-card__avatar--marcos etc.
+function barberAvatarStyle(id) {
+  const c = getBarberColor(id);
+  return `background:${c.bg};color:${c.fg}`;
+}
 
 function getStatusLabel(status) {
   const map = {
@@ -134,18 +171,16 @@ function hasConflict(appt, excludeId = null) {
   });
 }
 
-// Gera slots de horário para o select
-// Horário de almoço bloqueado: das 12:00 até as 13:00
-const LUNCH_START = 12 * 60; // 720 min
-const LUNCH_END = 13 * 60; // 780 min
-
+// Gera slots de horário para o select.
+// O intervalo de almoço (se ativo) vem de LUNCH, carregado das Preferências
+// da barbearia — nada de horário fixo aqui.
 function generateTimeSlots() {
   const slots = [];
   let current = CFG.openHour * 60;
   const close = CFG.closeHour * 60;
   while (current < close) {
-    // Pula qualquer slot que inicie dentro do bloqueio de almoço
-    if (current < LUNCH_START || current >= LUNCH_END) {
+    // Pula qualquer slot que inicie dentro do bloqueio de almoço (se ativo)
+    if (!LUNCH || current < LUNCH.startMin || current >= LUNCH.endMin) {
       const h = Math.floor(current / 60).toString().padStart(2, '0');
       const m = (current % 60).toString().padStart(2, '0');
       slots.push(`${h}:${m}`);
@@ -153,6 +188,28 @@ function generateTimeSlots() {
     current += CFG.slotMinutes;
   }
   return slots;
+}
+
+// Verifica se [startMin, endMin) cai dentro do intervalo de almoço ativo
+function isWithinLunch(startMin, endMin) {
+  if (!LUNCH) return false;
+  return startMin < LUNCH.endMin && endMin > LUNCH.startMin;
+}
+
+// Detecta se um horário (barbeiro + data + faixa de minutos) esbarra em
+// algum bloqueio manual carregado de /api/blocks (folga, férias,
+// manutenção, almoço manual etc.), considerando também bloqueios gerais
+// (sem barbeiro específico, valem para todos).
+function findManualBlock(barberId, date, startMin, endMin) {
+  return BLOCKS.find(b => {
+    if (b.date !== date) return false;
+    if (b.barberId && b.barberId !== barberId) return false;
+    const [bsh, bsm] = b.startTime.split(':').map(Number);
+    const [beh, bem] = b.endTime.split(':').map(Number);
+    const bStart = bsh * 60 + bsm;
+    const bEnd = beh * 60 + bem;
+    return startMin < bEnd && endMin > bStart;
+  }) || null;
 }
 
 // Retorna semana (dom-sab) de uma data
@@ -178,6 +235,62 @@ function getFilteredAppointments(dateOverride) {
     }
     return true;
   });
+}
+
+/* ─── CONFIG DE NEGÓCIO (API) ───────────────────────────────
+   Carrega nome da barbearia (/api/barbershop) e horário de
+   funcionamento + almoço (/api/preferences), substituindo os
+   antigos valores fixos de CFG/LUNCH. Chamado uma vez no boot(),
+   antes de qualquer render que dependa desses valores.
+──────────────────────────────────────────────────────────── */
+async function loadBusinessConfig() {
+  try {
+    const barbershop = await InBarberAPI.getBarbershop();
+    CFG.barbershopName = barbershop?.nome || '';
+    CFG.ownerName = barbershop?.ownerName || barbershop?.nome || '';
+
+    document.title = CFG.barbershopName || document.title;
+    const nameEl = document.getElementById('sidebarUserName');
+    const avatarEl = document.getElementById('sidebarUserAvatar');
+    if (nameEl) nameEl.textContent = CFG.ownerName || CFG.barbershopName || '—';
+    if (avatarEl) {
+      const initials = (CFG.ownerName || CFG.barbershopName || '')
+        .trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+      avatarEl.textContent = initials || '—';
+    }
+  } catch (err) {
+    showToast('Erro ao carregar dados da barbearia.', 'error');
+  }
+
+  try {
+    const prefs = await InBarberAPI.getPreferences();
+    const today = getTodayStr();
+    const weekday = new Date(today + 'T00:00:00').getDay(); // 0=dom...6=sab
+    const diaKeys = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+    const horarioHoje = prefs?.horarios?.[diaKeys[weekday]];
+
+    if (horarioHoje && horarioHoje.aberto) {
+      const [oh] = (horarioHoje.abertura || '08:00').split(':').map(Number);
+      const [ch] = (horarioHoje.fechamento || '18:00').split(':').map(Number);
+      CFG.openHour = oh;
+      CFG.closeHour = ch;
+    }
+
+    if (prefs?.almoco?.ativo) {
+      const [sh, sm] = prefs.almoco.inicio.split(':').map(Number);
+      const [eh, em] = prefs.almoco.fim.split(':').map(Number);
+      LUNCH = {
+        startMin: sh * 60 + sm,
+        endMin: eh * 60 + em,
+        startLabel: prefs.almoco.inicio,
+        endLabel: prefs.almoco.fim,
+      };
+    } else {
+      LUNCH = null;
+    }
+  } catch (err) {
+    showToast('Erro ao carregar preferências da barbearia.', 'error');
+  }
 }
 
 /* ─── RELOAD CENTRAL (API) ──────────────────────────────────
@@ -222,6 +335,21 @@ async function reloadAppointments() {
     _firstAppointmentsLoad = false;
     animateAgendaStats();
   }
+}
+
+/* ─── RELOAD DE BLOQUEIOS (API) ─────────────────────────────
+   Busca os bloqueios de horário no back-end (GET /api/blocks)
+   e repõe BLOCKS. Chamado no boot() e sempre que um bloqueio é
+   criado/removido, seguindo o mesmo padrão de reloadAppointments().
+──────────────────────────────────────────────────────────── */
+async function reloadBlocks() {
+  try {
+    BLOCKS = await InBarberAPI.listBlocks();
+  } catch (err) {
+    showToast(err.message || 'Erro ao carregar bloqueios de horário.', 'error');
+    // Mantém o que já estava carregado, mesma lógica de reloadAppointments().
+  }
+  refreshAll();
 }
 
 /* ─── TOAST ─────────────────────────────────────────────── */
@@ -323,7 +451,7 @@ function renderKanban() {
   const board = document.getElementById('kanbanBoard');
   if (!board) return;
 
-  const today = getTodayStr();
+  const today = STATE.kanbanDate || getTodayStr();
   const filtered = getFilteredAppointments(today);
 
   board.innerHTML = KANBAN_COLUMNS.map(col => {
@@ -401,6 +529,7 @@ function renderKanbanCard(appt) {
          data-id="${appt.id}"
          data-status="${appt.status}"
          data-barber="${appt.barberId}"
+         style="--barber-accent:${getBarberColor(appt.barberId).fg}"
          draggable="true"
          role="listitem"
          tabindex="0"
@@ -427,7 +556,7 @@ function renderKanbanCard(appt) {
 
       <div class="kanban-card__footer">
         <div class="kanban-card__barber">
-          <div class="kanban-card__avatar kanban-card__avatar--${appt.barberId}" aria-hidden="true">
+          <div class="kanban-card__avatar" style="${barberAvatarStyle(appt.barberId)}" aria-hidden="true">
             ${barber ? barber.avatar : '?'}
           </div>
           <span class="kanban-card__barber-name">${barber ? barber.name.split(' ')[0] : '—'}</span>
@@ -461,60 +590,67 @@ function renderBlockCard(block) {
 }
 
 function renderCardActions(appt) {
-  const whatsapp = `
-    <button class="action-btn action-btn--green"
+  // WhatsApp vira ícone compacto para não sobrecarregar a linha
+  const whatsappIcon = `
+    <button class="action-btn action-btn--icon action-btn--green"
             onclick="sendWhatsApp('${appt.id}')"
-            aria-label="Enviar WhatsApp para ${appt.client}" title="WhatsApp">
-      <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            aria-label="WhatsApp ${appt.client}" title="WhatsApp">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
         <path d="M8 0C3.58 0 0 3.58 0 8c0 1.41.37 2.74 1.01 3.9L0 16l4.24-1.01A7.95 7.95 0 0 0 8 16c4.42 0 8-3.58 8-8S12.42 0 8 0zm3.92 11.34c-.17.47-1 .92-1.38.96-.35.04-.68.17-2.29-.47-1.93-.76-3.18-2.72-3.28-2.85-.1-.13-.82-1.08-.82-2.07 0-.99.52-1.47.7-1.67.18-.2.4-.25.53-.25h.38c.12 0 .29.05.44.34.16.3.54 1.31.59 1.4.05.1.08.21.02.33-.06.13-.09.2-.19.31-.1.11-.2.24-.28.32-.1.09-.19.19-.08.38.11.19.5.82 1.07 1.32.74.65 1.36.86 1.56.95.19.09.3.08.41-.04.12-.13.5-.58.64-.78.13-.2.27-.17.45-.1.19.07 1.19.56 1.39.66.2.1.34.15.39.24.05.09.05.53-.12 1z"/>
       </svg>
-      WhatsApp
     </button>`;
 
-  const actions = [];
+  // Linha primária: ação principal de status
+  // Linha secundária: ações secundárias (editar + whatsapp)
+  let primary = '';
+  let secondary = '';
 
   if (appt.status === 'pendente') {
-    actions.push(`
-      <button class="action-btn action-btn--blue" onclick="changeStatus('${appt.id}','confirmado')" aria-label="Confirmar agendamento">
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 6l3 3 7-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    primary = `
+      <button class="action-btn action-btn--blue" onclick="changeStatus('${appt.id}','confirmado')" aria-label="Confirmar">
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 6l3 3 7-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Confirmar
-      </button>`);
-    actions.push(whatsapp);
-    actions.push(`<button class="action-btn action-btn--gold" onclick="openEditAppt('${appt.id}')" aria-label="Editar agendamento">Editar</button>`);
-    actions.push(`<button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show')" aria-label="Cancelar">Cancelar</button>`);
+      </button>
+      <button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show')" aria-label="Cancelar">Cancelar</button>`;
+    secondary = `
+      <button class="action-btn action-btn--gold action-btn--sm" onclick="openEditAppt('${appt.id}')" aria-label="Editar">Editar</button>
+      ${whatsappIcon}`;
   }
 
   if (appt.status === 'confirmado') {
-    actions.push(`
+    primary = `
       <button class="action-btn action-btn--orange" onclick="changeStatus('${appt.id}','em-andamento')" aria-label="Iniciar corte">
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 6l9-4-4 9-2-3-3-2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 6l9-4-4 9-2-3-3-2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
         Iniciar
-      </button>`);
-    actions.push(whatsapp);
-    actions.push(`<button class="action-btn action-btn--gold" onclick="openEditAppt('${appt.id}')" aria-label="Reagendar">Reagendar</button>`);
-    actions.push(`<button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show')" aria-label="No-show">No-show</button>`);
+      </button>
+      <button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show')" aria-label="No-show">No-show</button>`;
+    secondary = `
+      <button class="action-btn action-btn--gold action-btn--sm" onclick="openEditAppt('${appt.id}')" aria-label="Reagendar">Reagendar</button>
+      ${whatsappIcon}`;
   }
 
   if (appt.status === 'em-andamento') {
-    actions.push(`
-      <button class="action-btn action-btn--green" onclick="changeStatus('${appt.id}','concluido')" aria-label="Finalizar atendimento">
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 6l3 3 7-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    primary = `
+      <button class="action-btn action-btn--green" onclick="changeStatus('${appt.id}','concluido')" aria-label="Finalizar">
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 6l3 3 7-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Finalizar
-      </button>`);
-    actions.push(whatsapp);
+      </button>`;
+    secondary = whatsappIcon;
   }
 
   if (appt.status === 'concluido') {
-    actions.push(whatsapp);
-    actions.push(`<button class="action-btn action-btn--muted" onclick="openEditAppt('${appt.id}')" aria-label="Ver detalhes">Ver detalhes</button>`);
+    primary = `<button class="action-btn action-btn--muted" onclick="openEditAppt('${appt.id}')" aria-label="Ver detalhes">Ver detalhes</button>`;
+    secondary = whatsappIcon;
   }
 
   if (appt.status === 'no-show') {
-    actions.push(`<button class="action-btn action-btn--blue" onclick="openEditAppt('${appt.id}')" aria-label="Reagendar">Reagendar</button>`);
-    actions.push(whatsapp);
+    primary = `<button class="action-btn action-btn--blue" onclick="openEditAppt('${appt.id}')" aria-label="Reagendar">Reagendar</button>`;
+    secondary = whatsappIcon;
   }
 
-  return actions.join('');
+  return `
+    <div class="card-actions__primary">${primary}</div>
+    ${secondary ? `<div class="card-actions__secondary">${secondary}</div>` : ''}`;
 }
 
 
@@ -703,7 +839,7 @@ function renderWeekCal() {
         return true;
       });
 
-      const isLunch = (h >= 12 && h < 13);
+      const isLunch = isWithinLunch(h * 60, (h + 1) * 60);
       html += `<div class="cal-hour-cell cal-hour-cell--half-line${isToday ? ' cal-hour-cell--today' : ''}${isLunch ? ' cal-hour-cell--lunch' : ''}"
               data-date="${date}" data-hour="${h}"
               onclick="calCellClick('${date}', ${h})"
@@ -846,8 +982,8 @@ function dateToStr(d) {
 }
 
 function calCellClick(date, hour) {
-  if (hour >= 12 && hour < 13) {
-    showToast('Horário de almoço bloqueado (12:00–13:00).', 'warning');
+  if (isWithinLunch(hour * 60, (hour + 1) * 60)) {
+    showToast(`Horário de almoço bloqueado (${LUNCH.startLabel}–${LUNCH.endLabel}).`, 'warning');
     return;
   }
   // Abre modal de resumo do slot em vez de ir direto ao novo agendamento
@@ -1060,7 +1196,7 @@ function renderList() {
         </td>
         <td>
           <div class="list-barber">
-            <div class="list-barber-avatar list-barber-avatar--${a.barberId}" aria-hidden="true">
+            <div class="list-barber-avatar" style="${barberAvatarStyle(a.barberId)}" aria-hidden="true">
               ${barber?.avatar || '?'}
             </div>
             ${barber?.name.split(' ')[0] || '—'}
@@ -1118,6 +1254,7 @@ async function deleteAppt(id) {
 function initListFilters() {
   const dateInput = document.getElementById('listDateFilter');
   const statusInput = document.getElementById('listStatusFilter');
+  const kanbanDateInput = document.getElementById('kanbanDateFilter');
 
   if (dateInput) {
     dateInput.value = STATE.listDate;
@@ -1131,6 +1268,14 @@ function initListFilters() {
     statusInput.addEventListener('change', () => {
       STATE.listStatus = statusInput.value;
       renderList();
+    });
+  }
+
+  if (kanbanDateInput) {
+    kanbanDateInput.value = STATE.kanbanDate;
+    kanbanDateInput.addEventListener('change', () => {
+      STATE.kanbanDate = kanbanDateInput.value;
+      renderKanban();
     });
   }
 
@@ -1161,6 +1306,7 @@ function openNewAppt(status = null, prefill = {}) {
   document.getElementById('apptClient').value = '';
   document.getElementById('apptPhone').value = '';
   document.getElementById('apptNotes').value = '';
+  document.getElementById('apptFormaPagamento').value = '';
   document.getElementById('apptDate').value = prefill.date || getTodayStr();
   document.getElementById('apptModalTitle').textContent = 'Novo Agendamento';
   document.getElementById('apptModalSubtitle').textContent = 'Preencha os dados abaixo para agendar';
@@ -1196,6 +1342,7 @@ function openEditAppt(id) {
   document.getElementById('apptClient').value = appt.client;
   document.getElementById('apptPhone').value = appt.phone || '';
   document.getElementById('apptNotes').value = appt.notes || '';
+  document.getElementById('apptFormaPagamento').value = appt.formaPagamentoId || '';
   document.getElementById('apptDate').value = appt.date;
   document.getElementById('apptModalTitle').textContent = 'Editar Agendamento';
   document.getElementById('apptModalSubtitle').textContent = appt.client;
@@ -1261,7 +1408,7 @@ function populateBarberPicker(selectedId) {
             role="radio"
             aria-checked="${String(b.id === selectedId)}"
             onclick="selectBarber('${b.id}')">
-      <div class="barber-option__avatar kanban-card__avatar--${b.id}" aria-hidden="true">${b.avatar}</div>
+      <div class="barber-option__avatar" style="${barberAvatarStyle(b.id)}" aria-hidden="true">${b.avatar}</div>
       <div>
         <div class="barber-option__name">${b.name}</div>
         <div class="barber-option__rating">★ ${b.rating}</div>
@@ -1275,6 +1422,9 @@ function selectBarber(id) {
     el.classList.toggle('is-selected', sel);
     el.setAttribute('aria-checked', String(sel));
   });
+  // Atualiza o select de horário para refletir slots ocupados pelo novo barbeiro
+  const currentTime = document.getElementById('apptTime')?.value || null;
+  populateTimeSelect(currentTime);
   checkConflict();
 }
 
@@ -1282,8 +1432,42 @@ function populateTimeSelect(selectedTime) {
   const sel = document.getElementById('apptTime');
   if (!sel) return;
   const slots = generateTimeSlots();
+
+  // Lê barbeiro e data do modal para filtrar slots ocupados
+  const selectedBarberEl = document.querySelector('.barber-option.is-selected');
+  const barberId = selectedBarberEl?.dataset.barberId || null;
+  const date = document.getElementById('apptDate')?.value || null;
+  const editingId = STATE.editingId;
+
   sel.innerHTML = `<option value="">Selecionar</option>` +
-    slots.map(t => `<option value="${t}" ${t === selectedTime ? 'selected' : ''}>${t}</option>`).join('');
+    slots.map(t => {
+      // Verifica conflito para este slot: usa serviceId genérico de 1min
+      // apenas para checar sobreposição; o check real é por barbeiro+data+hora.
+      let occupied = false;
+      if (barberId && date) {
+        const [h, m] = t.split(':').map(Number);
+        const slotStart = h * 60 + m;
+        // Considera slot ocupado se qualquer agendamento do barbeiro naquele
+        // dia começa dentro da janela do slot (±slotMinutes) — checa se
+        // algum agendamento existente sobrepõe o intervalo [slotStart, slotStart+slotMinutes)
+        occupied = APPOINTMENTS.some(a => {
+          if (a.id === editingId) return false;
+          if (a.barberId !== barberId) return false;
+          if (a.date !== date) return false;
+          if (['concluido', 'no-show'].includes(a.status)) return false;
+          const svcA = getService(a.serviceId);
+          if (!svcA) return false;
+          const [ah, am] = a.time.split(':').map(Number);
+          const aStart = ah * 60 + am;
+          const aEnd = aStart + svcA.duration;
+          return slotStart < aEnd && (slotStart + CFG.slotMinutes) > aStart;
+        });
+      }
+      if (occupied) {
+        return `<option value="${t}" disabled style="color:var(--muted,#888)">${t} — ocupado</option>`;
+      }
+      return `<option value="${t}" ${t === selectedTime ? 'selected' : ''}>${t}</option>`;
+    }).join('');
 }
 
 function updateModalSummary(serviceId) {
@@ -1305,6 +1489,7 @@ function updateModalSummary(serviceId) {
 function getFormData() {
   const selectedService = document.querySelector('.service-option.is-selected');
   const selectedBarber = document.querySelector('.barber-option.is-selected');
+  const formaPagamentoRaw = document.getElementById('apptFormaPagamento').value;
   return {
     id: document.getElementById('apptId').value || null,
     client: document.getElementById('apptClient').value.trim(),
@@ -1314,6 +1499,7 @@ function getFormData() {
     serviceId: selectedService?.dataset.serviceId || '',
     barberId: selectedBarber?.dataset.barberId || '',
     notes: document.getElementById('apptNotes').value.trim(),
+    formaPagamentoId: formaPagamentoRaw ? Number(formaPagamentoRaw) : null,
   };
 }
 
@@ -1323,12 +1509,24 @@ function checkConflict() {
     hideConflict();
     return;
   }
+  const svc = getService(data.serviceId);
+  const [h, m] = data.time.split(':').map(Number);
+  const startMin = h * 60 + m;
+  const endMin = startMin + (svc ? svc.duration : 0);
+
   const appt = { ...data, status: 'confirmado' };
   if (hasConflict(appt, STATE.editingId)) {
     showConflict(`Conflito: ${getBarber(data.barberId)?.name} já tem agendamento próximo às ${data.time}.`);
-  } else {
-    hideConflict();
+    return;
   }
+
+  const manualBlock = findManualBlock(data.barberId, data.date, startMin, endMin);
+  if (manualBlock) {
+    showConflict(`Horário indisponível: ${getBlockReasonLabel(manualBlock.reason)} bloqueado(a) nesse intervalo.`);
+    return;
+  }
+
+  hideConflict();
 }
 
 function showConflict(msg) {
@@ -1350,8 +1548,8 @@ async function saveAppt() {
   if (!data.time) { showToast('Selecione o horário.', 'error'); return; }
   const [slotH, slotM] = data.time.split(':').map(Number);
   const slotMin = slotH * 60 + slotM;
-  if (slotMin >= LUNCH_START && slotMin < LUNCH_END) {
-    showToast('Horário de almoço bloqueado (12:00–13:00). Escolha outro horário.', 'warning');
+  if (LUNCH && slotMin >= LUNCH.startMin && slotMin < LUNCH.endMin) {
+    showToast(`Horário de almoço bloqueado (${LUNCH.startLabel}–${LUNCH.endLabel}). Escolha outro horário.`, 'warning');
     return;
   }
   if (!data.serviceId) { showToast('Selecione um serviço.', 'error'); return; }
@@ -1373,6 +1571,7 @@ async function saveAppt() {
         serviceId: data.serviceId,
         barberId: data.barberId,
         notes: data.notes,
+        formaPagamentoId: data.formaPagamentoId,
       });
       showToast('Agendamento atualizado.', 'success');
     } else {
@@ -1385,6 +1584,7 @@ async function saveAppt() {
         serviceId: data.serviceId,
         barberId: data.barberId,
         notes: data.notes,
+        formaPagamentoId: data.formaPagamentoId,
       });
       showToast(`Agendamento de ${data.client} criado com sucesso.`, 'success');
     }
@@ -1524,7 +1724,7 @@ function openDetail(id) {
     <div class="detail-field">
       <span class="detail-field__label">Barbeiro</span>
       <div class="detail-barber-chip">
-        <div class="detail-barber-avatar detail-barber-avatar--${appt.barberId}" aria-hidden="true">${barber?.avatar || '?'}</div>
+        <div class="detail-barber-avatar" style="${barberAvatarStyle(appt.barberId)}" aria-hidden="true">${barber?.avatar || '?'}</div>
         <div class="detail-barber-info">
           <span class="detail-barber-name">${barber?.name || '—'}</span>
           <span class="detail-barber-rating">★ ${barber?.rating || '—'}</span>
@@ -1595,20 +1795,32 @@ function openDetail(id) {
 function initBlockModal() {
   document.getElementById('openBlockBtn')?.addEventListener('click', () => {
     document.getElementById('blockDate').value = getTodayStr();
+    // Pré-preenche com o intervalo de almoço configurado nas Preferências,
+    // já que "Almoço" é o motivo default do select — sem hora fixa aqui.
+    if (LUNCH) {
+      document.getElementById('blockStart').value = LUNCH.startLabel;
+      document.getElementById('blockEnd').value = LUNCH.endLabel;
+    }
     openModal('blockModalOverlay');
   });
 
   document.getElementById('blockReason')?.addEventListener('change', function () {
     document.getElementById('blockOtherGroup').style.display =
       this.value === 'outro' ? 'flex' : 'none';
+    // Ao voltar para "Almoço", reoferece o horário configurado nas Preferências.
+    if (this.value === 'almoco' && LUNCH) {
+      document.getElementById('blockStart').value = LUNCH.startLabel;
+      document.getElementById('blockEnd').value = LUNCH.endLabel;
+    }
   });
 
-  document.getElementById('blockModalSave')?.addEventListener('click', () => {
+  document.getElementById('blockModalSave')?.addEventListener('click', async () => {
     const date = document.getElementById('blockDate').value;
     const barber = document.getElementById('blockBarber').value;
     const start = document.getElementById('blockStart').value;
     const end = document.getElementById('blockEnd').value;
     const reason = document.getElementById('blockReason').value;
+    const otherReason = document.getElementById('blockOtherReason')?.value.trim() || '';
 
     if (!date || !start || !end) {
       showToast('Preencha data, início e fim.', 'error');
@@ -1618,15 +1830,34 @@ function initBlockModal() {
       showToast('O horário de início deve ser antes do fim.', 'error');
       return;
     }
+    if (reason === 'outro' && !otherReason) {
+      showToast('Descreva o motivo do bloqueio.', 'error');
+      return;
+    }
 
-    // POST /api/blocks
-    const block = { id: genId(), date, startTime: start, endTime: end, reason };
-    if (barber) block.barberId = barber;
-    BLOCKS.push(block);
+    const saveBtn = document.getElementById('blockModalSave');
+    if (saveBtn) saveBtn.disabled = true;
+
+    try {
+      // POST /api/blocks
+      await InBarberAPI.createBlock({
+        date,
+        startTime: start,
+        endTime: end,
+        barberId: barber || undefined,
+        reason,
+        obs: reason === 'outro' ? otherReason : undefined,
+      });
+    } catch (err) {
+      showToast(err.message || 'Erro ao bloquear horário.', 'error');
+      return;
+    } finally {
+      if (saveBtn) saveBtn.disabled = false;
+    }
 
     showToast('Horário bloqueado.', 'warning');
     closeModal('blockModalOverlay');
-    refreshAll();
+    await reloadBlocks();
   });
 
   document.getElementById('blockModalClose')?.addEventListener('click', () => closeModal('blockModalOverlay'));
@@ -1683,7 +1914,11 @@ function initModalClose() {
 
   // Mudanças no formulário disparam verificação de conflito
   document.getElementById('apptTime')?.addEventListener('change', () => { checkConflict(); });
-  document.getElementById('apptDate')?.addEventListener('change', () => { checkConflict(); });
+  document.getElementById('apptDate')?.addEventListener('change', () => {
+    const currentTime = document.getElementById('apptTime')?.value || null;
+    populateTimeSelect(currentTime);
+    checkConflict();
+  });
 }
 
 
@@ -2024,13 +2259,17 @@ async function boot() {
   initSidebar();
   initCalTooltip();
 
-  // Carrega serviços e barbeiros em paralelo antes de qualquer render,
-  // para que getService()/getBarber(), os pickers do modal e os selects
-  // de filtro já tenham dados reais quando a tela aparecer.
+  // Carrega serviços, barbeiros e config de negócio (nome da barbearia,
+  // horário de funcionamento e almoço) em paralelo antes de qualquer
+  // render, para que getService()/getBarber(), CFG, LUNCH, os pickers
+  // do modal e os selects de filtro já tenham dados reais quando a
+  // tela aparecer.
   try {
-    [SERVICES, BARBERS] = await Promise.all([
+    [SERVICES, BARBERS, FORMAS_PAGAMENTO] = await Promise.all([
       InBarberAPI.listServices(),
       InBarberAPI.listBarbers(),
+      InBarberAPI.listSaidasPgto(),
+      loadBusinessConfig(),
     ]);
   } catch (err) {
     showToast('Erro ao carregar dados da barbearia. Recarregue a página.', 'error');
@@ -2039,6 +2278,7 @@ async function boot() {
   // Popula os <select> de filtro com os dados vindos da API.
   // Feito aqui (após o await) para garantir que SERVICES/BARBERS já têm dados.
   populateFilterSelects();
+  populateFormaPagamentoSelect();
 
   // initFilters() registra os listeners DEPOIS que os <select> foram populados,
   // evitando que o 'change' dispare com um option vazio na montagem.
@@ -2050,6 +2290,10 @@ async function boot() {
   // preenche assim que a resposta chega, disparando também a
   // animação dos stats na primeira carga — ver reloadAppointments()).
   reloadAppointments();
+
+  // Carrega os bloqueios de horário reais (GET /api/blocks),
+  // substituindo o antigo mock BLOCKS.
+  reloadBlocks();
 
   // ── Animações de entrada ──────────────────────────────────
   initScrollReveal();
@@ -2079,6 +2323,16 @@ function populateFilterSelects() {
       `<option value="">Todos</option>` +
       BARBERS.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
   }
+}
+
+// Popula o <select> de forma de pagamento do modal de agendamento
+// com os dados reais de formas_pagamento (mesma fonte usada em Saídas).
+function populateFormaPagamentoSelect() {
+  const sel = document.getElementById('apptFormaPagamento');
+  if (!sel) return;
+  sel.innerHTML =
+    `<option value="">Selecionar...</option>` +
+    FORMAS_PAGAMENTO.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
 }
 
 document.addEventListener('DOMContentLoaded', boot);

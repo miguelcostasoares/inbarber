@@ -91,6 +91,69 @@ def existe_conflito(cursor, barbeiro_id, data, hora_inicio, hora_fim, excluir_id
     return cursor.fetchone() is not None
 
 
+def _sobrepoe(inicio_a, fim_a, inicio_b, fim_b):
+    """True se [inicio_a, fim_a) sobrepõe [inicio_b, fim_b)."""
+    return inicio_a < fim_b and fim_a > inicio_b
+
+
+def buscar_almoco_ativo(cursor):
+    """Lê o bloqueio de almoço configurado em Preferências.
+    Retorna (inicio: time, fim: time) ou None se o almoço estiver desativado
+    ou sem preferências salvas ainda (comportamento igual ao GET /api/preferences)."""
+    cursor.execute("SELECT almoco FROM preferencias WHERE id = 'default'")
+    row = cursor.fetchone()
+    almoco = _json_col(row['almoco']) if row and row.get('almoco') else None
+    if not almoco or not almoco.get('ativo'):
+        return None
+    try:
+        inicio = datetime.strptime(almoco['inicio'], '%H:%M').time()
+        fim = datetime.strptime(almoco['fim'], '%H:%M').time()
+        return (inicio, fim)
+    except (KeyError, ValueError, TypeError):
+        return None
+
+
+def existe_bloqueio_manual(cursor, barbeiro_id, data, hora_inicio, hora_fim):
+    """Verifica bloqueios manuais (folga, férias, manutenção, almoço manual etc.)
+    cadastrados em `bloqueios_horario`. Considera tanto bloqueios do barbeiro
+    específico quanto bloqueios gerais (barbeiro_id NULL = vale para todos)."""
+    cursor.execute(
+        '''SELECT id, motivo FROM bloqueios_horario
+           WHERE data = %s
+             AND (barbeiro_id = %s OR barbeiro_id IS NULL)
+             AND hora_inicio < %s
+             AND hora_fim > %s''',
+        (data, barbeiro_id, hora_fim, hora_inicio)
+    )
+    return cursor.fetchone()
+
+
+def validar_disponibilidade(cursor, barbeiro_id, data, hora_inicio, hora_fim, excluir_id=None):
+    """Agrega todas as regras de disponibilidade de horário para um agendamento:
+    1) conflito com outro agendamento do mesmo barbeiro,
+    2) horário de almoço configurado em Preferências (vale para todos os barbeiros),
+    3) bloqueios manuais cadastrados em bloqueios_horario (folga, férias, etc.).
+    Retorna None se disponível, ou uma tupla (mensagem, http_status) em caso de bloqueio."""
+    if existe_conflito(cursor, barbeiro_id, data, hora_inicio, hora_fim, excluir_id=excluir_id):
+        return ('Já existe um agendamento nesse horário para este barbeiro.', 409)
+
+    almoco = buscar_almoco_ativo(cursor)
+    if almoco:
+        almoco_inicio, almoco_fim = almoco
+        if _sobrepoe(hora_inicio, hora_fim, almoco_inicio, almoco_fim):
+            return ('Horário indisponível: intervalo de almoço da barbearia.', 409)
+
+    bloqueio = existe_bloqueio_manual(cursor, barbeiro_id, data, hora_inicio, hora_fim)
+    if bloqueio:
+        motivo_label = {
+            'almoco': 'almoço', 'folga': 'folga', 'ferias': 'férias',
+            'manutencao': 'manutenção', 'outro': 'bloqueio manual',
+        }.get(bloqueio['motivo'], 'bloqueio manual')
+        return (f'Horário indisponível: {motivo_label} cadastrado(a) para este horário.', 409)
+
+    return None
+
+
 def serializar_agendamento(row):
     """Converte tipos DATE/TIME/DECIMAL do MySQL para JSON-friendly
     e usa os mesmos nomes de campo que o front já consome
@@ -219,15 +282,25 @@ def criar_agendamento():
 
         hora_fim = calcular_hora_fim(hora_inicio, servico['duracao_min'])
 
-        if existe_conflito(cursor, data['barberId'], data['date'], hora_inicio, hora_fim):
-            return jsonify({'error': 'Já existe um agendamento nesse horário para este barbeiro.'}), 409
+        indisponivel = validar_disponibilidade(cursor, data['barberId'], data['date'], hora_inicio, hora_fim)
+        if indisponivel:
+            mensagem, status_code = indisponivel
+            return jsonify({'error': mensagem}), status_code
+
+        # Valor cobrado é travado no preço do serviço no momento da criação
+        # (snapshot), para a Visão Geral do Financeiro não mudar retroativamente
+        # se o preço do serviço for alterado depois.
+        valor_cobrado = servico['preco']
+
+        forma_pagamento_id = data.get('formaPagamentoId') or None
 
         novo_id = gerar_agendamento_id()
         cursor.execute(
             '''INSERT INTO agendamentos
                (id, cliente_id, cliente_nome, cliente_telefone, servico_id,
-                barbeiro_id, data, hora_inicio, hora_fim, status, observacoes)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pendente', %s)''',
+                barbeiro_id, data, hora_inicio, hora_fim, valor_cobrado,
+                forma_pagamento_id, status, observacoes)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pendente', %s)''',
             (
                 novo_id,
                 data.get('clienteId'),
@@ -238,6 +311,8 @@ def criar_agendamento():
                 data['date'],
                 hora_inicio,
                 hora_fim,
+                valor_cobrado,
+                forma_pagamento_id,
                 data.get('notes', ''),
             )
         )
@@ -292,22 +367,44 @@ def atualizar_agendamento(agendamento_id):
             except ValueError:
                 return jsonify({'error': 'Horário inválido (use HH:MM).'}), 400
         else:
-            hora_inicio = atual['hora_inicio']
+            hi = atual['hora_inicio']
+            # mysql-connector devolve TIME como timedelta; converte para time
+            if isinstance(hi, timedelta):
+                total_seg = int(hi.total_seconds())
+                hora_inicio = (datetime.min + timedelta(seconds=total_seg)).time()
+            else:
+                hora_inicio = hi
 
         hora_fim = calcular_hora_fim(hora_inicio, servico['duracao_min'])
 
-        if existe_conflito(cursor, barbeiro_id, data_agendamento, hora_inicio, hora_fim, excluir_id=agendamento_id):
-            return jsonify({'error': 'Já existe um agendamento nesse horário para este barbeiro.'}), 409
+        indisponivel = validar_disponibilidade(
+            cursor, barbeiro_id, data_agendamento, hora_inicio, hora_fim, excluir_id=agendamento_id
+        )
+        if indisponivel:
+            mensagem, status_code = indisponivel
+            return jsonify({'error': mensagem}), status_code
 
         status = data.get('status', atual['status'])
         if status not in STATUS_VALIDOS:
             return jsonify({'error': f'Status inválido: {status}'}), 400
 
+        # valor_cobrado é o snapshot do preço no momento do agendamento.
+        # Só recalcula se o serviço mudou nesta edição; caso contrário,
+        # preserva o valor já gravado (evita alterar retroativamente um
+        # agendamento já concluído que alimenta a Visão Geral).
+        if servico_id != atual['servico_id']:
+            valor_cobrado = servico['preco']
+        else:
+            valor_cobrado = atual['valor_cobrado']
+
+        forma_pagamento_id = data.get('formaPagamentoId', atual['forma_pagamento_id'])
+
         cursor.execute(
             '''UPDATE agendamentos SET
                    cliente_id = %s, cliente_nome = %s, cliente_telefone = %s,
                    servico_id = %s, barbeiro_id = %s, data = %s,
-                   hora_inicio = %s, hora_fim = %s, status = %s, observacoes = %s
+                   hora_inicio = %s, hora_fim = %s, valor_cobrado = %s,
+                   forma_pagamento_id = %s, status = %s, observacoes = %s
                WHERE id = %s''',
             (
                 data.get('clienteId', atual['cliente_id']),
@@ -318,6 +415,8 @@ def atualizar_agendamento(agendamento_id):
                 data_agendamento,
                 hora_inicio,
                 hora_fim,
+                valor_cobrado,
+                forma_pagamento_id,
                 status,
                 data.get('notes', atual['observacoes']),
                 agendamento_id,
@@ -361,6 +460,174 @@ def deletar_agendamento(agendamento_id):
     finally:
         cursor.close()
         conn.close()
+
+
+# ═══════════════════════════════════════════════════════════
+# BLOQUEIOS DE HORÁRIO
+#
+# Espelha o mock BLOCKS do agenda-crm.js: cada bloqueio pode ser
+# de um barbeiro específico (barberId) ou geral, valendo para
+# todos (barberId nulo/omitido) — ex.: manutenção da barbearia.
+# ═══════════════════════════════════════════════════════════
+
+MOTIVOS_VALIDOS = {'almoco', 'folga', 'ferias', 'manutencao', 'outro'}
+
+
+def serializar_bloqueio(row):
+    """Mesmos nomes de campo que o front já usa em BLOCKS
+    (date, startTime, endTime, barberId, reason, obs)."""
+    return {
+        'id': row['id'],
+        'date': row['data'].strftime('%Y-%m-%d') if row['data'] else None,
+        'startTime': row['hora_inicio'].strftime('%H:%M') if hasattr(row['hora_inicio'], 'strftime') else str(row['hora_inicio'])[:5],
+        'endTime': row['hora_fim'].strftime('%H:%M') if hasattr(row['hora_fim'], 'strftime') else str(row['hora_fim'])[:5],
+        'barberId': row['barbeiro_id'],
+        'reason': row['motivo'],
+        'obs': row['motivo_obs'] or '',
+    }
+
+
+@app.route('/api/blocks', methods=['GET'])
+def listar_bloqueios():
+    """Filtros opcionais: date, barberId (mesmo padrão de /api/appointments)."""
+    filtros = []
+    params = []
+
+    if request.args.get('date'):
+        filtros.append('data = %s')
+        params.append(request.args['date'])
+
+    if request.args.get('barberId'):
+        # Inclui bloqueios gerais (barbeiro_id NULL) junto com os do barbeiro pedido,
+        # já que um bloqueio geral também afeta a agenda dele.
+        filtros.append('(barbeiro_id = %s OR barbeiro_id IS NULL)')
+        params.append(request.args['barberId'])
+
+    where = f"WHERE {' AND '.join(filtros)}" if filtros else ''
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            f'''SELECT id, barbeiro_id, data, hora_inicio, hora_fim, motivo, motivo_obs
+                FROM bloqueios_horario
+                {where}
+                ORDER BY data ASC, hora_inicio ASC''',
+            tuple(params)
+        )
+        return jsonify([serializar_bloqueio(row) for row in cursor.fetchall()]), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao listar bloqueios: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/blocks/<bloqueio_id>', methods=['GET'])
+def buscar_bloqueio(bloqueio_id):
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            '''SELECT id, barbeiro_id, data, hora_inicio, hora_fim, motivo, motivo_obs
+               FROM bloqueios_horario WHERE id = %s''',
+            (bloqueio_id,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({'error': 'Bloqueio não encontrado.'}), 404
+        return jsonify(serializar_bloqueio(row)), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao buscar bloqueio: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/blocks', methods=['POST'])
+def criar_bloqueio():
+    """Body JSON (mesmo shape do modal de bloqueio do front):
+        date       : 'YYYY-MM-DD' (obrigatório)
+        startTime  : 'HH:MM' (obrigatório)
+        endTime    : 'HH:MM' (obrigatório)
+        barberId   : string | omitido/None = bloqueio geral (vale p/ todos)
+        reason     : 'almoco'|'folga'|'ferias'|'manutencao'|'outro'
+        obs        : string — usado quando reason == 'outro'
+    Não valida conflito contra agendamentos: um bloqueio pode ser criado
+    livremente; é a criação/edição de AGENDAMENTOS que respeita os bloqueios
+    já existentes (ver validar_disponibilidade)."""
+    data = request.get_json(silent=True) or {}
+
+    obrigatorios = ['date', 'startTime', 'endTime']
+    faltando = [campo for campo in obrigatorios if not data.get(campo)]
+    if faltando:
+        return jsonify({'error': f"Campos obrigatórios ausentes: {', '.join(faltando)}"}), 400
+
+    reason = data.get('reason', 'outro')
+    if reason not in MOTIVOS_VALIDOS:
+        return jsonify({'error': f'Motivo inválido: {reason}'}), 400
+
+    try:
+        hora_inicio = datetime.strptime(data['startTime'], '%H:%M').time()
+        hora_fim = datetime.strptime(data['endTime'], '%H:%M').time()
+    except ValueError:
+        return jsonify({'error': 'Horário inválido (use HH:MM).'}), 400
+
+    if hora_inicio >= hora_fim:
+        return jsonify({'error': 'O horário de início deve ser antes do fim.'}), 400
+
+    barbeiro_id = data.get('barberId') or None
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        if barbeiro_id:
+            barbeiro = buscar_barbeiro(cursor, barbeiro_id)
+            if not barbeiro:
+                return jsonify({'error': 'Barbeiro inválido ou inativo.'}), 400
+
+        novo_id = 'b' + uuid.uuid4().hex[:12]
+        cursor.execute(
+            '''INSERT INTO bloqueios_horario
+               (id, barbeiro_id, data, hora_inicio, hora_fim, motivo, motivo_obs)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+            (novo_id, barbeiro_id, data['date'], hora_inicio, hora_fim, reason, data.get('obs') or None)
+        )
+        conn.commit()
+
+        cursor.execute(
+            '''SELECT id, barbeiro_id, data, hora_inicio, hora_fim, motivo, motivo_obs
+               FROM bloqueios_horario WHERE id = %s''',
+            (novo_id,)
+        )
+        return jsonify(serializar_bloqueio(cursor.fetchone())), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao criar bloqueio: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/blocks/<bloqueio_id>', methods=['DELETE'])
+def deletar_bloqueio(bloqueio_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('SELECT id FROM bloqueios_horario WHERE id = %s', (bloqueio_id,))
+        if not cursor.fetchone():
+            return jsonify({'error': 'Bloqueio não encontrado.'}), 404
+
+        cursor.execute('DELETE FROM bloqueios_horario WHERE id = %s', (bloqueio_id,))
+        conn.commit()
+        return '', 204
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao deletar bloqueio: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # ═══════════════════════════════════════════════════════════
 # SERVIÇOS
@@ -2597,6 +2864,269 @@ def deletar_saida(saida_id):
     except Exception as e:
         conn.rollback()
         return jsonify({'error': f'Erro ao excluir saída: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# ═══════════════════════════════════════════════════════════
+# FINANCEIRO — Visão Geral
+# GET /api/financeiro/visao-geral → KPIs, caixa por forma de
+#     pagamento, evolução do faturamento e faturamento por
+#     barbeiro, todos calculados a partir dos agendamentos
+#     concluídos (status = 'concluido').
+# ═══════════════════════════════════════════════════════════
+
+def _intervalo_periodo(periodo, hoje=None):
+    """
+    Calcula (data_inicio, data_fim) para um período nomeado,
+    igual à convenção já usada em listar_saidas().
+    """
+    from datetime import date
+    import calendar
+
+    hoje = hoje or date.today()
+
+    if periodo == 'dia':
+        return hoje, hoje
+
+    if periodo == 'semana':
+        inicio = hoje - timedelta(days=hoje.weekday())
+        return inicio, inicio + timedelta(days=6)
+
+    if periodo == 'trimestre':
+        mes_inicio = ((hoje.month - 1) // 3) * 3 + 1
+        inicio = hoje.replace(month=mes_inicio, day=1)
+        mes_fim = mes_inicio + 2
+        fim = hoje.replace(month=mes_fim, day=calendar.monthrange(hoje.year, mes_fim)[1])
+        return inicio, fim
+
+    if periodo == 'semestre':
+        mes_inicio = 1 if hoje.month <= 6 else 7
+        inicio = hoje.replace(month=mes_inicio, day=1)
+        mes_fim = 6 if mes_inicio == 1 else 12
+        fim = hoje.replace(month=mes_fim, day=calendar.monthrange(hoje.year, mes_fim)[1])
+        return inicio, fim
+
+    if periodo == 'ano':
+        return hoje.replace(month=1, day=1), hoje.replace(month=12, day=31)
+
+    # 'mes' (default)
+    inicio = hoje.replace(day=1)
+    fim = hoje.replace(day=calendar.monthrange(hoje.year, hoje.month)[1])
+    return inicio, fim
+
+
+@app.route('/api/financeiro/visao-geral', methods=['GET'])
+def visao_geral_financeiro():
+    """
+    Retorna todos os dados da sub-aba Visão Geral do Financeiro,
+    calculados a partir de agendamentos concluídos.
+
+    Query params:
+        periodo : 'dia' | 'semana' | 'mes' | 'trimestre' | 'semestre' | 'ano'
+                  (default 'mes') — usado para os KPIs, caixa e barbeiros.
+        evolucao: 'dia' | 'semana' | 'mes' (default 'semana') — granularidade
+                  independente do gráfico de linha (filtro próprio da UI).
+
+    Resposta:
+        {
+          kpis: { faturamentoTotal, faturamentoLiquido, totalCortes },
+          formasPagamento: [{ id, nome, total, count }],
+          evolucao: { labels: [...], values: [...] },
+          barbeiros: [{ id, nome, faturamento, cortes }]
+        }
+    """
+    from datetime import date
+
+    periodo   = request.args.get('periodo', 'mes')
+    evolucao_periodo = request.args.get('evolucao', 'semana')
+
+    data_inicio, data_fim = _intervalo_periodo(periodo)
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # ── KPIs + faturamento por forma de pagamento ──────────
+        cursor.execute(
+            '''SELECT
+                   a.forma_pagamento_id,
+                   fp.nome AS forma_pagamento_nome,
+                   COUNT(*) AS qtd,
+                   COALESCE(SUM(a.valor_cobrado), 0) AS total
+               FROM agendamentos a
+               LEFT JOIN formas_pagamento fp ON fp.id = a.forma_pagamento_id
+               WHERE a.status = 'concluido'
+                 AND a.data BETWEEN %s AND %s
+               GROUP BY a.forma_pagamento_id, fp.nome
+               ORDER BY total DESC''',
+            (data_inicio, data_fim)
+        )
+        linhas_pgto = cursor.fetchall()
+
+        formas_pagamento = [
+            {
+                'id':    row['forma_pagamento_id'],
+                'nome':  row['forma_pagamento_nome'] or 'Não informado',
+                # row['total'] já vem como Decimal do MySQL (SUM sobre
+                # decimal(10,2)); _q2() só garante 2 casas exatas antes de
+                # converter pra float — sem isso, e com soma/subtração em
+                # float puro mais abaixo, é fácil acumular erro de ponto
+                # flutuante e o centavo exibido não bater com o do banco.
+                'total': float(_q2(row['total'])),
+                'count': row['qtd'],
+            }
+            for row in linhas_pgto
+        ]
+
+        # Últimas transações de cada forma de pagamento, para as mini-listas
+        # dos cards de "Conferência de Caixa". Limitado a 6 por forma para
+        # manter a resposta enxuta (o card mostra no máximo 6 mesmo assim).
+        cursor.execute(
+            '''SELECT
+                   a.forma_pagamento_id,
+                   a.data,
+                   a.cliente_nome,
+                   sv.nome AS servico_nome,
+                   a.valor_cobrado
+               FROM agendamentos a
+               LEFT JOIN servicos sv ON sv.id = a.servico_id
+               WHERE a.status = 'concluido'
+                 AND a.data BETWEEN %s AND %s
+               ORDER BY a.data DESC, a.hora_inicio DESC''',
+            (data_inicio, data_fim)
+        )
+        entries_por_forma = {}
+        for row in cursor.fetchall():
+            chave = row['forma_pagamento_id']
+            lista = entries_por_forma.setdefault(chave, [])
+            if len(lista) >= 6:
+                continue
+            lista.append({
+                'date':    row['data'].strftime('%d/%m') if row['data'] else '',
+                'client':  row['cliente_nome'],
+                'service': row['servico_nome'] or '',
+                'val':     float(_q2(row['valor_cobrado'])) if row['valor_cobrado'] is not None else 0,
+            })
+
+        for forma in formas_pagamento:
+            forma['entries'] = entries_por_forma.get(forma['id'], [])
+
+        # Soma em Decimal (não em float) para não acumular erro de ponto
+        # flutuante entre as formas de pagamento antes de fechar o total.
+        faturamento_total_dec = sum(
+            (Decimal(str(f['total'])) for f in formas_pagamento),
+            Decimal('0.00')
+        )
+        faturamento_total = float(_q2(faturamento_total_dec))
+        total_cortes = sum(f['count'] for f in formas_pagamento)
+
+        # ── Saídas do mesmo período (faturamento líquido) ──────
+        cursor.execute(
+            '''SELECT COALESCE(SUM(valor), 0) AS total
+               FROM saidas
+               WHERE data BETWEEN %s AND %s''',
+            (data_inicio, data_fim)
+        )
+        total_saidas_dec = _q2(cursor.fetchone()['total'])
+        total_saidas = float(total_saidas_dec)
+        # Subtração também em Decimal — evita o clássico erro de ponto
+        # flutuante (ex: 1234.56 - 358.97 em float puro pode virar
+        # 875.5899999999999 em vez de 875.59 exato).
+        faturamento_liquido = float(_q2(faturamento_total_dec - total_saidas_dec))
+
+        # ── Faturamento por barbeiro (mesmo período) ────────────
+        cursor.execute(
+            '''SELECT
+                   b.id,
+                   b.nome,
+                   COUNT(a.id) AS cortes,
+                   COALESCE(SUM(a.valor_cobrado), 0) AS faturamento
+               FROM barbeiros b
+               LEFT JOIN agendamentos a
+                      ON a.barbeiro_id = b.id
+                     AND a.status = 'concluido'
+                     AND a.data BETWEEN %s AND %s
+               WHERE b.ativo = 1
+               GROUP BY b.id, b.nome
+               ORDER BY faturamento DESC''',
+            (data_inicio, data_fim)
+        )
+        barbeiros = [
+            {
+                'id':          row['id'],
+                'nome':        row['nome'],
+                'faturamento': float(_q2(row['faturamento'])),
+                'cortes':      row['cortes'],
+            }
+            for row in cursor.fetchall()
+        ]
+
+        # ── Evolução do faturamento (dia/semana/mês) ────────────
+        if evolucao_periodo == 'dia':
+            # Últimas 12 horas úteis do dia atual, agrupado por hora
+            cursor.execute(
+                '''SELECT HOUR(hora_inicio) AS bucket, COALESCE(SUM(valor_cobrado), 0) AS total
+                   FROM agendamentos
+                   WHERE status = 'concluido' AND data = %s
+                   GROUP BY HOUR(hora_inicio)''',
+                (date.today(),)
+            )
+            por_hora = {row['bucket']: float(_q2(row['total'])) for row in cursor.fetchall()}
+            horas = list(range(8, 20))
+            evolucao = {
+                'labels': [f'{h:02d}h' for h in horas],
+                'values': [por_hora.get(h, 0) for h in horas],
+            }
+        elif evolucao_periodo == 'mes':
+            # Últimos 8 meses, agrupado por mês
+            cursor.execute(
+                '''SELECT DATE_FORMAT(data, '%%Y-%%m') AS bucket, COALESCE(SUM(valor_cobrado), 0) AS total
+                   FROM agendamentos
+                   WHERE status = 'concluido'
+                     AND data >= DATE_SUB(CURDATE(), INTERVAL 8 MONTH)
+                   GROUP BY DATE_FORMAT(data, '%%Y-%%m')
+                   ORDER BY bucket ASC'''
+            )
+            rows = cursor.fetchall()
+            meses_pt = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+            evolucao = {
+                'labels': [meses_pt[int(row['bucket'].split('-')[1]) - 1] for row in rows],
+                'values': [float(_q2(row['total'])) for row in rows],
+            }
+        else:
+            # 'semana' (default): semana corrente, agrupado por dia
+            semana_inicio, semana_fim = _intervalo_periodo('semana')
+            cursor.execute(
+                '''SELECT data, COALESCE(SUM(valor_cobrado), 0) AS total
+                   FROM agendamentos
+                   WHERE status = 'concluido'
+                     AND data BETWEEN %s AND %s
+                   GROUP BY data''',
+                (semana_inicio, semana_fim)
+            )
+            por_dia = {row['data']: float(_q2(row['total'])) for row in cursor.fetchall()}
+            dias_pt = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+            labels, values = [], []
+            for i in range(7):
+                dia = semana_inicio + timedelta(days=i)
+                labels.append(f'{dias_pt[i]} {dia.day}')
+                values.append(por_dia.get(dia, 0))
+            evolucao = {'labels': labels, 'values': values}
+
+        return jsonify({
+            'kpis': {
+                'faturamentoTotal':    faturamento_total,
+                'faturamentoLiquido':  faturamento_liquido,
+                'totalCortes':         total_cortes,
+            },
+            'formasPagamento': formas_pagamento,
+            'evolucao': evolucao,
+            'barbeiros': barbeiros,
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': f'Erro ao carregar visão geral: {e}'}), 500
     finally:
         cursor.close()
         conn.close()

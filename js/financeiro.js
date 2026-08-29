@@ -1,74 +1,14 @@
 'use strict';
 
-/* ─── 1. MOCK DATA ──────────────────────────────────────── */
+/* ─── 1. ESTADO REAL (populado via API) ─────────────────── */
 
-const FIN_BARBERS = [
-    { id: 'marcos', name: 'Marcos Silva', initials: 'MS', cssClass: 'marcos', faturamento: 8_240, cortes: 112 },
-    { id: 'joao', name: 'João Pereira', initials: 'JP', cssClass: 'joao', faturamento: 6_480, cortes: 95 },
-    { id: 'andre', name: 'André Santos', initials: 'AS', cssClass: 'andre', faturamento: 5_830, cortes: 84 },
-    { id: 'carlos', name: 'Carlos Lima', initials: 'CL', cssClass: 'carlos', faturamento: 3_450, cortes: 52 },
-];
-
-const PAYMENT_METHODS = [
-    {
-        id: 'pix', label: 'PIX', cssClass: 'pix', total: 10_240, count: 148,
-        entries: [
-            { date: '21/08', client: 'Lucas Andrade', service: 'Corte + Barba', val: 70 },
-            { date: '21/08', client: 'Felipe Rocha', service: 'Corte Masculino', val: 45 },
-            { date: '21/08', client: 'Gabriel Souza', service: 'Pigmentação', val: 90 },
-            { date: '20/08', client: 'Matheus Lima', service: 'Barba', val: 35 },
-            { date: '20/08', client: 'Ricardo F.', service: 'Corte Masculino', val: 45 },
-            { date: '19/08', client: 'Thiago Oliveira', service: 'Combo', val: 70 },
-            { date: '19/08', client: 'Diego Martins', service: 'Relaxamento', val: 80 },
-        ],
-    },
-    {
-        id: 'cartao', label: 'Cartão', cssClass: 'cartao', total: 7_320, count: 98,
-        entries: [
-            { date: '21/08', client: 'Bruno Carvalho', service: 'Corte + Barba', val: 70 },
-            { date: '21/08', client: 'Vinicius Alves', service: 'Sobrancelha', val: 20 },
-            { date: '20/08', client: 'Leonardo Costa', service: 'Pigmentação', val: 90 },
-            { date: '20/08', client: 'Samuel Pereira', service: 'Corte Masculino', val: 45 },
-            { date: '19/08', client: 'Rafael N.', service: 'Relaxamento', val: 80 },
-            { date: '18/08', client: 'Igor Campos', service: 'Combo', val: 70 },
-        ],
-    },
-    {
-        id: 'dinheiro', label: 'Dinheiro', cssClass: 'dinheiro', total: 4_940, count: 72,
-        entries: [
-            { date: '21/08', client: 'Henrique Duarte', service: 'Corte Masculino', val: 45 },
-            { date: '21/08', client: 'Gustavo Mendes', service: 'Barba', val: 35 },
-            { date: '20/08', client: 'Pedro Linhares', service: 'Combo', val: 70 },
-            { date: '19/08', client: 'Rodrigo Fonseca', service: 'Pigmentação', val: 90 },
-            { date: '18/08', client: 'Cauã Ribeiro', service: 'Relaxamento', val: 80 },
-        ],
-    },
-    {
-        id: 'outros', label: 'Outros', cssClass: 'outros', total: 1_500, count: 25,
-        entries: [
-            { date: '21/08', client: 'Cliente Avulso', service: 'Sobrancelha', val: 20 },
-            { date: '19/08', client: 'Cliente Avulso', service: 'Corte Masculino', val: 45 },
-            { date: '18/08', client: 'Cliente Avulso', service: 'Barba', val: 35 },
-        ],
-    },
-    {
-        id: 'credito', label: 'Crédito', cssClass: 'credito', total: 3_180, count: 41,
-        entries: [
-            { date: '21/08', client: 'Anderson Silva', service: 'Pigmentação', val: 90 },
-            { date: '20/08', client: 'Rodrigo Teixeira', service: 'Combo', val: 70 },
-            { date: '19/08', client: 'Paulo Mendes', service: 'Corte Masculino', val: 45 },
-            { date: '18/08', client: 'Fábio Correia', service: 'Relaxamento', val: 80 },
-        ],
-    },
-    {
-        id: 'voucher', label: 'Voucher', cssClass: 'voucher', total: 920, count: 14,
-        entries: [
-            { date: '21/08', client: 'Carlos Eduardo', service: 'Corte Masculino', val: 45 },
-            { date: '20/08', client: 'Thiago Lopes', service: 'Barba', val: 35 },
-            { date: '18/08', client: 'Marcus Vitor', service: 'Sobrancelha', val: 20 },
-        ],
-    },
-];
+// Estado real da Visão Geral — preenchido via API em loadVisaoGeralData().
+// FIN_BARBERS: [{ id, name, initials, cssClass, faturamento, cortes }]
+let FIN_BARBERS = [];
+// PAYMENT_METHODS: [{ id, label, cssClass, total, count, entries: [] }]
+let PAYMENT_METHODS = [];
+// Totais consolidados vindos direto do back (evita recomputar no front)
+let VISAO_GERAL_KPIS = { faturamentoTotal: 0, faturamentoLiquido: 0, totalCortes: 0 };
 
 // Estado real de Metas & Comissões — preenchido via API em loadMetasData()
 let METAS_DATA = [];         // [{ id, meta, comissaoPct }]
@@ -77,20 +17,11 @@ let META_BARBEARIA_TOTAL = 0;
 // Estado real de Saídas — preenchido via API (a conectar)
 let SAIDAS_DATA = [];
 
-// Dados para o gráfico de linha por período
-const LINE_DATA = {
-    dia: {
-        labels: ['08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h', '19h'],
-        values: [120, 190, 215, 160, 75, 230, 185, 210, 140, 295, 180, 90],
-    },
-    semana: {
-        labels: ['Seg 18', 'Ter 19', 'Qua 20', 'Qui 21', 'Sex 22', 'Sáb 23', 'Dom 24'],
-        values: [1_840, 2_310, 1_980, 2_760, 3_120, 4_420, 870],
-    },
-    mes: {
-        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
-        values: [14_200, 12_800, 15_400, 13_900, 16_200, 17_800, 15_600, 24_000],
-    },
+// Dados do gráfico de linha por período — preenchido via API em loadLineChartData()
+let LINE_DATA = {
+    dia:    { labels: [], values: [] },
+    semana: { labels: [], values: [] },
+    mes:    { labels: [], values: [] },
 };
 
 /* ─── 2. UTILS ──────────────────────────────────────────── */
@@ -138,17 +69,17 @@ function hideTooltip() {
 
 /* ─── 5. KPIs ───────────────────────────────────────────── */
 function renderKPIs() {
-    const totalFaturamento = PAYMENT_METHODS.reduce((a, m) => a + m.total, 0);
-    const totalSaidas = SAIDAS_DATA.reduce((a, s) => a + s.valor, 0);
-    const faturamentoLiquido = totalFaturamento - totalSaidas;
-    const totalCortes = FIN_BARBERS.reduce((a, b) => a + b.cortes, 0);
+    // Vem pronto do back-end (GET /api/financeiro/visao-geral), já com
+    // Faturamento Líquido = Faturamento − Saídas do MESMO período dos KPIs
+    // (evita misturar com o período independente da aba Saídas).
+    const { faturamentoTotal, faturamentoLiquido, totalCortes } = VISAO_GERAL_KPIS;
 
     // Valores estáticos imediatos (trends e datas não são animados)
     document.getElementById('kpiFaturamentoTrend').textContent = '↑ 12,4%';
     document.getElementById('kpiLiquidoTrend').textContent = '↑ 9,8%';
     document.getElementById('kpiCortesTrend').textContent = '↑ 8,2%';
-    document.getElementById('caixaTotalRecebido').textContent = fmt(totalFaturamento);
-    document.getElementById('donutCenterValue').textContent = fmtK(totalFaturamento);
+    document.getElementById('caixaTotalRecebido').textContent = fmt(faturamentoTotal);
+    document.getElementById('donutCenterValue').textContent = fmtK(faturamentoTotal);
     document.getElementById('finHeaderDate').textContent = getTodayLabel();
 
     // Count-up nos KPIs numéricos — idêntico ao padrão do dashboard.js
@@ -156,20 +87,38 @@ function renderKPIs() {
     const elLiquido = document.getElementById('kpiFaturamentoLiquido');
     const elCortes  = document.getElementById('kpiCortes');
 
-    if (elTotal)   animateCounter(elTotal,   0, totalFaturamento,   1200, fmt);
+    if (elTotal)   animateCounter(elTotal,   0, faturamentoTotal,   1200, fmt);
     if (elLiquido) animateCounter(elLiquido, 0, faturamentoLiquido, 1000, fmt);
     if (elCortes)  animateCounter(elCortes,  0, totalCortes,         800);
 }
 
 /* ─── 4. DONUT CHART ────────────────────────────────────── */
+// Paleta por forma de pagamento. As chaves batem com os nomes usados em
+// formas_pagamento (mesma tabela usada em Saídas — ver SAIDAS_PGTO_COLORS
+// mais abaixo). Formas de pagamento novas/desconhecidas caem no fallback
+// 'outros', então nenhum nome cadastrado no banco quebra o render.
 const DONUT_COLORS = {
-    pix:      { fill: '#00d68f', glow: 'rgba(0,214,143,0.4)' },
-    cartao:   { fill: '#0047ff', glow: 'rgba(0,71,255,0.4)' },
-    dinheiro: { fill: '#ff9c40', glow: 'rgba(255,156,64,0.4)' },
-    outros:   { fill: '#8b5cf6', glow: 'rgba(139,92,246,0.4)' },
-    credito:  { fill: '#ff4d6a', glow: 'rgba(255,77,106,0.4)' },
-    voucher:  { fill: '#00f0ff', glow: 'rgba(0,240,255,0.4)' },
+    pix:           { fill: '#00d68f', glow: 'rgba(0,214,143,0.4)' },
+    cartao:        { fill: '#0047ff', glow: 'rgba(0,71,255,0.4)' },
+    dinheiro:      { fill: '#ff9c40', glow: 'rgba(255,156,64,0.4)' },
+    boleto:        { fill: '#4da6ff', glow: 'rgba(77,166,255,0.4)' },
+    transferencia: { fill: '#00f0ff', glow: 'rgba(0,240,255,0.4)' },
+    outros:        { fill: '#8b5cf6', glow: 'rgba(139,92,246,0.4)' },
 };
+
+// Normaliza o nome vindo do banco ('PIX', 'Cartão', 'Não informado', ...)
+// para uma das chaves de DONUT_COLORS acima.
+function normalizarFormaPagamentoKey(nome) {
+    const slug = (nome || '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+        .toLowerCase().trim();
+    if (slug.includes('pix')) return 'pix';
+    if (slug.includes('cart')) return 'cartao';
+    if (slug.includes('dinheiro')) return 'dinheiro';
+    if (slug.includes('boleto')) return 'boleto';
+    if (slug.includes('transf')) return 'transferencia';
+    return 'outros';
+}
 
 let donutInstance = null;
 
@@ -186,8 +135,8 @@ function renderDonut() {
 
         const idx = tip.dataPoints[0].dataIndex;
         const m = PAYMENT_METHODS[idx];
-        const pct = ((m.total / total) * 100).toFixed(1);
-        const col = DONUT_COLORS[m.id].fill;
+        const pct = total > 0 ? ((m.total / total) * 100).toFixed(1) : '0.0';
+        const col = DONUT_COLORS[m.cssClass].fill;
 
         tooltipInner.innerHTML = `
           <div class="chart-tooltip__title">${m.label}</div>
@@ -225,7 +174,7 @@ function renderDonut() {
             labels: PAYMENT_METHODS.map(m => m.label),
             datasets: [{
                 data: PAYMENT_METHODS.map(m => m.total),
-                backgroundColor: PAYMENT_METHODS.map(m => DONUT_COLORS[m.id].fill),
+                backgroundColor: PAYMENT_METHODS.map(m => DONUT_COLORS[m.cssClass].fill),
                 borderColor: '#0a0a0a00',
                 borderWidth: 3,
                 hoverOffset: 6,
@@ -247,10 +196,10 @@ function renderDonut() {
     // Legend
     const legend = document.getElementById('caixaLegend');
     legend.innerHTML = PAYMENT_METHODS.map(m => {
-        const pct = ((m.total / total) * 100).toFixed(1);
+        const pct = total > 0 ? ((m.total / total) * 100).toFixed(1) : '0.0';
         return `
           <div class="caixa-legend-item">
-            <span class="caixa-legend-dot" style="background:${DONUT_COLORS[m.id].fill}"></span>
+            <span class="caixa-legend-dot" style="background:${DONUT_COLORS[m.cssClass].fill}"></span>
             <span class="caixa-legend-name">${m.label}</span>
             <span class="caixa-legend-pct">${pct}%</span>
             <span class="caixa-legend-val">${fmtK(m.total)}</span>
@@ -264,8 +213,13 @@ function renderPaymentCards() {
     const total = PAYMENT_METHODS.reduce((a, m) => a + m.total, 0);
     const grid = document.getElementById('caixaPaymentGrid');
 
+    if (!PAYMENT_METHODS.length) {
+        grid.innerHTML = `<div class="fin-empty-state">Nenhum recebimento no período selecionado.</div>`;
+        return;
+    }
+
     grid.innerHTML = PAYMENT_METHODS.map(m => {
-        const pct = ((m.total / total) * 100).toFixed(1);
+        const pct = total > 0 ? ((m.total / total) * 100).toFixed(1) : '0.0';
         const rows = m.entries.slice(0, 6).map(e => `
           <div class="payment-mini-row">
             <span class="payment-mini-date">${e.date}</span>
@@ -409,12 +363,17 @@ function renderBarChart() {
     const tooltip = document.getElementById('chartTooltip');
     const tooltipInner = document.getElementById('chartTooltipInner');
 
-    const BAR_COLORS = [
+    const BAR_COLORS_PALETTE = [
         'rgba(0,71,255,0.8)',
         'rgba(77,166,255,0.8)',
         'rgba(0,214,143,0.8)',
         'rgba(139,92,246,0.8)',
+        'rgba(255,156,64,0.8)',
+        'rgba(0,240,255,0.8)',
     ];
+    // Repete a paleta por posição em vez de travar em 4 cores fixas,
+    // já que o número de barbeiros ativos agora vem do banco.
+    const BAR_COLORS = FIN_BARBERS.map((_, i) => BAR_COLORS_PALETTE[i % BAR_COLORS_PALETTE.length]);
 
     const externalTooltip = (context) => {
         const { chart, tooltip: tip } = context;
@@ -424,7 +383,8 @@ function renderBarChart() {
         const idx = tip.dataPoints[0].dataIndex;
         const barber = FIN_BARBERS[idx];
         const total = FIN_BARBERS.reduce((a, b) => a + b.faturamento, 0);
-        const pct = ((barber.faturamento / total) * 100).toFixed(1);
+        const pct = total > 0 ? ((barber.faturamento / total) * 100).toFixed(1) : '0.0';
+        const ticketMedio = barber.cortes > 0 ? barber.faturamento / barber.cortes : 0;
         const col = BAR_COLORS[idx];
 
         tooltipInner.innerHTML = `
@@ -442,7 +402,7 @@ function renderBarChart() {
           <div class="chart-tooltip__row">
             <span class="chart-tooltip__dot" style="background:var(--muted)"></span>
             <span class="chart-tooltip__label">Ticket médio</span>
-            <span class="chart-tooltip__val">${fmt(barber.faturamento / barber.cortes)}</span>
+            <span class="chart-tooltip__val">${fmt(ticketMedio)}</span>
           </div>
           <div class="chart-tooltip__divider"></div>
           <div class="chart-tooltip__row">
@@ -1320,12 +1280,32 @@ function showToast(msg, type = 'success') {
 }
 
 /* ─── 8. PERIOD FILTER ──────────────────────────────────── */
+// Períodos já buscados da API nesta sessão da tela, pra não refazer a
+// mesma chamada toda vez que o usuário clica de novo no mesmo pill.
+const LINE_DATA_LOADED = { dia: false, semana: false, mes: false };
+
+async function loadLineChartData(period) {
+    try {
+        const resp = await InBarberAPI.getVisaoGeralFinanceiro({ evolucao: period });
+        LINE_DATA[period] = resp.evolucao || { labels: [], values: [] };
+        LINE_DATA_LOADED[period] = true;
+    } catch (err) {
+        console.error('[Visão Geral] Erro ao carregar evolução do faturamento:', err);
+        showToast('Erro ao carregar a evolução do faturamento.', 'error');
+        LINE_DATA[period] = { labels: [], values: [] };
+    }
+}
+
 function initPeriodFilter() {
     document.querySelectorAll('.chart-pill').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             document.querySelectorAll('.chart-pill').forEach(b => b.classList.remove('chart-pill--active'));
             btn.classList.add('chart-pill--active');
             activePeriod = btn.dataset.period;
+
+            if (!LINE_DATA_LOADED[activePeriod]) {
+                await loadLineChartData(activePeriod);
+            }
             renderLineChart(activePeriod);
         });
     });
@@ -1433,12 +1413,19 @@ function animateCounter(el, from, to, duration, formatter) {
         el.textContent = formatter ? formatter(to) : to;
         return;
     }
+    // Só arredonda pra inteiro quando NÃO há formatter (contadores simples,
+    // ex: total de cortes). Valores monetários (com formatter) interpolam em
+    // ponto flutuante e, no frame final, usam `to` exato — Math.round no
+    // frame final truncava centavos reais (R$ 358,97 virava R$ 359,00).
     const start = performance.now();
     function tick(now) {
         const elapsed = now - start;
         const progress = Math.min(elapsed / duration, 1);
         const ease = 1 - Math.pow(1 - progress, 3);
-        const current = Math.round(from + (to - from) * ease);
+        const raw = from + (to - from) * ease;
+        const current = progress >= 1
+            ? to
+            : (formatter ? raw : Math.round(raw));
         el.textContent = formatter ? formatter(current) : current;
         if (progress < 1) requestAnimationFrame(tick);
     }
@@ -1497,17 +1484,74 @@ function animatePaymentBars() {
 }
 
 
+/* ─── 11.5 VISÃO GERAL ──────────────────────────────────── */
+
+/**
+ * Carrega todos os dados reais da sub-aba Visão Geral
+ * (GET /api/financeiro/visao-geral) e popula os estados globais
+ * consumidos pelos renders: PAYMENT_METHODS, FIN_BARBERS, VISAO_GERAL_KPIS.
+ * O gráfico de linha é carregado à parte por loadLineChartData(),
+ * pois tem filtro de período independente (Dia | Semana | Mês).
+ */
+async function loadVisaoGeralData() {
+    try {
+        const resp = await InBarberAPI.getVisaoGeralFinanceiro({ periodo: 'mes' });
+
+        VISAO_GERAL_KPIS = {
+            faturamentoTotal:   resp.kpis?.faturamentoTotal   ?? 0,
+            faturamentoLiquido: resp.kpis?.faturamentoLiquido ?? 0,
+            totalCortes:        resp.kpis?.totalCortes        ?? 0,
+        };
+
+        PAYMENT_METHODS = (resp.formasPagamento || []).map(f => ({
+            id:      f.id,
+            label:   f.nome,
+            cssClass: normalizarFormaPagamentoKey(f.nome),
+            total:   f.total,
+            count:   f.count,
+            entries: f.entries || [],
+        }));
+
+        FIN_BARBERS = (resp.barbeiros || []).map((b, i) => ({
+            id:          b.id,
+            name:        b.nome,
+            initials:    (b.nome || '')
+                            .split(' ')
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map(p => p[0].toUpperCase())
+                            .join(''),
+            cssClass:    `barber-${i}`,
+            faturamento: b.faturamento,
+            cortes:      b.cortes,
+        }));
+
+        renderKPIs();
+        renderDonut();
+        renderPaymentCards();
+        renderBarChart();
+    } catch (err) {
+        console.error('[Visão Geral] Erro ao carregar dados:', err);
+        showToast('Erro ao carregar a Visão Geral. Verifique a conexão com o servidor.', 'error');
+    }
+}
+
 /* ─── 12. BOOT ──────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-    renderKPIs();
-    renderDonut();
-    renderPaymentCards();
-    renderLineChart(activePeriod);
-    renderBarChart();
+document.addEventListener('DOMContentLoaded', async () => {
     initPeriodFilter();
     initFinTabs();
     initSidebar();
     initTooltipHide();
+
+    // Visão Geral — dados reais (substitui os antigos mocks PAYMENT_METHODS,
+    // FIN_BARBERS e LINE_DATA). KPIs/donut/cards/barras vêm de uma única
+    // chamada; o gráfico de linha é carregado à parte pelo período ativo.
+    await Promise.all([
+        loadVisaoGeralData(),
+        loadLineChartData(activePeriod),
+    ]);
+    renderLineChart(activePeriod);
+
     loadMetasData();
     initMetasSaveBar();
     loadSaidasData();

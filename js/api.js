@@ -124,6 +124,7 @@ function getAppointment(id) {
  * @param {string} data.serviceId
  * @param {string} data.barberId
  * @param {string} [data.notes]
+ * @param {number} [data.formaPagamentoId] - id de formas_pagamento (capturado no modal)
  * @returns {Promise<Object>} agendamento criado
  */
 function createAppointment(data) {
@@ -138,7 +139,8 @@ function createAppointment(data) {
  * Aceita atualização parcial — envie apenas os campos alterados.
  *
  * @param {string} id
- * @param {Object} data - mesmos campos de createAppointment, todos opcionais
+ * @param {Object} data - mesmos campos de createAppointment (incluindo
+ *                        formaPagamentoId), todos opcionais
  * @returns {Promise<Object>} agendamento atualizado
  */
 function updateAppointment(id, data) {
@@ -157,6 +159,67 @@ function updateAppointment(id, data) {
  */
 function deleteAppointment(id) {
   return apiRequest(`/appointments/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+/* ─── 2.1 BLOQUEIOS DE HORÁRIO ──────────────────────────────
+   GET    /api/blocks         → listar (com filtros opcionais)
+   GET    /api/blocks/:id     → buscar um bloqueio
+   POST   /api/blocks         → criar (modal "Bloquear horário" da Agenda)
+   DELETE /api/blocks/:id     → remover bloqueio
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Lista bloqueios de horário, com filtros opcionais.
+ * @param {Object} [filters]
+ * @param {string} [filters.date]     - Data no formato YYYY-MM-DD
+ * @param {string} [filters.barberId] - id do barbeiro (inclui bloqueios gerais)
+ * @returns {Promise<Array>} lista de bloqueios
+ */
+function listBlocks(filters = {}) {
+  const qs = buildQueryString({
+    date: filters.date,
+    barberId: filters.barberId,
+  });
+  return apiRequest(`/blocks${qs}`, { method: 'GET' });
+}
+
+/**
+ * Busca um bloqueio específico por id.
+ * @param {string} id
+ * @returns {Promise<Object>} bloqueio
+ */
+function getBlock(id) {
+  return apiRequest(`/blocks/${encodeURIComponent(id)}`, { method: 'GET' });
+}
+
+/**
+ * Cria um novo bloqueio de horário.
+ * Formato de entrada segue o shape usado hoje no modal de bloqueio
+ * do agenda-crm.js (date, startTime, endTime, barberId, reason, obs).
+ *
+ * @param {Object} data
+ * @param {string} data.date       - 'YYYY-MM-DD'
+ * @param {string} data.startTime  - 'HH:MM'
+ * @param {string} data.endTime    - 'HH:MM'
+ * @param {string} [data.barberId] - omitido/vazio = bloqueio geral (todos os barbeiros)
+ * @param {string} [data.reason]   - 'almoco'|'folga'|'ferias'|'manutencao'|'outro'
+ * @param {string} [data.obs]      - descrição livre, usado quando reason === 'outro'
+ * @returns {Promise<Object>} bloqueio criado
+ */
+function createBlock(data) {
+  return apiRequest('/blocks', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Remove um bloqueio de horário.
+ * @param {string} id
+ * @returns {Promise<void>}
+ */
+function deleteBlock(id) {
+  return apiRequest(`/blocks/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
 /* ─── 3. SERVIÇOS ───────────────────────────────────────────
@@ -678,12 +741,37 @@ function deleteSaida(id) {
   return apiRequest(`/saidas/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
+/* ─── 11. FINANCEIRO — VISÃO GERAL ──────────────────────────
+   GET /api/financeiro/visao-geral → KPIs, caixa por forma de
+   pagamento, evolução do faturamento e faturamento por barbeiro,
+   calculados a partir de agendamentos concluídos.
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Busca os dados consolidados da sub-aba Visão Geral do Financeiro.
+ * @param {Object} [filters]
+ * @param {string} [filters.periodo]  - 'dia'|'semana'|'mes'|'trimestre'|'semestre'|'ano' (KPIs, caixa, barbeiros)
+ * @param {string} [filters.evolucao] - 'dia'|'semana'|'mes' (granularidade do gráfico de linha)
+ * @returns {Promise<Object>} { kpis, formasPagamento, evolucao, barbeiros }
+ */
+function getVisaoGeralFinanceiro(filters = {}) {
+  const qs = buildQueryString({
+    periodo:  filters.periodo,
+    evolucao: filters.evolucao,
+  });
+  return apiRequest(`/financeiro/visao-geral${qs}`, { method: 'GET' });
+}
+
 window.InBarberAPI = {
   listAppointments,
   getAppointment,
   createAppointment,
   updateAppointment,
   deleteAppointment,
+  listBlocks,
+  getBlock,
+  createBlock,
+  deleteBlock,
   listServices,
   listServicesAdmin,
   createService,
@@ -720,4 +808,5 @@ window.InBarberAPI = {
   createSaida,
   updateSaida,
   deleteSaida,
+  getVisaoGeralFinanceiro,
 };

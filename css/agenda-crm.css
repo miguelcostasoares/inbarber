@@ -1073,10 +1073,13 @@ input, select, textarea {
   border-radius: var(--r-sm) 0 0 var(--r-sm);
 }
 
-/* Cor da borda lateral por barbeiro */
-.kanban-card[data-barber="marcos"]::before { background: var(--gold-lt); }
-.kanban-card[data-barber="joao"]::before   { background: var(--blue); }
-.kanban-card[data-barber="andre"]::before  { background: var(--green); }
+/* Cor da borda lateral por barbeiro: definida via --barber-accent,
+   setada inline pelo JS (getBarberColor/barberAvatarStyle em
+   agenda-crm.js) a partir do id real do barbeiro, já que os ids
+   vêm do banco e não podem ter uma classe fixa por barbeiro. */
+.kanban-card::before {
+  background: var(--barber-accent, var(--gold-lt));
+}
 
 .kanban-card:hover {
   border-color: rgba(255,255,255,0.12);
@@ -1175,9 +1178,8 @@ input, select, textarea {
   letter-spacing: 0.03em;
 }
 
-.kanban-card__avatar--marcos { background: rgba(0,71,255,0.15); color: var(--gold-lt); }
-.kanban-card__avatar--joao   { background: var(--blue-bg);        color: var(--blue); }
-.kanban-card__avatar--andre  { background: var(--green-bg);        color: var(--green); }
+/* Cor de fundo/texto do avatar definida inline via style (barberAvatarStyle
+   em agenda-crm.js), a partir do id real do barbeiro vindo do banco. */
 
 .kanban-card__barber-name {
   font-size: 11px;
@@ -2149,10 +2151,8 @@ input, select, textarea {
   flex-shrink: 0;
 }
 
-/* Herda cores do kanban */
-.list-barber-avatar--marcos { background: rgba(191,160,106,0.2); color: var(--gold); }
-.list-barber-avatar--joao   { background: var(--blue-bg);        color: var(--blue); }
-.list-barber-avatar--andre  { background: var(--green-bg);        color: var(--green); }
+/* Cor de fundo/texto definida inline via style (barberAvatarStyle
+   em agenda-crm.js), a partir do id real do barbeiro. */
 
 /* Célula de valor */
 .list-value {
@@ -2867,9 +2867,8 @@ input, select, textarea {
   flex-shrink: 0;
 }
 
-.detail-barber-avatar--marcos { background: rgba(0,71,255,0.15); color: var(--gold-lt); }
-.detail-barber-avatar--joao   { background: var(--blue-bg);        color: var(--blue); }
-.detail-barber-avatar--andre  { background: var(--green-bg);        color: var(--green); }
+/* Cor de fundo/texto definida inline via style (barberAvatarStyle
+   em agenda-crm.js), a partir do id real do barbeiro. */
 
 .detail-barber-info {
   display: flex;
@@ -3132,4 +3131,36 @@ input[type="time"] {
   #listView {
     animation: none;
   }
+}
+
+/* Ações do card kanban — duas linhas organizadas */
+.kanban-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.card-actions__primary {
+  display: flex;
+  gap: 5px;
+}
+
+.card-actions__secondary {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+/* WhatsApp compacto (só ícone) */
+.action-btn--icon {
+  padding: 4px 6px;
+  min-width: unset;
+  flex-shrink: 0;
+}
+
+/* Botão menor para ações secundárias */
+.action-btn--sm {
+  font-size: 11px;
+  padding: 3px 8px;
 }

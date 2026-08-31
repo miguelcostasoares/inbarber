@@ -723,6 +723,20 @@ input, select, textarea {
   .agenda-stats .stat-pill:nth-child(5) {
     grid-column: span 1;
   }
+
+  .agenda-filters-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  
+  .period-filter {
+    width: 100%;
+  }
+  
+  .agenda-filters {
+    width: 100%;
+  }
 }
 
 @media (max-width: 700px) {
@@ -731,7 +745,6 @@ input, select, textarea {
 }
 
 
-/* ── Controles: tabs + filtros ── */
 .agenda-controls {
   display: flex;
   align-items: center;
@@ -740,6 +753,25 @@ input, select, textarea {
   padding-bottom: 20px;
   border-bottom: 1px solid var(--divider);
   margin-bottom: 24px;
+}
+
+/* Wrapper único: mantém period-filter + agenda-filters na mesma linha */
+.agenda-filters-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+/* Ajuste para manter consistência */
+.agenda-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  flex-wrap: wrap;
 }
 
 .view-tabs {
@@ -778,14 +810,6 @@ input, select, textarea {
   background: #0a40c987;
   color: white;
   transform: scale(1.02);
-}
-
-.agenda-filters {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  flex-wrap: wrap;
 }
 
 .filter-search {
@@ -2022,6 +2046,84 @@ input, select, textarea {
 .list-date-input:focus {
   outline: none;
   border-color: var(--gold-dim);
+}
+
+/* ── Filtro global de período ── */
+.period-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.period-filter__preset {
+  min-width: 130px;
+}
+
+.period-filter__custom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.period-filter__date {
+  background: var(--bg-2);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-md);
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--cream-2);
+  cursor: pointer;
+  transition: border-color var(--dur);
+  color-scheme: dark;
+  font-family: var(--ff-b);
+  width: 138px;
+}
+
+.period-filter__date:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(0,71,255,0.08);
+}
+
+.period-filter__sep {
+  font-size: 13px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.period-filter__apply {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--gold);
+  color: var(--white);
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: var(--r-md);
+  transition: background var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.period-filter__apply:hover {
+  background: var(--gold-dim);
+  transform: translateY(-1px);
+}
+
+.period-filter__apply:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 900px) {
+  .period-filter {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .period-filter__preset { flex: 1; min-width: 0; }
+  .period-filter__apply { width: 100%; justify-content: center; }
+  .period-filter__custom { width: 100%; }
+  .period-filter__date { flex: 1; min-width: 0; width: auto; }
 }
 
 .list-table-wrap {

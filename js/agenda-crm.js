@@ -65,6 +65,8 @@ const STATE = {
   listDate: getTodayStr(),
   listStatus: '',
   kanbanDate: getTodayStr(),
+  periodStart: getTodayStr(),   // filtro global de período — início
+  periodEnd: getTodayStr(),     // filtro global de período — fim
   dragging: null,   // { id, fromStatus }
   editingId: null,   // null = criando, string = editando
 };
@@ -226,7 +228,14 @@ function getWeekDates(refDate, offsetWeeks) {
 // Filtra agendamentos conforme STATE
 function getFilteredAppointments(dateOverride) {
   return APPOINTMENTS.filter(a => {
-    if (dateOverride && a.date !== dateOverride) return false;
+    // dateOverride é passado pelo Kanban (filtra por um dia exato)
+    if (dateOverride) {
+      if (a.date !== dateOverride) return false;
+    } else {
+      // sem override: respeita o intervalo global do filtro de período
+      if (STATE.periodStart && a.date < STATE.periodStart) return false;
+      if (STATE.periodEnd   && a.date > STATE.periodEnd)   return false;
+    }
     if (STATE.filterBarber && a.barberId !== STATE.filterBarber) return false;
     if (STATE.filterService && a.serviceId !== STATE.filterService) return false;
     if (STATE.filterSearch) {
@@ -1115,11 +1124,11 @@ function initCalNav() {
    8. LISTA
 ═══════════════════════════════════════════════════════════ */
 function renderList() {
-  const dateFilter = STATE.listDate;
   const statusFilter = STATE.listStatus;
 
   let rows = APPOINTMENTS.filter(a => {
-    if (dateFilter && a.date !== dateFilter) return false;
+    if (STATE.periodStart && a.date < STATE.periodStart) return false;
+    if (STATE.periodEnd   && a.date > STATE.periodEnd)   return false;
     if (statusFilter && a.status !== statusFilter) return false;
     if (STATE.filterBarber && a.barberId !== STATE.filterBarber) return false;
     if (STATE.filterService && a.serviceId !== STATE.filterService) return false;
@@ -1251,31 +1260,96 @@ async function deleteAppt(id) {
   await reloadAppointments();
 }
 
-function initListFilters() {
-  const dateInput = document.getElementById('listDateFilter');
-  const statusInput = document.getElementById('listStatusFilter');
-  const kanbanDateInput = document.getElementById('kanbanDateFilter');
+/* ─── FILTRO GLOBAL DE PERÍODO ──────────────────────────────
+   Gerencia o select de preset + inputs de data personalizada.
+   Ao clicar em Aplicar, atualiza STATE.periodStart/periodEnd
+   e sincroniza STATE.kanbanDate/listDate com o início do
+   intervalo, disparando reloadAppointments() para todas as
+   views.
+──────────────────────────────────────────────────────────── */
+function initPeriodFilter() {
+  const preset   = document.getElementById('periodPreset');
+  const custom   = document.getElementById('periodCustom');
+  const startEl  = document.getElementById('periodStart');
+  const endEl    = document.getElementById('periodEnd');
+  const applyBtn = document.getElementById('periodApply');
 
-  if (dateInput) {
-    dateInput.value = STATE.listDate;
-    dateInput.addEventListener('change', () => {
-      STATE.listDate = dateInput.value;
-      renderList();
-    });
+  if (!preset || !applyBtn) return;
+
+  // Helpers de datas
+  function getWeekRange() {
+    const today = new Date(getTodayStr() + 'T00:00:00');
+    const dow = today.getDay();
+    const mon = new Date(today); mon.setDate(today.getDate() - dow);
+    const sun = new Date(mon);   sun.setDate(mon.getDate() + 6);
+    return [toStr(mon), toStr(sun)];
   }
+
+  function getMonthRange() {
+    const today = new Date(getTodayStr() + 'T00:00:00');
+    const first = new Date(today.getFullYear(), today.getMonth(), 1);
+    const last  = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    return [toStr(first), toStr(last)];
+  }
+
+  function toStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function applyPreset(val) {
+    const today = getTodayStr();
+    if (val === 'today') {
+      STATE.periodStart = today;
+      STATE.periodEnd   = today;
+    } else if (val === 'week') {
+      [STATE.periodStart, STATE.periodEnd] = getWeekRange();
+    } else if (val === 'month') {
+      [STATE.periodStart, STATE.periodEnd] = getMonthRange();
+    }
+    // 'custom' não altera o STATE aqui — só o botão Aplicar faz isso
+  }
+
+  // Mostra/oculta inputs customizados
+  preset.addEventListener('change', () => {
+    const isCustom = preset.value === 'custom';
+    custom.hidden = !isCustom;
+    if (isCustom) {
+      // Pré-preenche com o período atual
+      startEl.value = STATE.periodStart;
+      endEl.value   = STATE.periodEnd;
+    }
+  });
+
+  // Botão Aplicar
+  applyBtn.addEventListener('click', () => {
+    if (preset.value === 'custom') {
+      const s = startEl.value;
+      const e = endEl.value;
+      if (!s || !e) { showToast('Informe data início e fim.', 'error'); return; }
+      if (s > e)    { showToast('Data início deve ser anterior ao fim.', 'error'); return; }
+      STATE.periodStart = s;
+      STATE.periodEnd   = e;
+    } else {
+      applyPreset(preset.value);
+    }
+    // Sincroniza as datas de Kanban e Lista com o início do intervalo
+    STATE.kanbanDate = STATE.periodStart;
+    STATE.listDate   = STATE.periodStart;
+    reloadAppointments();
+  });
+
+  // Aplica "Hoje" na carga inicial (sem recarregar, pois o boot()
+  // já chama reloadAppointments() logo depois)
+  applyPreset('today');
+}
+
+function initListFilters() {
+  const statusInput = document.getElementById('listStatusFilter');
 
   if (statusInput) {
     statusInput.addEventListener('change', () => {
       STATE.listStatus = statusInput.value;
       renderList();
-    });
-  }
-
-  if (kanbanDateInput) {
-    kanbanDateInput.value = STATE.kanbanDate;
-    kanbanDateInput.addEventListener('change', () => {
-      STATE.kanbanDate = kanbanDateInput.value;
-      renderKanban();
     });
   }
 
@@ -2251,6 +2325,7 @@ function animateAgendaStats() {
 async function boot() {
   renderHeader();
   initViewTabs();
+  initPeriodFilter();
   initListFilters();
   initCalNav();
   initModalClose();

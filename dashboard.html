@@ -693,19 +693,9 @@
                   Acompanhamento de desempenho individual
                 </p>
               </div>
-              <!-- Pills de filtro período -->
-              <div
-                class="goals-filters"
-                role="group"
-                aria-label="Filtrar período das metas"
-              >
-                <button
-                  class="goals-filter goals-filter--active"
-                  data-goals-period="week"
-                >
-                  Semanal
-                </button>
-                <button class="goals-filter" data-goals-period="month">
+              <!-- Período fixo: mensal -->
+              <div class="goals-filters">
+                <button class="goals-filter goals-filter--active" data-goals-period="month">
                   Mensal
                 </button>
               </div>
@@ -1067,10 +1057,10 @@
     </div>
 
     <!-- Script -->
+    <script src="js/api.js"></script>
     <script src="js/dashboard.js"></script>
 
     <!-- Alerta de stock com dados reais; a gestão vive em produtos-crm.html -->
-    <script src="js/api.js"></script>
     <script src="js/produtos-data.js"></script>
     <script src="js/dashboard-produtos.js"></script>
   </body>

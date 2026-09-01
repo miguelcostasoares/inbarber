@@ -3445,6 +3445,783 @@ def visao_geral_financeiro():
         conn.close()
 
 
+# ═══════════════════════════════════════════════════════════
+# DASHBOARD — Endpoint único de resumo
+# GET /api/dashboard
+# ═══════════════════════════════════════════════════════════
+
+@app.route('/api/dashboard', methods=['GET'])
+def dashboard_summary():
+    """
+    Retorna todos os dados necessários para o Dashboard em uma única chamada.
+    Resposta dividida em seções independentes que alimentam cada bloco do front.
+    """
+    from datetime import date
+    import calendar
+
+    hoje = date.today()
+    ontem = hoje - timedelta(days=1)
+    inicio_semana = hoje - timedelta(days=hoje.weekday())
+    inicio_mes = hoje.replace(day=1)
+    fim_mes = hoje.replace(day=calendar.monthrange(hoje.year, hoje.month)[1])
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+    fim_mes_anterior = inicio_mes - timedelta(days=1)
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+
+        # ── 1. KPIs: faturamento de hoje ──────────────────────
+        cursor.execute(
+            '''SELECT
+                   COALESCE(SUM(valor_cobrado), 0) AS receita,
+                   COUNT(*) AS total_agendamentos
+               FROM agendamentos
+               WHERE status = 'concluido' AND data = %s''',
+            (hoje,)
+        )
+        kpi_hoje = cursor.fetchone()
+        receita_hoje = float(_q2(kpi_hoje['receita']))
+        agend_hoje_concluidos = kpi_hoje['total_agendamentos']
+
+        # Total de agendamentos do dia (qualquer status)
+        cursor.execute(
+            '''SELECT COUNT(*) AS total,
+                      COALESCE(SUM(s.preco), 0) AS valor_previsto
+               FROM agendamentos a
+               JOIN servicos s ON s.id = a.servico_id
+               WHERE a.data = %s''',
+            (hoje,)
+        )
+        row_agend = cursor.fetchone()
+        total_agend_hoje = row_agend['total']
+        valor_previsto_hoje = float(_q2(row_agend['valor_previsto']))
+
+        # Receita de ontem (para variação)
+        cursor.execute(
+            '''SELECT COALESCE(SUM(valor_cobrado), 0) AS receita
+               FROM agendamentos
+               WHERE status = 'concluido' AND data = %s''',
+            (ontem,)
+        )
+        receita_ontem = float(_q2(cursor.fetchone()['receita']))
+
+        # ── 2. KPIs: ticket médio (mês atual vs semana passada) ─
+        cursor.execute(
+            '''SELECT
+                   COALESCE(AVG(valor_cobrado), 0) AS ticket_mes,
+                   COUNT(*) AS qtd_mes
+               FROM agendamentos
+               WHERE status = 'concluido'
+                 AND data BETWEEN %s AND %s''',
+            (inicio_mes, hoje)
+        )
+        row_ticket = cursor.fetchone()
+        ticket_mes = float(_q2(row_ticket['ticket_mes']))
+
+        inicio_semana_passada = inicio_semana - timedelta(days=7)
+        fim_semana_passada = inicio_semana - timedelta(days=1)
+        cursor.execute(
+            '''SELECT COALESCE(AVG(valor_cobrado), 0) AS ticket
+               FROM agendamentos
+               WHERE status = 'concluido'
+                 AND data BETWEEN %s AND %s''',
+            (inicio_semana_passada, fim_semana_passada)
+        )
+        ticket_semana_passada = float(_q2(cursor.fetchone()['ticket']))
+
+        # ── 3. KPIs: novos clientes esta semana ──────────────
+        cursor.execute(
+            '''SELECT COUNT(*) AS qtd
+               FROM clientes
+               WHERE cliente_desde BETWEEN %s AND %s''',
+            (inicio_semana, hoje)
+        )
+        novos_clientes_semana = cursor.fetchone()['qtd']
+
+        # ── 4. Faturamento mensal (cabeçalho) ─────────────────
+        cursor.execute(
+            '''SELECT COALESCE(SUM(valor_cobrado), 0) AS receita
+               FROM agendamentos
+               WHERE status = 'concluido'
+                 AND data BETWEEN %s AND %s''',
+            (inicio_mes, fim_mes)
+        )
+        receita_mes = float(_q2(cursor.fetchone()['receita']))
+
+        cursor.execute(
+            '''SELECT COALESCE(SUM(valor_cobrado), 0) AS receita
+               FROM agendamentos
+               WHERE status = 'concluido'
+                 AND data BETWEEN %s AND %s''',
+            (inicio_mes_anterior, fim_mes_anterior)
+        )
+        receita_mes_anterior = float(_q2(cursor.fetchone()['receita']))
+
+        # ── 5. Agenda do dia ──────────────────────────────────
+        cursor.execute(
+            '''SELECT
+                   a.id, a.cliente_nome, a.cliente_telefone,
+                   a.hora_inicio, a.hora_fim, a.status,
+                   a.servico_id, a.barbeiro_id,
+                   s.nome AS servico_nome, s.preco AS servico_preco,
+                   s.duracao_min, s.cor_hex,
+                   b.nome AS barbeiro_nome, b.avatar_iniciais
+               FROM agendamentos a
+               JOIN servicos s ON s.id = a.servico_id
+               JOIN barbeiros b ON b.id = a.barbeiro_id
+               WHERE a.data = %s
+               ORDER BY a.hora_inicio ASC''',
+            (hoje,)
+        )
+        agendamentos_hoje = []
+        for row in cursor.fetchall():
+            hi = row['hora_inicio']
+            hora_str = (datetime.min + hi).strftime('%H:%M') if isinstance(hi, timedelta) else str(hi)[:5]
+            agendamentos_hoje.append({
+                'id':          row['id'],
+                'time':        hora_str,
+                'client':      row['cliente_nome'],
+                'phone':       row['cliente_telefone'] or '',
+                'serviceId':   row['servico_id'],
+                'serviceName': row['servico_nome'],
+                'servicePrice': float(_q2(row['servico_preco'])),
+                'duration':    row['duracao_min'],
+                'color':       row['cor_hex'] or '#3B82F6',
+                'barberId':    row['barbeiro_id'],
+                'barberName':  row['barbeiro_nome'],
+                'barberAvatar': row['avatar_iniciais'] or '',
+                'status':      row['status'],
+            })
+
+        # ── 6. Faturamento últimos 30 dias (gráfico) ─────────
+        data_30d = hoje - timedelta(days=29)
+        cursor.execute(
+            '''SELECT data, COALESCE(SUM(valor_cobrado), 0) AS total
+               FROM agendamentos
+               WHERE status = 'concluido' AND data BETWEEN %s AND %s
+               GROUP BY data
+               ORDER BY data ASC''',
+            (data_30d, hoje)
+        )
+        por_dia_30d = {row['data']: float(_q2(row['total'])) for row in cursor.fetchall()}
+        revenue_30d = []
+        revenue_30d_labels = []
+        for i in range(29, -1, -1):
+            dia = hoje - timedelta(days=i)
+            revenue_30d_labels.append(dia.strftime('%d/%m'))
+            revenue_30d.append(por_dia_30d.get(dia, 0))
+
+        # Faturamento por mês (últimos 12 meses)
+        cursor.execute(
+            '''SELECT DATE_FORMAT(data, '%%Y-%%m') AS mes,
+                      COALESCE(SUM(valor_cobrado), 0) AS total
+               FROM agendamentos
+               WHERE status = 'concluido'
+                 AND data >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+               GROUP BY mes ORDER BY mes ASC'''
+        )
+        por_mes = {row['mes']: float(_q2(row['total'])) for row in cursor.fetchall()}
+        revenue_month_labels = []
+        revenue_month_data = []
+        for i in range(11, -1, -1):
+            ref = hoje.replace(day=1) - timedelta(days=i * 30)
+            chave = ref.strftime('%Y-%m')
+            label = ref.strftime('%b/%y')
+            revenue_month_labels.append(label)
+            revenue_month_data.append(por_mes.get(chave, 0))
+
+        # Faturamento por ano (últimos 5 anos)
+        cursor.execute(
+            '''SELECT YEAR(data) AS ano, COALESCE(SUM(valor_cobrado), 0) AS total
+               FROM agendamentos
+               WHERE status = 'concluido'
+                 AND YEAR(data) >= YEAR(CURDATE()) - 4
+               GROUP BY ano ORDER BY ano ASC'''
+        )
+        por_ano = {row['ano']: float(_q2(row['total'])) for row in cursor.fetchall()}
+        ano_atual = hoje.year
+        revenue_year_labels = [str(a) for a in range(ano_atual - 4, ano_atual + 1)]
+        revenue_year_data = [por_ano.get(a, 0) for a in range(ano_atual - 4, ano_atual + 1)]
+
+        # ── 7. Distribuição de serviços do mês (donut) ────────
+        cursor.execute(
+            '''SELECT
+                   a.servico_id,
+                   s.nome AS servico_nome,
+                   s.preco, s.cor_hex,
+                   COUNT(*) AS qtd
+               FROM agendamentos a
+               JOIN servicos s ON s.id = a.servico_id
+               WHERE a.status = 'concluido'
+                 AND a.data BETWEEN %s AND %s
+               GROUP BY a.servico_id, s.nome, s.preco, s.cor_hex
+               ORDER BY qtd DESC
+               LIMIT 8''',
+            (inicio_mes, hoje)
+        )
+        servicos_dist = [
+            {
+                'serviceId':   row['servico_id'],
+                'name':        row['servico_nome'],
+                'price':       float(_q2(row['preco'])),
+                'color':       row['cor_hex'] or '#3B82F6',
+                'count':       row['qtd'],
+            }
+            for row in cursor.fetchall()
+        ]
+
+        # ── 8. Ocupação por faixa de horário (últimos 30 dias) ─
+        cursor.execute(
+            '''SELECT
+                   HOUR(hora_inicio) AS hora,
+                   COUNT(*) AS total
+               FROM agendamentos
+               WHERE data BETWEEN %s AND %s
+                 AND status IN ('concluido', 'em-andamento', 'confirmado')
+               GROUP BY HOUR(hora_inicio)
+               ORDER BY hora ASC''',
+            (data_30d, hoje)
+        )
+        agend_por_hora = {row['hora']: row['total'] for row in cursor.fetchall()}
+        # Normaliza: máximo = 100% de ocupação
+        max_agend = max(agend_por_hora.values(), default=1)
+        occupancy = []
+        for h in range(8, 20):
+            pct = round((agend_por_hora.get(h, 0) / max_agend) * 100) if max_agend > 0 else 0
+            occupancy.append({'label': f'{h:02d}h', 'value': pct})
+
+        # ── 9. Metas dos barbeiros ─────────────────────────────
+        # Semana
+        cursor.execute(
+            '''SELECT mb.barbeiro_id, mb.meta_valor,
+                      b.nome, b.avatar_iniciais, b.comissao_pct,
+                      COALESCE(SUM(a.valor_cobrado), 0) AS sold
+               FROM metas_barbeiro mb
+               JOIN barbeiros b ON b.id = mb.barbeiro_id
+               LEFT JOIN agendamentos a
+                      ON a.barbeiro_id = mb.barbeiro_id
+                     AND a.status = 'concluido'
+                     AND a.data BETWEEN %s AND %s
+               WHERE mb.periodo_tipo = 'semana'
+                 AND mb.periodo_inicio = %s
+               GROUP BY mb.barbeiro_id, mb.meta_valor, b.nome, b.avatar_iniciais, b.comissao_pct''',
+            (inicio_semana, hoje, inicio_semana)
+        )
+        metas_semana_rows = cursor.fetchall()
+
+        # Tendência semanal (7 dias) por barbeiro
+        def _tendencia_barbeiro(barbeiro_id, data_inicio_trend, data_fim_trend):
+            cursor.execute(
+                '''SELECT data, COALESCE(SUM(valor_cobrado), 0) AS total
+                   FROM agendamentos
+                   WHERE barbeiro_id = %s AND status = 'concluido'
+                     AND data BETWEEN %s AND %s
+                   GROUP BY data ORDER BY data ASC''',
+                (barbeiro_id, data_inicio_trend, data_fim_trend)
+            )
+            por_dia = {row['data']: float(_q2(row['total'])) for row in cursor.fetchall()}
+            return [
+                por_dia.get(data_inicio_trend + timedelta(days=i), 0)
+                for i in range(7)
+            ]
+
+        def _calcular_status_meta(sold, target):
+            if target <= 0:
+                return 'on-track'
+            pct = (sold / target) * 100
+            if pct >= 100:
+                return 'ahead'
+            if pct >= 75:
+                return 'on-track'
+            if pct >= 50:
+                return 'almost'
+            return 'behind'
+
+        trend_inicio_semana = inicio_semana - timedelta(days=6)
+
+        barbers_week = []
+        for row in metas_semana_rows:
+            sold = float(_q2(row['sold']))
+            target = float(_q2(row['meta_valor']))
+            status = _calcular_status_meta(sold, target)
+            barbers_week.append({
+                'barberId':    row['barbeiro_id'],
+                'name':        row['nome'],
+                'avatar':      row['avatar_iniciais'] or row['nome'][:2].upper(),
+                'sold':        sold,
+                'target':      target,
+                'commissionPct': float(_q2(row['comissao_pct'])),
+                'status':      status,
+                'trend':       _tendencia_barbeiro(row['barbeiro_id'], trend_inicio_semana, hoje),
+                'forecast':    None,
+            })
+
+        # Meta da equipe — semana
+        cursor.execute(
+            '''SELECT COALESCE(meta_valor, 0) AS meta
+               FROM metas_barbearia
+               WHERE periodo_tipo = 'semana' AND periodo_inicio = %s''',
+            (inicio_semana,)
+        )
+        row_meta_equipe_sem = cursor.fetchone()
+        team_target_week = float(_q2(row_meta_equipe_sem['meta'])) if row_meta_equipe_sem else 0
+        team_sold_week = sum(b['sold'] for b in barbers_week)
+
+        cursor.execute(
+            '''SELECT data, COALESCE(SUM(valor_cobrado), 0) AS total
+               FROM agendamentos
+               WHERE status = 'concluido'
+                 AND data BETWEEN %s AND %s
+               GROUP BY data ORDER BY data ASC''',
+            (trend_inicio_semana, hoje)
+        )
+        team_trend_dict = {row['data']: float(_q2(row['total'])) for row in cursor.fetchall()}
+        team_trend_week = [
+            team_trend_dict.get(trend_inicio_semana + timedelta(days=i), 0)
+            for i in range(7)
+        ]
+
+        goals_week = {
+            'teamTarget': team_target_week,
+            'teamSold':   team_sold_week,
+            'teamTrend':  team_trend_week,
+            'barbers':    barbers_week,
+        }
+
+        # Mensal
+        cursor.execute(
+            '''SELECT mb.barbeiro_id, mb.meta_valor,
+                      b.nome, b.avatar_iniciais, b.comissao_pct,
+                      COALESCE(SUM(a.valor_cobrado), 0) AS sold
+               FROM metas_barbeiro mb
+               JOIN barbeiros b ON b.id = mb.barbeiro_id
+               LEFT JOIN agendamentos a
+                      ON a.barbeiro_id = mb.barbeiro_id
+                     AND a.status = 'concluido'
+                     AND a.data BETWEEN %s AND %s
+               WHERE mb.periodo_tipo = 'mes'
+                 AND mb.periodo_inicio = %s
+               GROUP BY mb.barbeiro_id, mb.meta_valor, b.nome, b.avatar_iniciais, b.comissao_pct''',
+            (inicio_mes, hoje, inicio_mes)
+        )
+        metas_mes_rows = cursor.fetchall()
+
+        trend_inicio_mes = hoje - timedelta(days=6)
+        barbers_month = []
+        for row in metas_mes_rows:
+            sold = float(_q2(row['sold']))
+            target = float(_q2(row['meta_valor']))
+            status = _calcular_status_meta(sold, target)
+            barbers_month.append({
+                'barberId':    row['barbeiro_id'],
+                'name':        row['nome'],
+                'avatar':      row['avatar_iniciais'] or row['nome'][:2].upper(),
+                'sold':        sold,
+                'target':      target,
+                'commissionPct': float(_q2(row['comissao_pct'])),
+                'status':      status,
+                'trend':       _tendencia_barbeiro(row['barbeiro_id'], trend_inicio_mes, hoje),
+                'forecast':    None,
+            })
+
+        cursor.execute(
+            '''SELECT COALESCE(meta_valor, 0) AS meta
+               FROM metas_barbearia
+               WHERE periodo_tipo = 'mes' AND periodo_inicio = %s''',
+            (inicio_mes,)
+        )
+        row_meta_equipe_mes = cursor.fetchone()
+        team_target_month = float(_q2(row_meta_equipe_mes['meta'])) if row_meta_equipe_mes else 0
+        team_sold_month = sum(b['sold'] for b in barbers_month)
+
+        cursor.execute(
+            '''SELECT data, COALESCE(SUM(valor_cobrado), 0) AS total
+               FROM agendamentos
+               WHERE status = 'concluido'
+                 AND data BETWEEN %s AND %s
+               GROUP BY data ORDER BY data ASC''',
+            (trend_inicio_mes, hoje)
+        )
+        team_trend_mes_dict = {row['data']: float(_q2(row['total'])) for row in cursor.fetchall()}
+        team_trend_month = [
+            team_trend_mes_dict.get(trend_inicio_mes + timedelta(days=i), 0)
+            for i in range(7)
+        ]
+
+        goals_month = {
+            'teamTarget': team_target_month,
+            'teamSold':   team_sold_month,
+            'teamTrend':  team_trend_month,
+            'barbers':    barbers_month,
+        }
+
+        # ── 10. Comissões por período ──────────────────────────
+        def _comissoes_periodo(data_ini, data_fim):
+            cursor.execute(
+                '''SELECT
+                       b.id AS barbeiro_id, b.nome, b.avatar_iniciais, b.comissao_pct,
+                       COUNT(a.id) AS appointments,
+                        COALESCE(SUM(a.valor_cobrado), 0) AS total_gerado
+                    FROM barbeiros b
+                    LEFT JOIN agendamentos a
+                            ON a.barbeiro_id = b.id
+                            AND a.status = 'concluido'
+                            AND a.data BETWEEN %s AND %s
+                    WHERE b.ativo = 1
+                    GROUP BY b.id, b.nome, b.avatar_iniciais, b.comissao_pct
+                    ORDER BY total_gerado DESC''',
+                (data_ini, data_fim)
+            )
+            barbers_comm = []
+            total_gen = Decimal('0')
+            total_pay = Decimal('0')
+            total_appts = 0
+            for row in cursor.fetchall():
+                gen = _q2(row['total_gerado'])
+                pct = _q2(row['comissao_pct'])
+                pay = _q2(gen * pct / Decimal('100'))
+                appointments = row['appointments']
+                total_gen += gen
+                total_pay += pay
+                total_appts += appointments
+                gen_f = float(gen)
+                perf = 'good' if appointments >= 5 else ('medium' if appointments >= 2 else 'warning')
+                barbers_comm.append({
+                    'barberId':      row['barbeiro_id'],
+                    'name':          row['nome'],
+                    'avatar':        row['avatar_iniciais'] or row['nome'][:2].upper(),
+                    'commissionPct': float(pct),
+                    'generated':     gen_f,
+                    'payout':        float(pay),
+                    'appointments':  appointments,
+                    'performance':   perf,
+                })
+            return {
+                'totalGenerated': float(_q2(total_gen)),
+                'totalPayout':    float(_q2(total_pay)),
+                'appointments':   total_appts,
+                'barbers':        barbers_comm,
+            }
+
+        commissions = {
+            'today': _comissoes_periodo(hoje, hoje),
+            'week':  _comissoes_periodo(inicio_semana, hoje),
+            'month': _comissoes_periodo(inicio_mes, hoje),
+        }
+
+        # ── 11. Alertas: clientes para reativar ───────────────
+        limite_reativar = hoje - timedelta(days=30)
+        cursor.execute(
+            '''SELECT c.id, c.nome, c.ultima_visita,
+                      DATEDIFF(CURDATE(), c.ultima_visita) AS dias_ausente,
+                      COALESCE(SUM(a.valor_cobrado), 0) AS total_gasto
+               FROM clientes c
+               LEFT JOIN agendamentos a
+                      ON a.cliente_id = c.id AND a.status = 'concluido'
+               WHERE c.ultima_visita IS NOT NULL
+                 AND c.ultima_visita < %s
+               GROUP BY c.id, c.nome, c.ultima_visita
+               ORDER BY c.ultima_visita ASC
+               LIMIT 5''',
+            (limite_reativar,)
+        )
+        reativar = [
+            {
+                'id':        row['id'],
+                'name':      row['nome'],
+                'lastVisit': f'{row["dias_ausente"]} dias',
+                'spend':     f'R$ {float(_q2(row["total_gasto"])):,.0f}'.replace(',', '.'),
+            }
+            for row in cursor.fetchall()
+        ]
+
+        # ── 12. Alertas: aniversariantes do mês ───────────────
+        cursor.execute(
+            '''SELECT id, nome, telefone, data_nascimento
+               FROM clientes
+               WHERE MONTH(data_nascimento) = MONTH(CURDATE())
+               ORDER BY DAY(data_nascimento) ASC
+               LIMIT 10'''
+        )
+        aniversariantes = []
+        for row in cursor.fetchall():
+            dn = row['data_nascimento']
+            dia_nasc = dn.day if dn else None
+            if dia_nasc == hoje.day:
+                label = 'Hoje'
+            elif dia_nasc == (hoje + timedelta(days=1)).day:
+                label = 'Amanhã'
+            else:
+                label = f"{dia_nasc:02d}/{hoje.month:02d}"
+            aniversariantes.append({
+                'id':    row['id'],
+                'name':  row['nome'],
+                'phone': row['telefone'],
+                'day':   label,
+            })
+
+        # ── 13. Alertas: estoque baixo ────────────────────────
+        # Usa a tabela `produtos` — mesma fonte da tela de Produtos.
+        # Critério: disponivel (= stock - reservado) <= 5, produto ativo.
+        LIMITE_STOCK_BAIXO_DASHBOARD = 5
+        cursor.execute(
+            '''SELECT id, nome, stock, reservado,
+                      (stock - reservado) AS disponivel
+               FROM produtos
+               WHERE ativo = 1
+                 AND (stock - reservado) <= %s
+               ORDER BY (stock - reservado) ASC
+               LIMIT 10''',
+            (LIMITE_STOCK_BAIXO_DASHBOARD,)
+        )
+        estoque_baixo = [
+            {
+                'id':   row['id'],
+                'name': row['nome'],
+                'qty':  int(row['disponivel']),
+                'unit': 'un',
+            }
+            for row in cursor.fetchall()
+        ]
+
+        # ── 14. Alertas: agendamentos pendentes hoje ──────────
+        pendentes = [
+            {
+                'id':     a['id'],
+                'client': a['client'],
+                'time':   a['time'],
+                'phone':  a['phone'],
+            }
+            for a in agendamentos_hoje if a['status'] == 'pendente'
+        ]
+
+        # ── 15. Relatórios rápidos — preview ──────────────────
+        def _top_servico(data_ini, data_fim):
+            cursor.execute(
+                '''SELECT s.nome, COUNT(*) AS qtd
+                   FROM agendamentos a
+                   JOIN servicos s ON s.id = a.servico_id
+                   WHERE a.status = 'concluido' AND a.data BETWEEN %s AND %s
+                   GROUP BY s.nome ORDER BY qtd DESC LIMIT 1''',
+                (data_ini, data_fim)
+            )
+            row = cursor.fetchone()
+            return row['nome'] if row else '—'
+
+        def _no_shows(data_ini, data_fim):
+            cursor.execute(
+                '''SELECT COUNT(*) AS qtd FROM agendamentos
+                   WHERE status = 'no-show' AND data BETWEEN %s AND %s''',
+                (data_ini, data_fim)
+            )
+            return cursor.fetchone()['qtd']
+
+        def _novos_clientes(data_ini, data_fim):
+            cursor.execute(
+                '''SELECT COUNT(*) AS qtd FROM clientes
+                   WHERE cliente_desde BETWEEN %s AND %s''',
+                (data_ini, data_fim)
+            )
+            return cursor.fetchone()['qtd']
+
+        def _ticket_medio(data_ini, data_fim):
+            cursor.execute(
+                '''SELECT COALESCE(AVG(valor_cobrado), 0) AS ticket
+                   FROM agendamentos
+                   WHERE status = 'concluido' AND data BETWEEN %s AND %s''',
+                (data_ini, data_fim)
+            )
+            return float(_q2(cursor.fetchone()['ticket']))
+
+        def _faturamento(data_ini, data_fim):
+            cursor.execute(
+                '''SELECT COALESCE(SUM(valor_cobrado), 0) AS total
+                   FROM agendamentos
+                   WHERE status = 'concluido' AND data BETWEEN %s AND %s''',
+                (data_ini, data_fim)
+            )
+            return float(_q2(cursor.fetchone()['total']))
+
+        def _total_agend(data_ini, data_fim):
+            cursor.execute(
+                '''SELECT COUNT(*) AS qtd FROM agendamentos
+                   WHERE data BETWEEN %s AND %s''',
+                (data_ini, data_fim)
+            )
+            return cursor.fetchone()['qtd']
+
+        def _comissoes_total(data_ini, data_fim):
+            cursor.execute(
+                '''SELECT COALESCE(SUM(a.valor_cobrado * b.comissao_pct / 100), 0) AS total
+                   FROM agendamentos a
+                   JOIN barbeiros b ON b.id = a.barbeiro_id
+                   WHERE a.status = 'concluido' AND a.data BETWEEN %s AND %s''',
+                (data_ini, data_fim)
+            )
+            return float(_q2(cursor.fetchone()['total']))
+
+        fim_semana_atual = inicio_semana + timedelta(days=6)
+
+        def _fmt_brl(v):
+            return f"R$ {v:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+        reports_preview = {
+            'today': {
+                'period': 'Hoje',
+                'filename': f'relatorio-{hoje.strftime("%d-%m-%Y")}',
+                'items': [
+                    {'label': 'Faturamento',       'value': _fmt_brl(_faturamento(hoje, hoje))},
+                    {'label': 'Agendamentos',       'value': str(_total_agend(hoje, hoje))},
+                    {'label': 'Ticket Médio',       'value': _fmt_brl(_ticket_medio(hoje, hoje))},
+                    {'label': 'Top Serviço',        'value': _top_servico(hoje, hoje)},
+                    {'label': 'Comissões a pagar',  'value': _fmt_brl(_comissoes_total(hoje, hoje))},
+                    {'label': 'No-shows',           'value': str(_no_shows(hoje, hoje))},
+                ],
+            },
+            'week': {
+                'period': 'Esta Semana',
+                'filename': f'relatorio-semana-{inicio_semana.strftime("%d-%m-%Y")}',
+                'items': [
+                    {'label': 'Faturamento',       'value': _fmt_brl(_faturamento(inicio_semana, hoje))},
+                    {'label': 'Agendamentos',       'value': str(_total_agend(inicio_semana, hoje))},
+                    {'label': 'Ticket Médio',       'value': _fmt_brl(_ticket_medio(inicio_semana, hoje))},
+                    {'label': 'Top Serviço',        'value': _top_servico(inicio_semana, hoje)},
+                    {'label': 'Comissões a pagar',  'value': _fmt_brl(_comissoes_total(inicio_semana, hoje))},
+                    {'label': 'Novos Clientes',     'value': str(_novos_clientes(inicio_semana, hoje))},
+                ],
+            },
+            'month': {
+                'period': f'{inicio_mes.strftime("%B/%Y")}',
+                'filename': f'relatorio-{inicio_mes.strftime("%m-%Y")}',
+                'items': [
+                    {'label': 'Faturamento',        'value': _fmt_brl(receita_mes)},
+                    {'label': 'Agendamentos',        'value': str(_total_agend(inicio_mes, hoje))},
+                    {'label': 'Ticket Médio',        'value': _fmt_brl(ticket_mes)},
+                    {'label': 'Top Serviço',         'value': _top_servico(inicio_mes, hoje)},
+                    {'label': 'Comissões a pagar',   'value': _fmt_brl(_comissoes_total(inicio_mes, hoje))},
+                    {'label': 'Taxa de Ocupação',    'value': f'{round((agend_hoje_concluidos / max(total_agend_hoje, 1)) * 100)}%'},
+                ],
+            },
+        }
+
+        # ── 16. Dados de barbeiros e serviços (para modal) ────
+        cursor.execute(
+            '''SELECT id, nome, avatar_iniciais, comissao_pct
+               FROM barbeiros WHERE ativo = 1 ORDER BY nome ASC'''
+        )
+        barbeiros_modal = [
+            {
+                'id':     row['id'],
+                'name':   row['nome'],
+                'avatar': row['avatar_iniciais'] or row['nome'][:2].upper(),
+            }
+            for row in cursor.fetchall()
+        ]
+
+        cursor.execute(
+            '''SELECT id, nome, preco, duracao_min, cor_hex
+               FROM servicos WHERE ativo = 1 ORDER BY nome ASC'''
+        )
+        servicos_modal = [
+            {
+                'id':       row['id'],
+                'name':     row['nome'],
+                'price':    float(_q2(row['preco'])),
+                'duration': row['duracao_min'],
+                'color':    row['cor_hex'] or '#3B82F6',
+            }
+            for row in cursor.fetchall()
+        ]
+
+        # ── 17. Loyalty ───────────────────────────────────────
+        cursor.execute(
+            '''SELECT
+                   lb.barbeiro_id, lb.pontos, lb.nivel, lb.proxima_meta_pontos,
+                   b.nome, b.avatar_iniciais,
+                   GROUP_CONCAT(lben.descricao ORDER BY lben.ordem SEPARATOR '||') AS beneficios
+               FROM loyalty_barbeiro lb
+               JOIN barbeiros b ON b.id = lb.barbeiro_id
+               LEFT JOIN loyalty_beneficios lben ON lben.nivel = lb.nivel
+               WHERE b.ativo = 1
+               GROUP BY lb.barbeiro_id, lb.pontos, lb.nivel, lb.proxima_meta_pontos,
+                        b.nome, b.avatar_iniciais
+               ORDER BY lb.pontos DESC'''
+        )
+        loyalty = []
+        for i, row in enumerate(cursor.fetchall()):
+            meta = row['proxima_meta_pontos'] or 0
+            pontos = row['pontos']
+            progress = round((pontos / meta) * 100) if meta > 0 else 100
+            beneficios = row['beneficios'].split('||') if row['beneficios'] else []
+            loyalty.append({
+                'barberId':  row['barbeiro_id'],
+                'name':      row['nome'],
+                'avatar':    row['avatar_iniciais'] or row['nome'][:2].upper(),
+                'points':    pontos,
+                'level':     row['nivel'],
+                'progress':  min(progress, 100),
+                'nextGoal':  meta,
+                'benefits':  beneficios,
+                'rank':      i + 1,
+            })
+
+        # ── 18. Dados da barbearia (header) ───────────────────
+        cursor.execute('SELECT nome FROM barbearia WHERE id = 1')
+        row_barb = cursor.fetchone()
+        barbershop_name = row_barb['nome'] if row_barb else 'Barbearia'
+
+        return jsonify({
+            'barbershop': {'name': barbershop_name},
+            'header': {
+                'monthlyRevenue':     receita_mes,
+                'prevMonthRevenue':   receita_mes_anterior,
+            },
+            'kpis': {
+                'todayRevenue':         receita_hoje,
+                'todayRevenueYesterday': receita_ontem,
+                'todayAppointments':    total_agend_hoje,
+                'todayAppointmentsValue': valor_previsto_hoje,
+                'ticketAvg':            ticket_mes,
+                'ticketAvgLastWeek':    ticket_semana_passada,
+                'newClientsWeek':       novos_clientes_semana,
+            },
+            'agenda': agendamentos_hoje,
+            'charts': {
+                'revenue': {
+                    'day':   {'labels': revenue_30d_labels, 'data': revenue_30d},
+                    'month': {'labels': revenue_month_labels, 'data': revenue_month_data},
+                    'year':  {'labels': revenue_year_labels, 'data': revenue_year_data},
+                },
+                'servicesDistribution': servicos_dist,
+                'occupancy': occupancy,
+            },
+            'goals': {
+                'week':  goals_week,
+                'month': goals_month,
+            },
+            'commissions': commissions,
+            'alerts': {
+                'reactivate': reativar,
+                'birthdays':  aniversariantes,
+                'lowStock':   estoque_baixo,
+                'pending':    pendentes,
+            },
+            'reportsPreview': reports_preview,
+            'modal': {
+                'barbers':  barbeiros_modal,
+                'services': servicos_modal,
+            },
+            'loyalty': loyalty,
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': f'Erro ao carregar dashboard: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
 if __name__ == '__main__':
     try:
         conn = get_db()

@@ -808,6 +808,15 @@ function getBarberAvailability(barberId, date, durationMin) {
   return apiRequest(`/barber-availability${qs}`, { method: 'GET' });
 }
 
+/**
+ * Carrega todos os dados do Dashboard em uma única chamada.
+ * GET /api/dashboard
+ * @returns {Promise<Object>} payload completo do dashboard
+ */
+function getDashboard() {
+  return apiRequest('/dashboard', { method: 'GET' });
+}
+
 window.InBarberAPI = {
   listAppointments,
   getAppointment,
@@ -858,4 +867,5 @@ window.InBarberAPI = {
   deleteSaida,
   getVisaoGeralFinanceiro,
   getBarberAvailability,
+  getDashboard,
 };

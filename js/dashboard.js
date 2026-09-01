@@ -15,342 +15,21 @@ const CONFIG = {
   slotMinutes: 30,
 };
 
+/* ─── 2. ESTADO GLOBAL (alimentado pela API) ─────────────── */
 
-/* ─── 2. MOCK DATA ──────────────────────────────────────── */
-/*
- * Todos os conjuntos de dados são exportados como constantes nomeadas.
- * Para conectar ao backend, substitua cada bloco por uma chamada fetch/axios
- * ao endpoint correspondente e mantenha a mesma estrutura de objeto.
- */
-
-// 2.1 Serviços disponíveis
-const mockServices = [
-  { id: 'corte', name: 'Corte Masculino', price: 45, duration: 30, color: '#3B82F6' },
-  { id: 'barba', name: 'Barba', price: 35, duration: 30, color: '#5B8DEF' },
-  { id: 'combo', name: 'Corte + Barba', price: 70, duration: 60, color: '#9B72CF' },
-  { id: 'pigmentacao', name: 'Pigmentação', price: 90, duration: 60, color: '#4CAF79' },
-  { id: 'relaxamento', name: 'Relaxamento', price: 80, duration: 60, color: '#E0924A' },
-  { id: 'sobrancelha', name: 'Sobrancelha', price: 20, duration: 20, color: '#E05454' },
-];
-
-// 2.2 Barbeiros
-const mockBarbers = [
-  { id: 'marcos', name: 'Marcos Silva', avatar: 'MS', rating: 4.9 },
-  { id: 'joao', name: 'João Pereira', avatar: 'JP', rating: 4.7 },
-  { id: 'andre', name: 'André Santos', avatar: 'AS', rating: 4.8 },
-];
-
-// 2.3 Agendamentos de hoje
-// status: 'confirmado' | 'pendente' | 'em-andamento' | 'concluido' | 'no-show'
-const mockAppointments = [
-  { id: 'a001', time: '08:00', client: 'Lucas Andrade', serviceId: 'combo', barberId: 'marcos', status: 'concluido', phone: '84999990001' },
-  { id: 'a002', time: '08:30', client: 'Felipe Rocha', serviceId: 'corte', barberId: 'joao', status: 'concluido', phone: '84999990002' },
-  { id: 'a003', time: '09:00', client: 'Gabriel Souza', serviceId: 'barba', barberId: 'andre', status: 'concluido', phone: '84999990003' },
-  { id: 'a004', time: '09:30', client: 'Matheus Lima', serviceId: 'pigmentacao', barberId: 'marcos', status: 'concluido', phone: '84999990004' },
-  { id: 'a005', time: '10:00', client: 'Ricardo Ferreira', serviceId: 'corte', barberId: 'joao', status: 'no-show', phone: '84999990005' },
-  { id: 'a006', time: '10:30', client: 'Bruno Carvalho', serviceId: 'combo', barberId: 'andre', status: 'concluido', phone: '84999990006' },
-  { id: 'a007', time: '11:00', client: 'Diego Martins', serviceId: 'relaxamento', barberId: 'marcos', status: 'em-andamento', phone: '84999990007' },
-  { id: 'a008', time: '11:30', client: 'Thiago Oliveira', serviceId: 'sobrancelha', barberId: 'joao', status: 'confirmado', phone: '84999990008' },
-  { id: 'a009', time: '12:00', client: 'Cauã Ribeiro', serviceId: 'corte', barberId: 'andre', status: 'confirmado', phone: '84999990009' },
-  { id: 'a010', time: '13:00', client: 'Vinicius Alves', serviceId: 'combo', barberId: 'marcos', status: 'confirmado', phone: '84999990010' },
-  { id: 'a011', time: '13:30', client: 'Leonardo Costa', serviceId: 'barba', barberId: 'joao', status: 'pendente', phone: '84999990011' },
-  { id: 'a012', time: '14:00', client: 'Samuel Pereira', serviceId: 'pigmentacao', barberId: 'andre', status: 'pendente', phone: '84999990012' },
-  { id: 'a013', time: '14:30', client: 'Rafael Nascimento', serviceId: 'corte', barberId: 'marcos', status: 'pendente', phone: '84999990013' },
-  { id: 'a014', time: '15:00', client: 'Igor Campos', serviceId: 'combo', barberId: 'joao', status: 'pendente', phone: '84999990014' },
-  { id: 'a015', time: '16:00', client: 'Henrique Duarte', serviceId: 'relaxamento', barberId: 'andre', status: 'pendente', phone: '84999990015' },
-];
-
-// 2.4 Faturamento dos últimos 30 dias (para gráfico de linha)
-// Conectar: GET /api/revenue?period=30d
-const mockRevenue30d = (function () {
-  const base = [
-    520, 480, 690, 710, 430, 0, 0,
-    650, 720, 810, 590, 670, 780, 0,
-    870, 920, 760, 840, 910, 650, 0,
-    1020, 890, 950, 730, 860, 980, 0,
-    1100, 870,
-  ];
-  // Sábados (índice 6, 13, 20, 27) = pico; domingos = fechado (0)
-  return base.map((v, i) => {
-    if (v === 0) return 0;
-    const jitter = Math.floor((Math.random() * 80) - 40);
-    return Math.max(0, v + jitter);
-  });
-})();
-
-// 2.5 Distribuição de serviços no mês (para donut)
-// Conectar: GET /api/services/distribution?period=month
-const mockServiceDistribution = [
-  { serviceId: 'corte', count: 148 },
-  { serviceId: 'combo', count: 97 },
-  { serviceId: 'barba', count: 83 },
-  { serviceId: 'pigmentacao', count: 42 },
-  { serviceId: 'relaxamento', count: 31 },
-  { serviceId: 'sobrancelha', count: 29 },
-];
-
-// 2.6 Ocupação por faixa de horário (para barras)
-// Conectar: GET /api/occupancy/hourly?period=week
-const mockOccupancyByHour = [
-  { label: '08h', value: 62 },
-  { label: '09h', value: 88 },
-  { label: '10h', value: 95 },
-  { label: '11h', value: 91 },
-  { label: '12h', value: 54 },
-  { label: '13h', value: 71 },
-  { label: '14h', value: 87 },
-  { label: '15h', value: 83 },
-  { label: '16h', value: 76 },
-  { label: '17h', value: 69 },
-  { label: '18h', value: 58 },
-  { label: '19h', value: 44 },
-];
-
-// 2.7 Metas dos Barbeiros — dados por período
-// Conectar: GET /api/goals/barbers?period=week|month
-//
-// Estrutura por barbeiro:
-//   sold        → valor já faturado no período
-//   target      → meta total do período
-//   trend       → array de 7 pontos (últimos 7 dias) para sparkline
-//   status      → 'ahead' | 'on-track' | 'almost' | 'behind'
-//   forecast    → texto de previsão (null = sem previsão)
-//
-// Status automático calculado via pct:
-//   >= 100% → ahead | 75–99% → on-track | 50–74% → almost | < 50% → behind
-const mockBarberGoals = {
-  week: {
-    teamTarget: 18_000,         // meta semanal total da equipe
-    teamSold: 13_420,         // faturado pela equipe na semana
-    // Tendência da equipe — últimos 7 dias (totais diários em R$)
-    teamTrend: [1580, 1920, 2100, 1870, 2250, 2300, 1400],
-    barbers: [
-      {
-        barberId: 'marcos',
-        sold: 5820,
-        target: 6000,
-        trend: [720, 900, 940, 850, 960, 1050, 400],  // últimos 7 dias
-        status: 'almost',
-        forecast: 'Deve bater a meta amanhã',
-      },
-      {
-        barberId: 'andre',
-        sold: 4600,
-        target: 6000,
-        trend: [580, 700, 750, 680, 820, 870, 200],
-        status: 'on-track',
-        forecast: 'No ritmo certo — projeção: R$ 6.100',
-      },
-      {
-        barberId: 'joao',
-        sold: 3000,
-        target: 6000,
-        trend: [280, 320, 410, 340, 470, 380, 800],
-        status: 'behind',
-        forecast: 'Precisa de R$ 500/dia para recuperar',
-      },
-    ],
-  },
-  month: {
-    teamTarget: 54_000,
-    teamSold: 41_830,
-    // Tendência da equipe — últimos 7 dias dentro do mês
-    teamTrend: [5200, 6100, 5800, 6400, 6300, 6500, 5530],
-    barbers: [
-      {
-        barberId: 'marcos',
-        sold: 19_200,
-        target: 20_000,
-        trend: [2500, 2900, 2700, 3100, 3000, 3100, 1900],
-        status: 'almost',
-        forecast: 'Deve bater a meta em 4 dias',
-      },
-      {
-        barberId: 'andre',
-        sold: 14_830,
-        target: 18_000,
-        trend: [1800, 2200, 2100, 2300, 2200, 2400, 1830],
-        status: 'on-track',
-        forecast: 'No ritmo — projeção: R$ 18.400',
-      },
-      {
-        barberId: 'joao',
-        sold: 7_800,
-        target: 16_000,
-        trend: [900, 1000, 1000, 1000, 1100, 1300, 1500],
-        status: 'behind',
-        forecast: 'Tendência positiva, mas meta distante',
-      },
-    ],
-  },
-};
-
-// 2.8 KPIs principais
-// Conectar: GET /api/kpis/today e GET /api/kpis/month
-const mockKPIs = {
-  monthly: {
-    revenue: 18_450,
-    revenuePrevMonth: 15_920,  // usado para calcular variação
-  },
-  today: {
-    revenue: 870,
-    revenueYesterday: 720,
-    appointments: 15,
-    appointmentsValue: 870,
-    occupancy: 78,       // porcentagem
-    ticketAvg: 58,
-    ticketAvgLastWeek: 52,
-    noShows: 1,
-    noShowValue: 45,
-  },
-  week: {
-    newClients: 7,
-  },
-};
-
-// 2.9 Clientes para reativar (sem visita há >30 dias)
-// Conectar: GET /api/clients/reactivate?days=30&limit=5
-const mockReactivateClients = [
-  { id: 'c001', name: 'Anderson Silva', lastVisit: '42 dias', spend: 'R$ 210' },
-  { id: 'c002', name: 'Rodrigo Teixeira', lastVisit: '38 dias', spend: 'R$ 175' },
-  { id: 'c003', name: 'Paulo Mendes', lastVisit: '35 dias', spend: 'R$ 280' },
-  { id: 'c004', name: 'Fábio Correia', lastVisit: '33 dias', spend: 'R$ 130' },
-];
-
-// 2.10 Aniversariantes do mês
-// Conectar: GET /api/clients/birthdays?month=current
-const mockBirthdays = [
-  { id: 'c010', name: 'Carlos Eduardo', day: 'Hoje', phone: '84999990020' },
-  { id: 'c011', name: 'Thiago Lopes', day: 'Amanhã', phone: '84999990021' },
-  { id: 'c012', name: 'Marcus Vitor', day: '30/06', phone: '84999990022' },
-];
-
-// 2.11 Estoque baixo
-// Conectar: GET /api/stock/low?threshold=10
-const mockLowStock = [
-  { id: 'p001', name: 'Pomada Modeladora 150g', qty: 2, unit: 'un' },
-  { id: 'p002', name: 'Lâminas Gillette (cx)', qty: 1, unit: 'cx' },
-  { id: 'p003', name: 'Óleo para barba 30ml', qty: 4, unit: 'un' },
-];
-
-// 2.12 Agendamentos pendentes de confirmação
-// Conectar: GET /api/appointments?status=pendente&date=today
-const mockPendingConfirmation = mockAppointments
-  .filter(a => a.status === 'pendente')
-  .map(a => ({
-    id: a.id,
-    client: a.client,
-    time: a.time,
-    phone: a.phone,
-  }));
-
-// 2.13 Loyalty Program — barbeiros
-// Conectar: GET /api/loyalty/barbers?period=month
-// Níveis: bronze (0–999 pts) | silver (1000–2499 pts) | gold (2500+ pts)
-const mockLoyalty = [
-  {
-    barberId: 'marcos',
-    points: 3120,
-    level: 'gold',
-    progress: 84,       // % rumo ao próximo benefício
-    nextGoal: 3750,     // meta em pontos para próximo benefit
-    benefits: ['Folga extra', 'Comissão +2%', 'Kit premium'],
-    rank: 1,
-  },
-  {
-    barberId: 'andre',
-    points: 2310,
-    level: 'silver',
-    progress: 63,
-    nextGoal: 2500,
-    benefits: ['Folga extra', 'Kit básico'],
-    rank: 2,
-  },
-  {
-    barberId: 'joao',
-    points: 890,
-    level: 'bronze',
-    progress: 89,
-    nextGoal: 1000,
-    benefits: ['Certificado mensal'],
-    rank: 3,
-  },
-];
-
-// 2.14 Comissões — dados por período
-// Conectar: GET /api/commissions?period=today|week|month&barberId=all
-const mockCommissions = {
-  today: {
-    totalGenerated: 870,
-    totalPayout: 217.5,
-    appointments: 15,
-    barbers: [
-      { barberId: 'marcos', commissionPct: 30, generated: 360, payout: 108, appointments: 6, performance: 'good' },
-      { barberId: 'andre', commissionPct: 28, generated: 300, payout: 84, appointments: 5, performance: 'good' },
-      { barberId: 'joao', commissionPct: 25, generated: 210, payout: 52.5, appointments: 4, performance: 'medium' },
-    ],
-  },
-  week: {
-    totalGenerated: 4830,
-    totalPayout: 1257,
-    appointments: 78,
-    barbers: [
-      { barberId: 'marcos', commissionPct: 30, generated: 2100, payout: 630, appointments: 33, performance: 'good' },
-      { barberId: 'andre', commissionPct: 28, generated: 1560, payout: 436.8, appointments: 25, performance: 'good' },
-      { barberId: 'joao', commissionPct: 25, generated: 1170, payout: 292.5, appointments: 20, performance: 'warning' },
-    ],
-  },
-  month: {
-    totalGenerated: 18450,
-    totalPayout: 4847,
-    appointments: 298,
-    barbers: [
-      { barberId: 'marcos', commissionPct: 30, generated: 8200, payout: 2460, appointments: 128, performance: 'good' },
-      { barberId: 'andre', commissionPct: 28, generated: 6300, payout: 1764, appointments: 98, performance: 'good' },
-      { barberId: 'joao', commissionPct: 25, generated: 3950, payout: 987, appointments: 72, performance: 'medium' },
-    ],
-  },
-};
-
-// 2.15 Relatórios rápidos — preview de dados por período
-// Conectar: GET /api/reports/preview?period=today|week|month
-const mockReportPreviews = {
-  today: {
-    period: 'Hoje',
-    filename: 'relatorio-hoje',
-    items: [
-      { label: 'Faturamento', value: 'R$ 870' },
-      { label: 'Agendamentos', value: '15' },
-      { label: 'Ticket Médio', value: 'R$ 58' },
-      { label: 'Top Serviço', value: 'Corte + Barba' },
-      { label: 'Comissões a pagar', value: 'R$ 217,50' },
-      { label: 'No-shows', value: '1' },
-    ],
-  },
-  week: {
-    period: 'Esta Semana',
-    filename: 'relatorio-semana',
-    items: [
-      { label: 'Faturamento', value: 'R$ 4.830' },
-      { label: 'Agendamentos', value: '78' },
-      { label: 'Ticket Médio', value: 'R$ 61,92' },
-      { label: 'Top Serviço', value: 'Corte Masc.' },
-      { label: 'Comissões a pagar', value: 'R$ 1.257' },
-      { label: 'Novos Clientes', value: '7' },
-    ],
-  },
-  month: {
-    period: 'Este Mês',
-    filename: 'relatorio-junho-2025',
-    items: [
-      { label: 'Faturamento', value: 'R$ 18.450' },
-      { label: 'Agendamentos', value: '298' },
-      { label: 'Ticket Médio', value: 'R$ 61,91' },
-      { label: 'Top Serviço', value: 'Corte Masc.' },
-      { label: 'Comissões a pagar', value: 'R$ 4.847' },
-      { label: 'Taxa de Ocupação', value: '78%' },
-    ],
-  },
+const DB = {
+  services:      [],
+  barbers:       [],
+  appointments:  [],
+  kpis:          {},
+  header:        {},
+  charts:        {},
+  goals:         {},
+  commissions:   {},
+  alerts:        {},
+  reportsPreview: {},
+  loyalty:       [],
+  modal:         { services: [], barbers: [] },
 };
 
 
@@ -412,14 +91,14 @@ function getFormattedDate() {
  * Busca serviço pelo id
  */
 function getService(id) {
-  return mockServices.find(s => s.id === id) || { name: id, price: 0, color: '#6B6762' };
+  return DB.services.find(s => s.id === id) || { name: id, price: 0, color: '#6B6762', duration: 30 };
 }
 
 /**
  * Busca barbeiro pelo id
  */
 function getBarber(id) {
-  return mockBarbers.find(b => b.id === id) || { name: id };
+  return DB.barbers.find(b => b.id === id) || { name: id, avatar: id.substring(0, 2).toUpperCase() };
 }
 
 /**
@@ -523,10 +202,11 @@ function getLast30DayLabels() {
 /* ─── 4. HEADER ─────────────────────────────────────────── */
 
 function initHeader() {
-  // Saudação
+  // Saudação dinâmica com nome da barbearia
+  const ownerName = DB.header.ownerName || CONFIG.ownerFirstName;
   const greetingEl = document.getElementById('greeting');
   if (greetingEl) {
-    greetingEl.textContent = `${getGreeting()}, ${CONFIG.ownerFirstName}`;
+    greetingEl.textContent = `${getGreeting()}, ${ownerName}`;
   }
 
   // Data
@@ -540,15 +220,12 @@ function initHeader() {
   const variationEl = document.getElementById('monthlyVariation');
 
   if (revenueEl) {
-    animateCounter(revenueEl, 0, mockKPIs.monthly.revenue, 1200, formatCurrency);
+    animateCounter(revenueEl, 0, DB.header.monthlyRevenue || 0, 1200, formatCurrency);
   }
 
   if (variationEl) {
-    const v = calcVariation(mockKPIs.monthly.revenue, mockKPIs.monthly.revenuePrevMonth);
-    variationEl.textContent = v.label;
+    const v = calcVariation(DB.header.monthlyRevenue || 0, DB.header.prevMonthRevenue || 0);
     variationEl.className = `dash-header__revenue-badge dash-header__revenue-badge--${v.isUp ? 'up' : 'down'}`;
-
-    // Atualiza o SVG de seta
     variationEl.innerHTML = `
       <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
         <path d="${v.isUp ? 'M5 1L9 5H1L5 1Z' : 'M5 9L1 5H9L5 9Z'}" fill="currentColor"/>
@@ -562,57 +239,42 @@ function initHeader() {
 /* ─── 5. KPIs ───────────────────────────────────────────── */
 
 function initKPIs() {
-  const kpi = mockKPIs.today;
-  const week = mockKPIs.week;
+  const kpi = DB.kpis;
 
   // Faturamento hoje
   const todayRevEl = document.getElementById('kpiTodayRevenue');
-  if (todayRevEl) animateCounter(todayRevEl, 0, kpi.revenue, 1000, formatCurrency);
+  if (todayRevEl) animateCounter(todayRevEl, 0, kpi.todayRevenue || 0, 1000, formatCurrency);
 
   const todayRevTrend = document.getElementById('kpiTodayRevenueTrend');
   if (todayRevTrend) {
-    const v = calcVariation(kpi.revenue, kpi.revenueYesterday);
+    const v = calcVariation(kpi.todayRevenue || 0, kpi.todayRevenueYesterday || 0);
     todayRevTrend.textContent = v.label;
     todayRevTrend.className = `kpi-card__trend kpi-card__trend--${v.isUp ? 'up' : 'down'}`;
   }
 
   // Agendamentos hoje
   const apptEl = document.getElementById('kpiTodayAppts');
-  if (apptEl) animateCounter(apptEl, 0, kpi.appointments, 800);
+  if (apptEl) animateCounter(apptEl, 0, kpi.todayAppointments || 0, 800);
 
   const apptValueEl = document.getElementById('kpiTodayApptsValue');
-  if (apptValueEl) apptValueEl.textContent = `${formatCurrency(kpi.appointmentsValue)} em serviços`;
-
-  // Ocupação
-  const occEl = document.getElementById('kpiOccupancy');
-  const occFill = document.getElementById('kpiOccupancyFill');
-  if (occEl) animateCounter(occEl, 0, kpi.occupancy, 1000, v => `${v}%`);
-  if (occFill) {
-    // Pequeno delay para a transição CSS ser visível
-    setTimeout(() => { occFill.style.width = `${kpi.occupancy}%`; }, 200);
+  if (apptValueEl) {
+    apptValueEl.textContent = `${formatCurrency(kpi.todayAppointmentsValue || 0)} em serviços`;
   }
 
   // Ticket médio
   const ticketEl = document.getElementById('kpiTicket');
-  if (ticketEl) animateCounter(ticketEl, 0, kpi.ticketAvg, 900, formatCurrency);
+  if (ticketEl) animateCounter(ticketEl, 0, kpi.ticketAvg || 0, 900, formatCurrency);
 
   const ticketTrend = document.getElementById('kpiTicketTrend');
   if (ticketTrend) {
-    const v = calcVariation(kpi.ticketAvg, kpi.ticketAvgLastWeek);
+    const v = calcVariation(kpi.ticketAvg || 0, kpi.ticketAvgLastWeek || 0);
     ticketTrend.textContent = v.label;
     ticketTrend.className = `kpi-card__trend kpi-card__trend--${v.isUp ? 'up' : 'down'}`;
   }
 
-  // No-shows
-  const noShowEl = document.getElementById('kpiNoShows');
-  if (noShowEl) animateCounter(noShowEl, 0, kpi.noShows, 600);
-
-  const noShowValueEl = document.getElementById('kpiNoShowsValue');
-  if (noShowValueEl) noShowValueEl.textContent = `${formatCurrency(kpi.noShowValue)} perdidos`;
-
   // Novos clientes
   const newClientsEl = document.getElementById('kpiNewClients');
-  if (newClientsEl) animateCounter(newClientsEl, 0, week.newClients, 800);
+  if (newClientsEl) animateCounter(newClientsEl, 0, kpi.newClientsWeek || 0, 800);
 }
 
 /**
@@ -721,25 +383,24 @@ function initRevenueChart() {
   const canvas = document.getElementById('revenueChart');
   if (!canvas) return;
 
-  // Mock de dados por período
-  // Em produção: trocar por fetch ao endpoint correspondente
+  const revenue = DB.charts.revenue || {};
   const periodData = {
     day: {
-      labels: getLast30DayLabels(),
-      data:   mockRevenue30d,
-      avgLabel: 'Média do período',
+      labels:    (revenue.day   || {}).labels || [],
+      data:      (revenue.day   || {}).data   || [],
+      avgLabel:  'Média do período',
       bestLabel: 'Melhor dia do período',
     },
     month: {
-      labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-      data:   [12400, 10800, 14200, 13600, 15900, 18450, 0, 0, 0, 0, 0, 0],
-      avgLabel: 'Média mensal',
+      labels:    (revenue.month || {}).labels || [],
+      data:      (revenue.month || {}).data   || [],
+      avgLabel:  'Média mensal',
       bestLabel: 'Melhor mês',
     },
     year: {
-      labels: ['2021', '2022', '2023', '2024', '2025'],
-      data:   [98000, 124000, 151000, 178000, 87300],
-      avgLabel: 'Média anual',
+      labels:    (revenue.year  || {}).labels || [],
+      data:      (revenue.year  || {}).data   || [],
+      avgLabel:  'Média anual',
       bestLabel: 'Melhor ano',
     },
   };
@@ -891,11 +552,12 @@ function initServicesChart() {
   const canvas = document.getElementById('servicesChart');
   if (!canvas) return;
 
-  const total = mockServiceDistribution.reduce((s, d) => s + d.count, 0);
-  const labels = mockServiceDistribution.map(d => getService(d.serviceId).name);
-  const data = mockServiceDistribution.map(d => d.count);
-  const colors = mockServiceDistribution.map(d => getService(d.serviceId).color);
-  const prices = mockServiceDistribution.map(d => getService(d.serviceId).price);
+  const dist = DB.charts.servicesDistribution || [];
+  const total = dist.reduce((s, d) => s + d.count, 0);
+  const labels = dist.map(d => d.name);
+  const data   = dist.map(d => d.count);
+  const colors = dist.map(d => d.color || '#3B82F6');
+  const prices = dist.map(d => d.price || 0);
 
   // Receita estimada por serviço (contagem × preço)
   const revenues = data.map((cnt, i) => cnt * prices[i]);
@@ -999,12 +661,12 @@ function initServicesChart() {
   // Legenda customizada (inalterada)
   const legendEl = document.getElementById('donutLegend');
   if (legendEl) {
-    legendEl.innerHTML = mockServiceDistribution.map((d, i) => {
-      const pct = ((d.count / total) * 100).toFixed(0);
+    legendEl.innerHTML = dist.map((d, i) => {
+      const pct = total > 0 ? ((d.count / total) * 100).toFixed(0) : 0;
       return `
         <div class="donut-legend-item">
           <span class="donut-legend-dot" style="background:${colors[i]}"></span>
-          <span>${getService(d.serviceId).name}</span>
+          <span>${d.name}</span>
           <span class="donut-legend-pct">${pct}%</span>
         </div>
       `;
@@ -1018,8 +680,9 @@ function initOccupancyChart() {
   const canvas = document.getElementById('occupancyChart');
   if (!canvas) return;
 
-  const labels = mockOccupancyByHour.map(d => d.label);
-  const data = mockOccupancyByHour.map(d => d.value);
+  const occupancy = DB.charts.occupancy || [];
+  const labels = occupancy.map(d => d.label);
+  const data   = occupancy.map(d => d.value);
 
   // Melhor e pior hora (ignora zeros)
   const maxOcc = Math.max(...data);
@@ -1121,8 +784,8 @@ function initOccupancyChart() {
 
 /* ─── 7. METAS DOS BARBEIROS ────────────────────────────── */
 
-// Período ativo das metas (week | month)
-let currentGoalsPeriod = 'week';
+// Período ativo das metas (somente mensal)
+let currentGoalsPeriod = 'month';
 
 /**
  * Inicializa o módulo de Metas dos Barbeiros.
@@ -1148,11 +811,26 @@ function initGoals() {
  * @param {'week'|'month'} period
  */
 function renderGoals(period) {
-  const data = mockBarberGoals[period];
+  const data = DB.goals[period];
   if (!data) return;
 
-  renderGoalsTeamOverview(data);
-  renderGoalsList(data);
+  // Mapeia shape da API para o formato esperado pelos renders
+  const mapped = {
+    teamTarget: data.teamTarget,
+    teamSold:   data.teamSold,
+    teamTrend:  data.teamTrend,
+    barbers: (data.barbers || []).map(b => ({
+      barberId: b.barberId,
+      sold:     b.sold,
+      target:   b.target,
+      trend:    b.trend,
+      status:   b.status,
+      forecast: b.forecast || null,
+    })),
+  };
+
+  renderGoalsTeamOverview(mapped);
+  renderGoalsList(mapped);
 }
 
 /**
@@ -1205,13 +883,12 @@ function renderGoalsList(data) {
   if (!el) return;
 
   // Índice de avatar (1-3) baseado na posição para aplicar o gradiente correto
-  const avatarIndex = { marcos: 1, andre: 2, joao: 3 };
-
   el.innerHTML = data.barbers.map((entry, i) => {
-    const barber = getBarber(entry.barberId);
+    const barber = DB.barbers.find(b => b.id === entry.barberId)
+      || { name: entry.barberId, avatar: entry.barberId.substring(0, 2).toUpperCase() };
     const pct = Math.min(Math.round((entry.sold / entry.target) * 100), 100);
     const statusMeta = getGoalStatusMeta(entry.status);
-    const aidx = avatarIndex[entry.barberId] || (i + 1);
+    const aidx = (i % 3) + 1;
     const sparkColor = GOAL_SPARK_COLORS[entry.status] || '#3B82F6';
     const sparkSVG = buildSparklineSVG(entry.trend, sparkColor, 64, 24);
 
@@ -1280,13 +957,14 @@ function renderGoalsList(data) {
 let currentFilter = 'all';
 
 function initAgenda() {
+  const appts = DB.appointments;
   const subEl = document.getElementById('agendaSub');
   if (subEl) {
-    const confirmed = mockAppointments.filter(a => a.status === 'confirmado' || a.status === 'em-andamento').length;
-    subEl.textContent = `${mockAppointments.length} agendamentos — ${confirmed} confirmados`;
+    const confirmed = appts.filter(a => a.status === 'confirmado' || a.status === 'em-andamento').length;
+    subEl.textContent = `${appts.length} agendamentos — ${confirmed} confirmados`;
   }
 
-  renderAgendaList(mockAppointments);
+  renderAgendaList(appts);
   initAgendaFilters();
 }
 
@@ -1304,29 +982,26 @@ function renderAgendaList(appointments) {
   }
 
   listEl.innerHTML = filtered.map(appt => {
-    const service = getService(appt.serviceId);
-    const barber = getBarber(appt.barberId);
     const actions = getActionButtons(appt);
-
     return `
       <div class="agenda-item" role="listitem" data-id="${appt.id}">
         <div class="agenda-time">
           <span class="agenda-time__hour">${appt.time}</span>
-          <span class="agenda-time__duration">${service.duration}min</span>
+          <span class="agenda-time__duration">${appt.duration}min</span>
         </div>
 
         <div class="agenda-info">
           <span class="agenda-client">${appt.client}</span>
           <div class="agenda-meta">
-            <span class="agenda-service">${service.name}</span>
+            <span class="agenda-service">${appt.serviceName}</span>
             <span class="agenda-separator">·</span>
-            <span class="agenda-barber">${barber.name}</span>
+            <span class="agenda-barber">${appt.barberName}</span>
           </div>
           <span class="status-badge status-badge--${appt.status}">${getStatusLabel(appt.status)}</span>
         </div>
 
         <div class="agenda-actions">
-          <span class="agenda-value">${formatCurrency(service.price)}</span>
+          <span class="agenda-value">${formatCurrency(appt.servicePrice)}</span>
           <div class="agenda-btn-row">
             ${actions}
           </div>
@@ -1335,7 +1010,6 @@ function renderAgendaList(appointments) {
     `;
   }).join('');
 
-  // Eventos dos botões de ação
   listEl.querySelectorAll('[data-action]').forEach(btn => {
     btn.addEventListener('click', handleAgendaAction);
   });
@@ -1348,7 +1022,7 @@ function initAgendaFilters() {
       filters.forEach(b => b.classList.remove('agenda-filter--active'));
       btn.classList.add('agenda-filter--active');
       currentFilter = btn.dataset.filter;
-      renderAgendaList(mockAppointments);
+      renderAgendaList(DB.appointments);
     });
   });
 }
@@ -1358,19 +1032,24 @@ function handleAgendaAction(e) {
   const id = btn.dataset.id;
   const action = btn.dataset.action;
 
-  const appt = mockAppointments.find(a => a.id === id);
+  const appt = DB.appointments.find(a => a.id === id);
   if (!appt) return;
 
-  if (action === 'start') {
-    appt.status = 'em-andamento';
-    showToast(`${appt.client} — Atendimento iniciado`, 'success');
-  } else if (action === 'finish') {
-    appt.status = 'concluido';
-    showToast(`${appt.client} — Atendimento concluído`, 'blue');
-  }
+  const newStatus = action === 'start' ? 'em-andamento' : 'concluido';
+  const toastType = action === 'start' ? 'success' : 'blue';
+  const toastMsg  = action === 'start'
+    ? `${appt.client} — Atendimento iniciado`
+    : `${appt.client} — Atendimento concluído`;
 
-  renderAgendaList(mockAppointments);
-  updatePendingAlerts(); // Atualiza painel de alertas em tempo real
+  // Otimista: atualiza local imediatamente
+  appt.status = newStatus;
+  renderAgendaList(DB.appointments);
+  updatePendingAlerts();
+  showToast(toastMsg, toastType);
+
+  // Sincroniza com o backend
+  window.InBarberAPI.updateAppointment(id, { status: newStatus })
+    .catch(() => showToast('Erro ao atualizar status no servidor', 'error'));
 }
 
 
@@ -1386,66 +1065,83 @@ function initAlerts() {
 function renderReactivate() {
   const listEl = document.getElementById('reactivateList');
   const badgeEl = document.getElementById('reactivateBadge');
+  const items = DB.alerts.reactivate || [];
 
-  if (badgeEl) badgeEl.textContent = mockReactivateClients.length;
-
+  if (badgeEl) badgeEl.textContent = items.length;
   if (!listEl) return;
-  listEl.innerHTML = mockReactivateClients.map(c => `
-    <li class="alert-item" role="listitem" title="Última visita: ${c.lastVisit}">
-      <span class="alert-item__name">${c.name}</span>
-      <span class="alert-item__sub">${c.lastVisit}</span>
-      <span class="alert-item__tag alert-item__tag--orange">Reativar</span>
-    </li>
-  `).join('');
+
+  listEl.innerHTML = items.length === 0
+    ? `<li class="alert-item alert-item--empty">Nenhum cliente inativo.</li>`
+    : items.map(c => `
+        <li class="alert-item" role="listitem" title="Última visita: ${c.lastVisit}">
+          <span class="alert-item__name">${c.name}</span>
+          <span class="alert-item__sub">${c.lastVisit}</span>
+          <span class="alert-item__tag alert-item__tag--orange">Reativar</span>
+        </li>
+      `).join('');
 }
 
 function renderBirthdays() {
   const listEl = document.getElementById('birthdayList');
   const badgeEl = document.getElementById('birthdayBadge');
+  const items = DB.alerts.birthdays || [];
 
-  if (badgeEl) badgeEl.textContent = mockBirthdays.length;
-
+  if (badgeEl) badgeEl.textContent = items.length;
   if (!listEl) return;
-  listEl.innerHTML = mockBirthdays.map(c => `
-    <li class="alert-item" role="listitem">
-      <span class="alert-item__name">${c.name}</span>
-      <span class="alert-item__sub">${c.day}</span>
-      <span class="alert-item__tag alert-item__tag--gold">🎂</span>
-    </li>
-  `).join('');
+
+  listEl.innerHTML = items.length === 0
+    ? `<li class="alert-item alert-item--empty">Sem aniversariantes este mês.</li>`
+    : items.map(c => `
+        <li class="alert-item" role="listitem">
+          <span class="alert-item__name">${c.name}</span>
+          <span class="alert-item__sub">${c.day}</span>
+          <span class="alert-item__tag alert-item__tag--gold">🎂</span>
+        </li>
+      `).join('');
 }
 
 function renderLowStock() {
   const listEl = document.getElementById('stockList');
   const badgeEl = document.getElementById('stockBadge');
+  const items = DB.alerts.lowStock || [];
 
-  if (badgeEl) badgeEl.textContent = mockLowStock.length;
-
+  if (badgeEl) badgeEl.textContent = items.length;
   if (!listEl) return;
-  listEl.innerHTML = mockLowStock.map(p => `
-    <li class="alert-item" role="listitem">
-      <span class="alert-item__name">${p.name}</span>
-      <span class="alert-item__sub">${p.qty} ${p.unit}</span>
-      <span class="alert-item__tag alert-item__tag--red">Crítico</span>
-    </li>
-  `).join('');
+
+  listEl.innerHTML = items.length === 0
+    ? `<li class="alert-item alert-item--empty">Estoque em dia.</li>`
+    : items.map(p => {
+        const tag = p.qty === 0
+          ? `<span class="alert-item__tag alert-item__tag--red">Esgotado</span>`
+          : `<span class="alert-item__tag alert-item__tag--red">Crítico</span>`;
+        return `
+        <li class="alert-item" role="listitem">
+          <span class="alert-item__name">${p.name}</span>
+          <span class="alert-item__sub">${p.qty} ${p.unit}</span>
+          ${tag}
+        </li>`;
+      }).join('');
 }
 
 function updatePendingAlerts() {
-  const pending = mockAppointments.filter(a => a.status === 'pendente');
+  const pending = (DB.alerts.pending || []).concat(
+    DB.appointments.filter(a => a.status === 'pendente' && !(DB.alerts.pending || []).find(p => p.id === a.id))
+  );
   const listEl = document.getElementById('pendingList');
   const badgeEl = document.getElementById('pendingBadge');
 
   if (badgeEl) badgeEl.textContent = pending.length;
-
   if (!listEl) return;
-  listEl.innerHTML = pending.map(a => `
-    <li class="alert-item" role="listitem">
-      <span class="alert-item__name">${a.client}</span>
-      <span class="alert-item__sub">${a.time}</span>
-      <span class="alert-item__tag alert-item__tag--blue">Confirmar</span>
-    </li>
-  `).join('');
+
+  listEl.innerHTML = pending.length === 0
+    ? `<li class="alert-item alert-item--empty">Nenhum pendente.</li>`
+    : pending.map(a => `
+        <li class="alert-item" role="listitem">
+          <span class="alert-item__name">${a.client || a.name}</span>
+          <span class="alert-item__sub">${a.time}</span>
+          <span class="alert-item__tag alert-item__tag--blue">Confirmar</span>
+        </li>
+      `).join('');
 }
 
 
@@ -1494,6 +1190,7 @@ function initModal() {
   if (dateInput) {
     dateInput.value = new Date().toISOString().split('T')[0];
   }
+
 }
 
 
@@ -1734,11 +1431,10 @@ function initLoyalty() {
     2: { css: '', rankCss: 'loyalty-rank--silver', avatarCss: 'loyalty-avatar--silver', symbol: '🥈' },
     3: { css: '', rankCss: 'loyalty-rank--bronze', avatarCss: 'loyalty-avatar--bronze', symbol: '🥉' },
   };
-
   const levelLabel = { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' };
 
-  container.innerHTML = mockLoyalty.map(entry => {
-    const barber = getBarber(entry.barberId);
+  container.innerHTML = DB.loyalty.map(entry => {
+    const barber = { name: entry.name, avatar: entry.avatar };
     const meta = rankMeta[entry.rank] || { css: '', rankCss: '', avatarCss: 'loyalty-avatar--default', symbol: entry.rank };
     const pointsToNext = (entry.nextGoal - entry.points).toLocaleString('pt-BR');
 
@@ -1814,7 +1510,7 @@ function initCommissions() {
 }
 
 function renderCommissions(period) {
-  const data = mockCommissions[period];
+  const data = DB.commissions[period];
   const totalsEl = document.getElementById('commissionTotals');
   const listEl = document.getElementById('commissionList');
   if (!data || !totalsEl || !listEl) return;
@@ -1841,7 +1537,8 @@ function renderCommissions(period) {
   const perfLabel = { good: 'Ótimo', medium: 'Regular', warning: 'Atenção' };
 
   listEl.innerHTML = data.barbers.map(barber => {
-    const info = getBarber(barber.barberId);
+    const info = DB.barbers.find(b => b.id === barber.barberId)
+      || { name: barber.name || barber.barberId, avatar: barber.avatar || barber.barberId.substring(0, 2).toUpperCase() };
     const barPct = maxGenerated > 0 ? ((barber.generated / maxGenerated) * 100).toFixed(0) : 0;
     const perfCss = `commission-perf--${barber.performance}`;
 
@@ -1941,7 +1638,7 @@ const REPORT_ICONS = {
 
 /** Define os cards de relatório para cada período */
 function getReportCards(period) {
-  const preview = mockReportPreviews[period];
+  const preview = DB.reportsPreview[period];
   if (!preview) return [];
 
   return [
@@ -2128,7 +1825,6 @@ function initScrollReveal() {
 /* ─── 18. BOOT ──────────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Garante que Chart.js carregou antes de inicializar os gráficos
   function waitForChartJS(cb, retries = 20) {
     if (typeof Chart !== 'undefined') {
       cb();
@@ -2139,36 +1835,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Inicializa partes que não dependem do Chart.js
-  initHeader();
-  initKPIs();
-  initGoals();   // Metas dos Barbeiros (substitui heatmap)
-  initAgenda();
-  initAlerts();
-  initModal();
+  // Inicializa partes que não dependem de dados (sidebar, modal esqueleto)
   initSidebar();
-
-  // ── NOVAS SEÇÕES ──────────────────────────────────────────
-  initLoyalty();       // Loyalty Program (seção 2.13)
-  initCommissions();   // Gestão de Comissões (seção 2.14)
-  initReports();       // Relatórios Rápidos (seção 2.15)
-  // ──────────────────────────────────────────────────────────
-
+  initModal();
   initScrollReveal();
 
-  // Inicializa gráficos após garantir Chart.js disponível
-  waitForChartJS(() => {
-    applyChartDefaults();
-    initRevenueChart();
-    initServicesChart();
-    initOccupancyChart();
-  });
+  // Carrega todos os dados do Dashboard em uma única chamada
+  window.InBarberAPI.getDashboard()
+    .then(payload => {
+      // Preenche o estado global
+      DB.services     = (payload.modal || {}).services || [];
+      DB.barbers      = (payload.modal || {}).barbers  || [];
+      DB.appointments = payload.agenda || [];
+      DB.kpis         = payload.kpis   || {};
+      DB.header       = {
+        monthlyRevenue:  (payload.header || {}).monthlyRevenue   || 0,
+        prevMonthRevenue: (payload.header || {}).prevMonthRevenue || 0,
+        ownerName:       (payload.barbershop || {}).name
+                           ? (payload.barbershop.name).split(' ')[0]
+                           : CONFIG.ownerFirstName,
+      };
+      DB.charts         = payload.charts         || {};
+      DB.goals          = payload.goals          || {};
+      DB.commissions    = payload.commissions    || {};
+      DB.alerts         = payload.alerts         || {};
+      DB.reportsPreview = payload.reportsPreview || {};
+      DB.loyalty        = payload.loyalty        || [];
+      DB.modal          = payload.modal          || {};
 
-  // Atualiza saudação se a hora mudar durante a sessão (ex: página aberta às 11:55)
+      // Renderiza todas as seções com dados reais
+      initHeader();
+      initKPIs();
+      initGoals();
+      initAgenda();
+      initAlerts();
+      initLoyalty();
+      initCommissions();
+      initReports();
+
+      // Popula selects do modal com dados reais
+      const serviceSelect = document.getElementById('apptService');
+      const barberSelect  = document.getElementById('apptBarber');
+      if (serviceSelect && DB.modal.services && DB.modal.services.length > 0) {
+        serviceSelect.innerHTML = '<option value="">Selecionar serviço</option>'
+          + DB.modal.services.map(s =>
+              `<option value="${s.id}">${s.name} — R$ ${s.price.toFixed(0)}</option>`
+            ).join('');
+      }
+      if (barberSelect && DB.modal.barbers && DB.modal.barbers.length > 0) {
+        barberSelect.innerHTML = '<option value="">Selecionar barbeiro</option>'
+          + DB.modal.barbers.map(b =>
+              `<option value="${b.id}">${b.name}</option>`
+            ).join('');
+      }
+
+      // Gráficos após dados carregados e Chart.js disponível
+      waitForChartJS(() => {
+        applyChartDefaults();
+        initRevenueChart();
+        initServicesChart();
+        initOccupancyChart();
+      });
+    })
+    .catch(err => {
+      console.error('InBarber Dashboard: falha ao carregar dados:', err);
+      // Mostra toast de erro sem travar a UI
+      showToast('Erro ao carregar dados do Dashboard. Verifique o servidor.', 'error');
+    });
+
+  // Atualiza saudação ao longo da sessão
   setInterval(() => {
     const greetingEl = document.getElementById('greeting');
     if (greetingEl) {
-      greetingEl.textContent = `${getGreeting()}, ${CONFIG.ownerFirstName}`;
+      const ownerName = DB.header.ownerName || CONFIG.ownerFirstName;
+      greetingEl.textContent = `${getGreeting()}, ${ownerName}`;
     }
   }, 60_000);
 });

@@ -65,8 +65,9 @@ const STATE = {
   listDate: getTodayStr(),
   listStatus: '',
   kanbanDate: getTodayStr(),
-  periodStart: getTodayStr(),   // filtro global de período — início
-  periodEnd: getTodayStr(),     // filtro global de período — fim
+  periodPreset: 'month',        // preset ativo: 'today'|'week'|'month'|'custom'
+  periodStart: '',              // resolvido por initPeriodFilter() no boot
+  periodEnd: '',                // resolvido por initPeriodFilter() no boot
   dragging: null,   // { id, fromStatus }
   editingId: null,   // null = criando, string = editando
 };
@@ -139,9 +140,8 @@ function getStatusLabel(status) {
   const map = {
     'pendente': 'Pendente',
     'confirmado': 'Confirmado',
-    'em-andamento': 'Em Andamento',
     'concluido': 'Finalizado',
-    'no-show': 'No-show',
+    'cancelado': 'Cancelado',
   };
   return map[status] || status;
 }
@@ -163,7 +163,7 @@ function hasConflict(appt, excludeId = null) {
     if (a.id === excludeId) return false;
     if (a.barberId !== appt.barberId) return false;
     if (a.date !== appt.date) return false;
-    if (['concluido', 'no-show'].includes(a.status)) return false;
+    if (['concluido', 'cancelado'].includes(a.status)) return false;
     const svcA = getService(a.serviceId);
     if (!svcA) return false;
     const [ah, am] = a.time.split(':').map(Number);
@@ -323,7 +323,9 @@ let _firstAppointmentsLoad = true;
 async function reloadAppointments() {
   try {
     const data = await InBarberAPI.listAppointments({
-      barberId: STATE.filterBarber || undefined,
+      dateStart: STATE.periodStart || undefined,
+      dateEnd:   STATE.periodEnd   || undefined,
+      barberId:  STATE.filterBarber  || undefined,
       serviceId: STATE.filterService || undefined,
     });
     APPOINTMENTS = data;
@@ -389,57 +391,143 @@ function renderHeader() {
   if (el) el.textContent = formatDate(today);
 }
 
-function renderStats() {
-  const today = getTodayStr();
-  const todays = APPOINTMENTS.filter(a => a.date === today);
+/* ─── HELPERS DE KPI ────────────────────────────────────────
+   Calcula os dados para renderStats() usando o intervalo global
+   STATE.periodStart/periodEnd — sem filtrar por dia fixo.
+   Cada chamada a getFilteredAppointments(null) já respeita os
+   filtros de barbeiro, serviço e busca, além do período.
+──────────────────────────────────────────────────────────── */
+function _calcKpiData() {
+  const periodAppts = getFilteredAppointments(null);
 
-  const total = todays.length;
-  const confirmed = todays.filter(a => a.status === 'confirmado').length;
-  const ongoing = todays.filter(a => a.status === 'em-andamento').length;
-  const done = todays.filter(a => a.status === 'concluido').length;
-  const noshow = todays.filter(a => ['no-show'].includes(a.status)).length;
-  const pendentes = todays.filter(a => a.status === 'pendente').length;
-
-  const revenue = todays
+  const revenue   = periodAppts
     .filter(a => a.status === 'concluido')
     .reduce((sum, a) => sum + (getService(a.serviceId)?.price || 0), 0);
+  const total     = periodAppts.length;
+  const confirmed = periodAppts.filter(a => a.status === 'confirmado').length;
+  const done      = periodAppts.filter(a => a.status === 'concluido').length;
 
-  const occupancy = total > 0 ? Math.round((done + ongoing) / total * 100) : 0;
+  return { revenue, total, confirmed, done };
+}
+
+/* ─── TENDÊNCIA vs. PERÍODO ANTERIOR ────────────────────────
+   Calcula o delta percentual de uma métrica comparada ao
+   período imediatamente anterior de mesma duração.
+   Retorna { pct: number, dir: 'up'|'down'|'neutral' }.
+──────────────────────────────────────────────────────────── */
+function _calcTrend(currentVal, metric) {
+  if (!STATE.periodStart || !STATE.periodEnd) return null;
+
+  const startD  = new Date(STATE.periodStart + 'T00:00:00');
+  const endD    = new Date(STATE.periodEnd   + 'T00:00:00');
+  const diffMs  = endD - startD + 86400000; // duração em ms (inclusiva)
+
+  const prevEnd   = new Date(startD.getTime() - 86400000);
+  const prevStart = new Date(prevEnd.getTime()  - diffMs + 86400000);
+
+  function toStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  const pStart = toStr(prevStart);
+  const pEnd   = toStr(prevEnd);
+
+  const prevAppts = APPOINTMENTS.filter(a => a.date >= pStart && a.date <= pEnd);
+
+  let prevVal = 0;
+  if      (metric === 'revenue')   prevVal = prevAppts.filter(a => a.status === 'concluido').reduce((s, a) => s + (getService(a.serviceId)?.price || 0), 0);
+  else if (metric === 'total')     prevVal = prevAppts.length;
+  else if (metric === 'confirmed') prevVal = prevAppts.filter(a => a.status === 'confirmado').length;
+  else if (metric === 'done')      prevVal = prevAppts.filter(a => a.status === 'concluido').length;
+
+  if (prevVal === 0 && currentVal === 0) return { pct: 0, dir: 'neutral' };
+  if (prevVal === 0) return { pct: 100, dir: 'up' };
+
+  const pct = Math.round(((currentVal - prevVal) / prevVal) * 100);
+  return { pct, dir: pct > 0 ? 'up' : pct < 0 ? 'down' : 'neutral' };
+}
+
+function _trendHTML(trend) {
+  if (!trend || trend.dir === 'neutral') return '';
+  const sign  = trend.dir === 'up' ? '+' : '';
+  const cls   = trend.dir === 'up' ? 'stat-pill__trend--up' : 'stat-pill__trend--down';
+  const arrow = trend.dir === 'up'
+    ? `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 8V2M2 5l3-3 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M5 2v6M2 5l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<span class="stat-pill__trend ${cls}" aria-label="Variação: ${sign}${trend.pct}% vs período anterior">${arrow}${sign}${trend.pct}%</span>`;
+}
+
+function renderStats() {
+  const { revenue, total, confirmed, done } = _calcKpiData();
+
+  const tRevenue   = _calcTrend(revenue,   'revenue');
+  const tTotal     = _calcTrend(total,     'total');
+  const tConfirmed = _calcTrend(confirmed, 'confirmed');
+  const tDone      = _calcTrend(done,      'done');
+
+  const periodLabel = STATE.periodPreset === 'today'  ? 'hoje'
+                    : STATE.periodPreset === 'week'   ? 'nesta semana'
+                    : STATE.periodPreset === 'month'  ? 'neste mês'
+                    : 'no período';
 
   const stats = [
     {
-      label: 'Total do dia',
-      value: total,
-      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M1 6h14" stroke="currentColor" stroke-width="1.4"/></svg>`,
-      mod: 'gold',
+      label:   'Faturamento',
+      caption: `Concluídos ${periodLabel}`,
+      value:   formatCurrency(revenue),
+      rawVal:  revenue,
+      metric:  'revenue',
+      trend:   tRevenue,
+      mod:     'gold',
+      isCurrency: true,
+      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5v7M5.5 6.5C5.5 5.67 6.17 5 7 5h1.5A1.5 1.5 0 0 1 10 6.5c0 .83-.67 1.5-1.5 1.5H7.5A1.5 1.5 0 0 0 6 9.5 1.5 1.5 0 0 0 7.5 11H9c.83 0 1.5-.67 1.5-1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`,
     },
     {
-      label: 'Confirmados',
-      value: confirmed,
+      label:   'Agendamentos',
+      caption: `Total ${periodLabel}`,
+      value:   total,
+      rawVal:  total,
+      metric:  'total',
+      trend:   tTotal,
+      mod:     'blue',
+      isCurrency: false,
+      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M1 6h14" stroke="currentColor" stroke-width="1.4"/><path d="M5 1v2M11 1v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+    },
+    {
+      label:   'Confirmados',
+      caption: `Aguardando atendimento`,
+      value:   confirmed,
+      rawVal:  confirmed,
+      metric:  'confirmed',
+      trend:   tConfirmed,
+      mod:     'green',
+      isCurrency: false,
       icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-      mod: 'blue',
     },
     {
-      label: 'Em andamento',
-      value: ongoing,
-      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`,
-      mod: 'orange',
-    },
-    {
-      label: 'Cancelado ou Falta',
-      value: noshow,
-      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M5 5l6 6M11 5L5 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`,
-      mod: 'red',
+      label:   'Finalizados',
+      caption: `Atendimentos concluídos`,
+      value:   done,
+      rawVal:  done,
+      metric:  'done',
+      trend:   tDone,
+      mod:     'orange',
+      isCurrency: false,
+      icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 9l4 4L14 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
     },
   ];
 
   const container = document.getElementById('agendaStats');
   if (!container) return;
-  container.innerHTML = stats.map(s => `
-    <div class="stat-pill stat-pill--${s.mod}" role="listitem">
-      <div class="stat-pill__icon">${s.icon}</div>
-      <div class="stat-pill__value">${s.value}</div>
+  container.innerHTML = stats.map((s, i) => `
+    <div class="stat-pill stat-pill--${s.mod}${i === 0 ? ' stat-pill--revenue' : ''}" role="listitem">
+      <div class="stat-pill__top-row">
+        <div class="stat-pill__icon">${s.icon}</div>
+        ${_trendHTML(s.trend)}
+      </div>
+      <div class="stat-pill__value" data-raw="${s.rawVal}" data-currency="${s.isCurrency}">${s.value}</div>
       <div class="stat-pill__label">${s.label}</div>
+      <div class="stat-pill__caption">${s.caption}</div>
     </div>
   `).join('');
 }
@@ -449,24 +537,30 @@ function renderStats() {
    6. KANBAN
 ═══════════════════════════════════════════════════════════ */
 const KANBAN_COLUMNS = [
-  { id: 'pendente', label: 'Pendentes', mod: 'pendente' },
+  { id: 'pendente',   label: 'Pendentes',   mod: 'pendente'   },
   { id: 'confirmado', label: 'Confirmados', mod: 'confirmado' },
-  { id: 'em-andamento', label: 'Em Andamento', mod: 'andamento' },
-  { id: 'concluido', label: 'Finalizados', mod: 'concluido' },
-  { id: 'no-show', label: 'No-show', mod: 'noshow' },
+  { id: 'concluido',  label: 'Finalizados', mod: 'concluido'  },
+  { id: 'cancelado',  label: 'Cancelados',  mod: 'cancelado'  },
 ];
 
 function renderKanban() {
   const board = document.getElementById('kanbanBoard');
   if (!board) return;
 
+  // Quando o preset for 'today', filtra por dia exato (kanbanDate).
+  // Para qualquer outro preset (week, month, custom), usa o intervalo
+  // global (periodStart/periodEnd) sem fixar um dia único.
+  const useDayOverride = STATE.periodPreset === 'today';
   const today = STATE.kanbanDate || getTodayStr();
-  const filtered = getFilteredAppointments(today);
+  const filtered = useDayOverride
+    ? getFilteredAppointments(today)
+    : getFilteredAppointments(null);
 
   board.innerHTML = KANBAN_COLUMNS.map(col => {
     const cards = filtered.filter(a => a.status === col.id);
-    // Blocos de horário (apenas na coluna "pendente" visualmente)
-    const blocks = col.id === 'pendente'
+    // Blocos de horário: no modo dia-único mostrados na coluna pendente;
+    // no modo intervalo, omitidos (não fazem sentido para múltiplos dias).
+    const blocks = col.id === 'pendente' && useDayOverride
       ? BLOCKS.filter(b => b.date === today &&
         (!STATE.filterBarber || b.barberId === STATE.filterBarber))
       : [];
@@ -525,11 +619,10 @@ function renderKanbanCard(appt) {
   const conflict = hasConflict(appt, appt.id);
 
   const statusColors = {
-    'pendente': '#E0924A',
+    'pendente':   '#E0924A',
     'confirmado': '#5B8DEF',
-    'em-andamento': '#9B72CF',
-    'concluido': '#4CAF79',
-    'no-show': '#E05454',
+    'concluido':  '#4CAF79',
+    'cancelado':  '#E05454',
   };
 
   return `
@@ -620,7 +713,7 @@ function renderCardActions(appt) {
         <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 6l3 3 7-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Confirmar
       </button>
-      <button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show')" aria-label="Cancelar">Cancelar</button>`;
+      <button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','cancelado')" aria-label="Cancelar">Cancelar</button>`;
     secondary = `
       <button class="action-btn action-btn--gold action-btn--sm" onclick="openEditAppt('${appt.id}')" aria-label="Editar">Editar</button>
       ${whatsappIcon}`;
@@ -628,23 +721,14 @@ function renderCardActions(appt) {
 
   if (appt.status === 'confirmado') {
     primary = `
-      <button class="action-btn action-btn--orange" onclick="changeStatus('${appt.id}','em-andamento')" aria-label="Iniciar corte">
-        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 6l9-4-4 9-2-3-3-2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-        Iniciar
-      </button>
-      <button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show')" aria-label="No-show">No-show</button>`;
-    secondary = `
-      <button class="action-btn action-btn--gold action-btn--sm" onclick="openEditAppt('${appt.id}')" aria-label="Reagendar">Reagendar</button>
-      ${whatsappIcon}`;
-  }
-
-  if (appt.status === 'em-andamento') {
-    primary = `
       <button class="action-btn action-btn--green" onclick="changeStatus('${appt.id}','concluido')" aria-label="Finalizar">
         <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 6l3 3 7-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Finalizar
-      </button>`;
-    secondary = whatsappIcon;
+      </button>
+      <button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','cancelado')" aria-label="Cancelar">Cancelar</button>`;
+    secondary = `
+      <button class="action-btn action-btn--gold action-btn--sm" onclick="openEditAppt('${appt.id}')" aria-label="Reagendar">Reagendar</button>
+      ${whatsappIcon}`;
   }
 
   if (appt.status === 'concluido') {
@@ -652,7 +736,7 @@ function renderCardActions(appt) {
     secondary = whatsappIcon;
   }
 
-  if (appt.status === 'no-show') {
+  if (appt.status === 'cancelado') {
     primary = `<button class="action-btn action-btn--blue" onclick="openEditAppt('${appt.id}')" aria-label="Reagendar">Reagendar</button>`;
     secondary = whatsappIcon;
   }
@@ -719,10 +803,9 @@ async function changeStatus(id, newStatus, opts = {}) {
 
   const labels = {
     'confirmado': 'confirmado',
-    'em-andamento': 'iniciado',
-    'concluido': 'finalizado',
-    'no-show': 'marcado como no-show',
-    'pendente': 'movido para pendente',
+    'concluido':  'finalizado',
+    'cancelado':  'cancelado',
+    'pendente':   'movido para pendente',
   };
 
   try {
@@ -1212,7 +1295,7 @@ function renderList() {
           </div>
         </td>
         <td><span class="list-value">${svc ? formatCurrency(svc.price) : '—'}</span></td>
-        <td><span class="status-badge status-badge--${a.status === 'em-andamento' ? 'andamento' : a.status === 'no-show' ? 'noshow' : a.status}">${getStatusLabel(a.status)}</span></td>
+        <td><span class="status-badge status-badge--${a.status}">${getStatusLabel(a.status)}</span></td>
         <td>
           <div class="list-actions">
             <button class="list-icon-btn list-icon-btn--whatsapp"
@@ -1297,6 +1380,7 @@ function initPeriodFilter() {
   }
 
   function applyPreset(val) {
+    STATE.periodPreset = val;
     const today = getTodayStr();
     if (val === 'today') {
       STATE.periodStart = today;
@@ -1306,41 +1390,40 @@ function initPeriodFilter() {
     } else if (val === 'month') {
       [STATE.periodStart, STATE.periodEnd] = getMonthRange();
     }
-    // 'custom' não altera o STATE aqui — só o botão Aplicar faz isso
+    // 'custom' não altera periodStart/periodEnd aqui — só o botão Aplicar faz isso
   }
 
-  // Mostra/oculta inputs customizados
+  // Preset aplica imediatamente ao mudar o select (sem precisar de Aplicar)
   preset.addEventListener('change', () => {
-    const isCustom = preset.value === 'custom';
-    custom.hidden = !isCustom;
-    if (isCustom) {
-      // Pré-preenche com o período atual
-      startEl.value = STATE.periodStart;
-      endEl.value   = STATE.periodEnd;
-    }
+    applyPreset(preset.value);
+    STATE.kanbanDate = STATE.periodStart;
+    STATE.listDate   = STATE.periodStart;
+    // Pré-preenche os inputs com o intervalo recém-calculado
+    startEl.value = STATE.periodStart;
+    endEl.value   = STATE.periodEnd;
+    reloadAppointments();
   });
 
-  // Botão Aplicar
+  // Botão Aplicar: só usado para datas customizadas preenchidas manualmente
   applyBtn.addEventListener('click', () => {
-    if (preset.value === 'custom') {
-      const s = startEl.value;
-      const e = endEl.value;
-      if (!s || !e) { showToast('Informe data início e fim.', 'error'); return; }
-      if (s > e)    { showToast('Data início deve ser anterior ao fim.', 'error'); return; }
-      STATE.periodStart = s;
-      STATE.periodEnd   = e;
-    } else {
-      applyPreset(preset.value);
-    }
+    const s = startEl.value;
+    const e = endEl.value;
+    if (!s || !e) { showToast('Informe data início e fim.', 'error'); return; }
+    if (s > e)    { showToast('Data início deve ser anterior ao fim.', 'error'); return; }
+    STATE.periodPreset = 'custom';
+    STATE.periodStart  = s;
+    STATE.periodEnd    = e;
     // Sincroniza as datas de Kanban e Lista com o início do intervalo
     STATE.kanbanDate = STATE.periodStart;
     STATE.listDate   = STATE.periodStart;
     reloadAppointments();
   });
 
-  // Aplica "Hoje" na carga inicial (sem recarregar, pois o boot()
-  // já chama reloadAppointments() logo depois)
-  applyPreset('today');
+  // Aplica "Este mês" na carga inicial e pré-preenche os inputs de data
+  // (sem recarregar, pois o boot() já chama reloadAppointments() logo depois)
+  applyPreset('month');
+  startEl.value = STATE.periodStart;
+  endEl.value   = STATE.periodEnd;
 }
 
 function initListFilters() {
@@ -1374,6 +1457,7 @@ function initListFilters() {
 ═══════════════════════════════════════════════════════════ */
 function openNewAppt(status = null, prefill = {}) {
   STATE.editingId = null;
+  _availabilityCache = { barberId: null, date: null, available: [], occupied: [] };
 
   // Reset form
   document.getElementById('apptId').value = '';
@@ -1394,13 +1478,20 @@ function openNewAppt(status = null, prefill = {}) {
   document.getElementById('modalSummary').hidden = true;
   document.getElementById('footerSummaryHint').textContent = '';
 
-  // Preencher service picker
-  populateServicePicker(null);
+  // Novo fluxo: barbeiro primeiro → data+hora → serviço
   populateBarberPicker(null);
-  populateTimeSelect(prefill.time || null);
+  populateServicePicker(null);
 
-  if (prefill.time) {
-    document.getElementById('apptTime').value = prefill.time;
+  // Select de horário começa bloqueado até barbeiro ser escolhido
+  const timeSel = document.getElementById('apptTime');
+  if (timeSel) {
+    timeSel.innerHTML = `<option value="">Selecione o barbeiro primeiro</option>`;
+  }
+
+  // Se prefill trouxer barbeiro+data, carrega disponibilidade imediatamente
+  if (prefill.barberId && prefill.date) {
+    populateBarberPicker(prefill.barberId);
+    loadBarberAvailability(prefill.barberId, prefill.date, prefill.time || null);
   }
 
   openModal('apptModalOverlay');
@@ -1411,6 +1502,7 @@ function openEditAppt(id) {
   if (!appt) return;
 
   STATE.editingId = id;
+  _availabilityCache = { barberId: null, date: null, available: [], occupied: [] };
 
   document.getElementById('apptId').value = id;
   document.getElementById('apptClient').value = appt.client;
@@ -1428,9 +1520,11 @@ function openEditAppt(id) {
 
   hideConflict();
 
-  populateServicePicker(appt.serviceId);
+  // Novo fluxo: barbeiro já vem pré-selecionado; busca disponibilidade real
+  // antes de renderizar os horários (exclui o próprio agendamento do check).
   populateBarberPicker(appt.barberId);
-  populateTimeSelect(appt.time);
+  populateServicePicker(appt.serviceId);
+  loadBarberAvailability(appt.barberId, appt.date, appt.time);
 
   updateModalSummary(appt.serviceId);
 
@@ -1465,6 +1559,18 @@ function selectService(id) {
     el.setAttribute('aria-checked', String(sel));
   });
   updateModalSummary(id);
+
+  // Recalcula slots disponíveis levando em conta a nova duração
+  const selectedBarberEl = document.querySelector('.barber-option.is-selected');
+  const barberId = selectedBarberEl?.dataset.barberId || null;
+  const date = document.getElementById('apptDate')?.value || null;
+  const currentTime = document.getElementById('apptTime')?.value || null;
+  if (barberId && date) {
+    // Invalida cache de duração para forçar nova busca
+    _availabilityCache.durationMin = null;
+    loadBarberAvailability(barberId, date, currentTime);
+  }
+
   checkConflict();
 }
 
@@ -1485,7 +1591,6 @@ function populateBarberPicker(selectedId) {
       <div class="barber-option__avatar" style="${barberAvatarStyle(b.id)}" aria-hidden="true">${b.avatar}</div>
       <div>
         <div class="barber-option__name">${b.name}</div>
-        <div class="barber-option__rating">★ ${b.rating}</div>
       </div>
     </button>`).join('');
 }
@@ -1496,52 +1601,102 @@ function selectBarber(id) {
     el.classList.toggle('is-selected', sel);
     el.setAttribute('aria-checked', String(sel));
   });
-  // Atualiza o select de horário para refletir slots ocupados pelo novo barbeiro
-  const currentTime = document.getElementById('apptTime')?.value || null;
-  populateTimeSelect(currentTime);
+  // Ao trocar barbeiro, recarrega slots de disponibilidade real do backend
+  const date = document.getElementById('apptDate')?.value || getTodayStr();
+  document.getElementById('apptDate').value = date;
+  loadBarberAvailability(id, date);
   checkConflict();
 }
 
-function populateTimeSelect(selectedTime) {
+// Cache local de disponibilidade retornada pelo backend para o
+// barbeiro+data atualmente selecionados no modal.
+// Evita rebuscar se o usuário mudar só o serviço (sem trocar barbeiro/data).
+let _availabilityCache = { barberId: null, date: null, available: [], occupied: [] };
+
+/**
+ * Busca disponibilidade real do barbeiro na data via GET /api/barber-availability
+ * e repopula o select de horário.
+ * Chamado ao selecionar barbeiro OU ao alterar a data.
+ */
+async function loadBarberAvailability(barberId, date, selectedTime = null) {
   const sel = document.getElementById('apptTime');
   if (!sel) return;
-  const slots = generateTimeSlots();
 
-  // Lê barbeiro e data do modal para filtrar slots ocupados
-  const selectedBarberEl = document.querySelector('.barber-option.is-selected');
-  const barberId = selectedBarberEl?.dataset.barberId || null;
-  const date = document.getElementById('apptDate')?.value || null;
-  const editingId = STATE.editingId;
+  if (!barberId || !date) {
+    sel.innerHTML = `<option value="">Selecione o barbeiro primeiro</option>`;
+    return;
+  }
 
+  // Lê a duração do serviço selecionado no momento da chamada
+  const selectedSvcEl = document.querySelector('.service-option.is-selected');
+  const svc = selectedSvcEl ? getService(selectedSvcEl.dataset.serviceId) : null;
+  const durationMin = svc ? svc.duration : 30;
+
+  // Usa cache se barbeiro, data E duração não mudaram
+  if (_availabilityCache.barberId === barberId &&
+      _availabilityCache.date    === date &&
+      _availabilityCache.durationMin === durationMin) {
+    _renderTimeSelect(sel, _availabilityCache.available, _availabilityCache.occupied, selectedTime);
+    return;
+  }
+
+  sel.innerHTML = `<option value="">Carregando horários…</option>`;
+  sel.disabled = true;
+
+  try {
+    const result = await InBarberAPI.getBarberAvailability(barberId, date, durationMin);
+    _availabilityCache = { barberId, date, durationMin, available: result.available || [], occupied: result.occupied || [] };
+
+    if (result.closed) {
+      sel.innerHTML = `<option value="">Barbearia fechada neste dia</option>`;
+      sel.disabled = true;
+      return;
+    }
+
+    _renderTimeSelect(sel, _availabilityCache.available, _availabilityCache.occupied, selectedTime);
+  } catch (err) {
+    // Fallback: gera slots localmente sem verificação de ocupação
+    sel.disabled = false;
+    const slots = generateTimeSlots();
+    sel.innerHTML = `<option value="">Selecionar</option>` +
+      slots.map(t => `<option value="${t}" ${t === selectedTime ? 'selected' : ''}>${t}</option>`).join('');
+    showToast('Não foi possível verificar disponibilidade. Verifique conflitos manualmente.', 'warning');
+  } finally {
+    sel.disabled = false;
+  }
+}
+
+function _renderTimeSelect(sel, available, occupied, selectedTime) {
+  const allSlots = [...available, ...occupied].sort();
+  if (!allSlots.length) {
+    sel.innerHTML = `<option value="">Sem horários disponíveis</option>`;
+    return;
+  }
   sel.innerHTML = `<option value="">Selecionar</option>` +
-    slots.map(t => {
-      // Verifica conflito para este slot: usa serviceId genérico de 1min
-      // apenas para checar sobreposição; o check real é por barbeiro+data+hora.
-      let occupied = false;
-      if (barberId && date) {
-        const [h, m] = t.split(':').map(Number);
-        const slotStart = h * 60 + m;
-        // Considera slot ocupado se qualquer agendamento do barbeiro naquele
-        // dia começa dentro da janela do slot (±slotMinutes) — checa se
-        // algum agendamento existente sobrepõe o intervalo [slotStart, slotStart+slotMinutes)
-        occupied = APPOINTMENTS.some(a => {
-          if (a.id === editingId) return false;
-          if (a.barberId !== barberId) return false;
-          if (a.date !== date) return false;
-          if (['concluido', 'no-show'].includes(a.status)) return false;
-          const svcA = getService(a.serviceId);
-          if (!svcA) return false;
-          const [ah, am] = a.time.split(':').map(Number);
-          const aStart = ah * 60 + am;
-          const aEnd = aStart + svcA.duration;
-          return slotStart < aEnd && (slotStart + CFG.slotMinutes) > aStart;
-        });
-      }
-      if (occupied) {
+    allSlots.map(t => {
+      const isOccupied = occupied.includes(t);
+      if (isOccupied) {
         return `<option value="${t}" disabled style="color:var(--muted,#888)">${t} — ocupado</option>`;
       }
       return `<option value="${t}" ${t === selectedTime ? 'selected' : ''}>${t}</option>`;
     }).join('');
+}
+
+// Mantida por compatibilidade: agora só gera slots locais (sem check de ocupação).
+// Usada apenas no fallback de loadBarberAvailability.
+function populateTimeSelect(selectedTime) {
+  const sel = document.getElementById('apptTime');
+  if (!sel) return;
+  const selectedBarberEl = document.querySelector('.barber-option.is-selected');
+  const barberId = selectedBarberEl?.dataset.barberId || null;
+  const date = document.getElementById('apptDate')?.value || null;
+  if (barberId && date) {
+    loadBarberAvailability(barberId, date, selectedTime);
+  } else {
+    const slots = generateTimeSlots();
+    sel.innerHTML = `<option value="">Selecione o barbeiro primeiro</option>` +
+      slots.map(t => `<option value="${t}" ${t === selectedTime ? 'selected' : ''}>${t}</option>`).join('');
+  }
 }
 
 function updateModalSummary(serviceId) {
@@ -1579,25 +1734,39 @@ function getFormData() {
 
 function checkConflict() {
   const data = getFormData();
-  if (!data.serviceId || !data.barberId || !data.time || !data.date) {
+  if (!data.barberId || !data.time || !data.date) {
     hideConflict();
     return;
   }
-  const svc = getService(data.serviceId);
-  const [h, m] = data.time.split(':').map(Number);
-  const startMin = h * 60 + m;
-  const endMin = startMin + (svc ? svc.duration : 0);
 
-  const appt = { ...data, status: 'confirmado' };
-  if (hasConflict(appt, STATE.editingId)) {
-    showConflict(`Conflito: ${getBarber(data.barberId)?.name} já tem agendamento próximo às ${data.time}.`);
+  // Verifica primeiro pelo cache de disponibilidade real do backend
+  // (já considera duração do serviço, almoço e bloqueios)
+  if (_availabilityCache.barberId === data.barberId &&
+      _availabilityCache.date    === data.date &&
+      _availabilityCache.occupied.includes(data.time)) {
+    const barberName = getBarber(data.barberId)?.name || 'este barbeiro';
+    showConflict(`Horário indisponível para ${barberName} neste serviço/horário.`);
     return;
   }
 
-  const manualBlock = findManualBlock(data.barberId, data.date, startMin, endMin);
-  if (manualBlock) {
-    showConflict(`Horário indisponível: ${getBlockReasonLabel(manualBlock.reason)} bloqueado(a) nesse intervalo.`);
-    return;
+  // Fallback: verificação local por agendamentos em memória + bloqueios manuais
+  if (data.serviceId) {
+    const svc = getService(data.serviceId);
+    const [h, m] = data.time.split(':').map(Number);
+    const startMin = h * 60 + m;
+    const endMin = startMin + (svc ? svc.duration : 0);
+
+    const appt = { ...data, status: 'confirmado' };
+    if (hasConflict(appt, STATE.editingId)) {
+      showConflict(`Conflito: ${getBarber(data.barberId)?.name} já tem agendamento próximo às ${data.time}.`);
+      return;
+    }
+
+    const manualBlock = findManualBlock(data.barberId, data.date, startMin, endMin);
+    if (manualBlock) {
+      showConflict(`Horário indisponível: ${getBlockReasonLabel(manualBlock.reason)} bloqueado(a) nesse intervalo.`);
+      return;
+    }
   }
 
   hideConflict();
@@ -1616,10 +1785,19 @@ function hideConflict() {
 async function saveAppt() {
   const data = getFormData();
 
-  // Validação básica
-  if (!data.client) { showToast('Informe o nome do cliente.', 'error'); return; }
-  if (!data.date) { showToast('Selecione a data.', 'error'); return; }
-  if (!data.time) { showToast('Selecione o horário.', 'error'); return; }
+  // Validação básica — nova ordem espelha o fluxo do modal
+  if (!data.barberId)  { showToast('Selecione um barbeiro.', 'error'); return; }
+  if (!data.date)      { showToast('Selecione a data.', 'error'); return; }
+  if (!data.time)      { showToast('Selecione o horário.', 'error'); return; }
+
+  // Rejeita slot que consta como ocupado no cache de disponibilidade real
+  if (_availabilityCache.barberId === data.barberId &&
+      _availabilityCache.date    === data.date &&
+      _availabilityCache.occupied.includes(data.time)) {
+    showConflict(`Horário ${data.time} já está ocupado para ${getBarber(data.barberId)?.name || 'este barbeiro'}.`);
+    return;
+  }
+
   const [slotH, slotM] = data.time.split(':').map(Number);
   const slotMin = slotH * 60 + slotM;
   if (LUNCH && slotMin >= LUNCH.startMin && slotMin < LUNCH.endMin) {
@@ -1627,7 +1805,7 @@ async function saveAppt() {
     return;
   }
   if (!data.serviceId) { showToast('Selecione um serviço.', 'error'); return; }
-  if (!data.barberId) { showToast('Selecione um barbeiro.', 'error'); return; }
+  if (!data.client)    { showToast('Informe o nome do cliente.', 'error'); return; }
 
   // Trava o botão de salvar durante a chamada, pra evitar duplo clique
   // criando dois agendamentos com a mesma requisição em voo.
@@ -1742,7 +1920,7 @@ function openDetail(id) {
   const barber = getBarber(appt.barberId);
   const conflict = hasConflict(appt, appt.id);
 
-  const statusKey = appt.status === 'em-andamento' ? 'andamento' : appt.status === 'no-show' ? 'noshow' : appt.status;
+  const statusKey = appt.status;
 
   // Calcula horário de término
   const durationMin = svc ? svc.duration : 30;
@@ -1801,7 +1979,6 @@ function openDetail(id) {
         <div class="detail-barber-avatar" style="${barberAvatarStyle(appt.barberId)}" aria-hidden="true">${barber?.avatar || '?'}</div>
         <div class="detail-barber-info">
           <span class="detail-barber-name">${barber?.name || '—'}</span>
-          <span class="detail-barber-rating">★ ${barber?.rating || '—'}</span>
         </div>
       </div>
     </div>
@@ -1827,16 +2004,13 @@ function openDetail(id) {
   const primaryBtns = [];
   if (appt.status === 'pendente') {
     primaryBtns.push(`<button class="action-btn action-btn--blue" onclick="changeStatus('${appt.id}','confirmado');closeModal('detailModalOverlay')">Confirmar</button>`);
-    primaryBtns.push(`<button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show');closeModal('detailModalOverlay')">Cancelar</button>`);
+    primaryBtns.push(`<button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','cancelado');closeModal('detailModalOverlay')">Cancelar</button>`);
   }
   if (appt.status === 'confirmado') {
-    primaryBtns.push(`<button class="action-btn action-btn--orange" onclick="changeStatus('${appt.id}','em-andamento');closeModal('detailModalOverlay')">Iniciar</button>`);
-    primaryBtns.push(`<button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','no-show');closeModal('detailModalOverlay')">No-show</button>`);
-  }
-  if (appt.status === 'em-andamento') {
     primaryBtns.push(`<button class="action-btn action-btn--green" onclick="changeStatus('${appt.id}','concluido');closeModal('detailModalOverlay')">Finalizar</button>`);
+    primaryBtns.push(`<button class="action-btn action-btn--red" onclick="changeStatus('${appt.id}','cancelado');closeModal('detailModalOverlay')">Cancelar</button>`);
   }
-  if (appt.status === 'no-show') {
+  if (appt.status === 'cancelado') {
     primaryBtns.push(`<button class="action-btn action-btn--blue" onclick="openEditAppt('${appt.id}')">Reagendar</button>`);
   }
 
@@ -1989,10 +2163,17 @@ function initModalClose() {
   // Mudanças no formulário disparam verificação de conflito
   document.getElementById('apptTime')?.addEventListener('change', () => { checkConflict(); });
   document.getElementById('apptDate')?.addEventListener('change', () => {
+    const selectedBarberEl = document.querySelector('.barber-option.is-selected');
+    const barberId = selectedBarberEl?.dataset.barberId || null;
+    const date = document.getElementById('apptDate').value;
     const currentTime = document.getElementById('apptTime')?.value || null;
-    populateTimeSelect(currentTime);
+    if (barberId && date) {
+      loadBarberAvailability(barberId, date, currentTime);
+    }
     checkConflict();
   });
+
+  
 }
 
 
@@ -2313,10 +2494,16 @@ function animateAgendaStats() {
 
   const pills = document.querySelectorAll('#agendaStats .stat-pill__value');
   pills.forEach((el) => {
-    const raw = parseInt(el.textContent, 10);
-    if (!isNaN(raw)) {
+    const isCurrency = el.dataset.currency === 'true';
+    const raw = parseFloat(el.dataset.raw);
+    if (isNaN(raw)) return;
+
+    if (isCurrency) {
+      // Anima o valor numérico em centavos e formata a cada frame
+      el.textContent = formatCurrency(0);
+      setTimeout(() => animateCounter(el, 0, raw, 900, v => formatCurrency(v)), 150);
+    } else {
       el.textContent = '0';
-      // Pequeno delay para a animação de fade-in do pill já ter iniciado
       setTimeout(() => animateCounter(el, 0, raw, 900), 150);
     }
   });

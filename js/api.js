@@ -87,13 +87,15 @@ function buildQueryString(params = {}) {
  * @param {string} [filters.date]      - Data no formato YYYY-MM-DD
  * @param {string} [filters.barberId]  - id do barbeiro
  * @param {string} [filters.serviceId] - id do serviço
- * @param {string} [filters.status]    - 'pendente'|'confirmado'|'em-andamento'|'concluido'|'no-show'
+ * @param {string} [filters.status]    - 'pendente'|'confirmado'|'concluido'|'cancelado'
  * @param {string} [filters.search]    - busca por nome do cliente
  * @returns {Promise<Array>} lista de agendamentos
  */
 function listAppointments(filters = {}) {
   const qs = buildQueryString({
     date: filters.date,
+    date_start: filters.dateStart,
+    date_end: filters.dateEnd,
     barberId: filters.barberId,
     serviceId: filters.serviceId,
     status: filters.status,
@@ -409,6 +411,31 @@ function saveBarberMetaComissao(id, data) {
 function searchClients(search) {
   const qs = buildQueryString({ search });
   return apiRequest(`/clients${qs}`, { method: 'GET' });
+}
+
+/**
+ * Cria um novo cliente (tela Clientes — botão "Novo Cliente").
+ * @param {Object} data
+ * @param {string} data.name
+ * @param {string} data.phone
+ * @param {string} [data.birthdate] - formato YYYY-MM-DD
+ * @param {string} [data.obs]
+ * @returns {Promise<Object>} cliente criado
+ */
+function createClient(data) {
+  return apiRequest('/clients', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Busca o histórico de visitas (agendamentos) de um cliente.
+ * @param {string} id
+ * @returns {Promise<Array>} lista de visitas ordenada por data desc
+ */
+function getClientVisitas(id) {
+  return apiRequest(`/clients/${encodeURIComponent(id)}/visitas`, { method: 'GET' });
 }
 
 /**
@@ -762,6 +789,25 @@ function getVisaoGeralFinanceiro(filters = {}) {
   return apiRequest(`/financeiro/visao-geral${qs}`, { method: 'GET' });
 }
 
+/* ─── 2.2 DISPONIBILIDADE POR BARBEIRO ──────────────────────
+   GET /api/barber-availability → slots livres/ocupados de um
+   barbeiro em uma data, considerando agendamentos, bloqueios
+   e preferências (funcionamento + almoço).
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Busca os slots de disponibilidade de um barbeiro em uma data.
+ * @param {string} barberId  - id do barbeiro
+ * @param {string} date      - 'YYYY-MM-DD'
+ * @returns {Promise<Object>} { available: string[], occupied: string[] }
+ *   available → horários livres ('HH:MM')
+ *   occupied  → horários indisponíveis ('HH:MM')
+ */
+function getBarberAvailability(barberId, date, durationMin) {
+  const qs = buildQueryString({ barberId, date, durationMin });
+  return apiRequest(`/barber-availability${qs}`, { method: 'GET' });
+}
+
 window.InBarberAPI = {
   listAppointments,
   getAppointment,
@@ -786,8 +832,10 @@ window.InBarberAPI = {
   searchClients,
   listClients,
   getClient,
+  createClient,
   updateClient,
   deleteClient,
+  getClientVisitas,
   listProducts,
   getProduct,
   createProduct,
@@ -809,4 +857,5 @@ window.InBarberAPI = {
   updateSaida,
   deleteSaida,
   getVisaoGeralFinanceiro,
+  getBarberAvailability,
 };

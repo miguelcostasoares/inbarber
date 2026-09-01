@@ -37,7 +37,7 @@ def check_password(password, hashed):
 # AGENDA — Helpers internos
 # ═══════════════════════════════════════════════════════════
 
-STATUS_VALIDOS = {'pendente', 'confirmado', 'em-andamento', 'concluido', 'no-show'}
+STATUS_VALIDOS = {'pendente', 'confirmado', 'concluido', 'cancelado'}
 
 
 def gerar_agendamento_id():
@@ -79,7 +79,7 @@ def existe_conflito(cursor, barbeiro_id, data, hora_inicio, hora_fim, excluir_id
         SELECT id FROM agendamentos
         WHERE barbeiro_id = %s
           AND data = %s
-          AND status NOT IN ('concluido', 'no-show')
+          AND status NOT IN ('concluido', 'cancelado')
           AND hora_inicio < %s
           AND hora_fim > %s
     '''
@@ -188,6 +188,17 @@ def listar_agendamentos():
         filtros.append('data = %s')
         params.append(request.args['date'])
 
+    if request.args.get('date_start') and request.args.get('date_end'):
+        filtros.append('data BETWEEN %s AND %s')
+        params.append(request.args['date_start'])
+        params.append(request.args['date_end'])
+    elif request.args.get('date_start'):
+        filtros.append('data >= %s')
+        params.append(request.args['date_start'])
+    elif request.args.get('date_end'):
+        filtros.append('data <= %s')
+        params.append(request.args['date_end'])
+
     if request.args.get('barberId'):
         filtros.append('barbeiro_id = %s')
         params.append(request.args['barberId'])
@@ -294,6 +305,39 @@ def criar_agendamento():
 
         forma_pagamento_id = data.get('formaPagamentoId') or None
 
+        # ── Upsert de cliente ──────────────────────────────────────────
+        # Se o agendamento veio com telefone, garante que o cliente existe
+        # na tabela clientes (cria ou actualiza ultima_visita).
+        # Isso alimenta automaticamente a tela Clientes via Agenda.
+        cliente_id_final = data.get('clienteId') or None
+        phone_raw = (data.get('phone') or '').strip()
+        nome_raw  = data['client'].strip()
+
+        if phone_raw:
+            cursor.execute(
+                'SELECT id FROM clientes WHERE telefone = %s',
+                (phone_raw,)
+            )
+            cli_row = cursor.fetchone()
+            if cli_row:
+                # Cliente já existe — atualiza ultima_visita
+                cliente_id_final = cli_row['id']
+                cursor.execute(
+                    'UPDATE clientes SET ultima_visita = %s WHERE id = %s',
+                    (data['date'], cliente_id_final)
+                )
+            else:
+                # Cliente novo — insere na base
+                cliente_id_final = 'c' + uuid.uuid4().hex[:12]
+                cursor.execute(
+                    '''INSERT INTO clientes
+                       (id, nome, telefone, cliente_desde, ultima_visita)
+                       VALUES (%s, %s, %s, %s, %s)''',
+                    (cliente_id_final, nome_raw, phone_raw,
+                     data['date'], data['date'])
+                )
+        # ──────────────────────────────────────────────────────────────
+
         novo_id = gerar_agendamento_id()
         cursor.execute(
             '''INSERT INTO agendamentos
@@ -303,8 +347,8 @@ def criar_agendamento():
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pendente', %s)''',
             (
                 novo_id,
-                data.get('clienteId'),
-                data['client'],
+                cliente_id_final,
+                nome_raw,
                 data.get('phone'),
                 data['serviceId'],
                 data['barberId'],
@@ -457,6 +501,170 @@ def deletar_agendamento(agendamento_id):
     except Exception as e:
         conn.rollback()
         return jsonify({'error': f'Erro ao deletar agendamento: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# ═══════════════════════════════════════════════════════════
+# DISPONIBILIDADE POR BARBEIRO
+# Retorna os slots livres e ocupados de um barbeiro em uma data,
+# considerando: agendamentos ativos, bloqueios manuais e
+# horário de funcionamento + almoço das Preferências.
+# ═══════════════════════════════════════════════════════════
+
+@app.route('/api/barber-availability', methods=['GET'])
+def disponibilidade_barbeiro():
+    barbeiro_id = request.args.get('barberId', '').strip()
+    data_str    = request.args.get('date', '').strip()
+
+    if not barbeiro_id or not data_str:
+        return jsonify({'error': 'barberId e date são obrigatórios.'}), 400
+
+    try:
+        datetime.strptime(data_str, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({'error': 'date inválido (use YYYY-MM-DD).'}), 400
+
+    conn   = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # ── Horário de funcionamento do dia ────────────────────
+        cursor.execute("SELECT horarios FROM preferencias WHERE id = 'default'")
+        pref_row = cursor.fetchone()
+        prefs_horarios = _json_col(pref_row['horarios']) if pref_row and pref_row.get('horarios') else {}
+
+        dia_semana_idx = datetime.strptime(data_str, '%Y-%m-%d').weekday()  # 0=seg … 6=dom
+        dia_keys = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']
+        horario_dia = prefs_horarios.get(dia_keys[dia_semana_idx], {})
+
+        if not horario_dia.get('aberto', True):
+            # Barbearia fechada neste dia — nenhum slot disponível
+            return jsonify({'available': [], 'occupied': [], 'closed': True}), 200
+
+        try:
+            open_h, open_m = map(int, (horario_dia.get('abertura', '08:00')).split(':'))
+            close_h, close_m = map(int, (horario_dia.get('fechamento', '20:00')).split(':'))
+        except (ValueError, AttributeError):
+            open_h, open_m   = 8, 0
+            close_h, close_m = 20, 0
+
+        open_min  = open_h  * 60 + open_m
+        close_min = close_h * 60 + close_m
+        slot_min      = 30  # granularidade de exibição (passos do select)
+        duration_min  = 30  # janela que o serviço ocupa — sobrescrita abaixo
+
+        # Duração do serviço: aceita durationMin (minutos direto) ou serviceId
+        raw_duration = request.args.get('durationMin', '').strip()
+        if raw_duration:
+            try:
+                duration_min = max(1, int(raw_duration))
+            except ValueError:
+                pass
+        else:
+            raw_service = request.args.get('serviceId', '').strip()
+            if raw_service:
+                svc_row = buscar_servico(cursor, raw_service)
+                if svc_row:
+                    duration_min = svc_row['duracao_min']
+
+        # ── Gera todos os slots do dia ─────────────────────────
+        todos_slots = []
+        cur = open_min
+        while cur < close_min:
+            h = cur // 60
+            m = cur % 60
+            todos_slots.append((cur, f'{h:02d}:{m:02d}'))
+            cur += slot_min
+
+        # ── Almoço ────────────────────────────────────────────
+        almoco = buscar_almoco_ativo(cursor)
+        almoco_start = int(almoco[0].hour * 60 + almoco[0].minute) if almoco else None
+        almoco_end   = int(almoco[1].hour * 60 + almoco[1].minute) if almoco else None
+
+        # ── Agendamentos ativos do barbeiro naquele dia ────────
+        cursor.execute(
+            '''SELECT hora_inicio, hora_fim FROM agendamentos
+               WHERE barbeiro_id = %s
+                 AND data = %s
+                 AND status NOT IN ('concluido', 'cancelado')''',
+            (barbeiro_id, data_str)
+        )
+        agendamentos_dia = []
+        for row in cursor.fetchall():
+            hi = row['hora_inicio']
+            hf = row['hora_fim']
+            # mysql-connector pode devolver timedelta para TIME
+            if isinstance(hi, timedelta):
+                hi = (datetime.min + hi).time()
+            if isinstance(hf, timedelta):
+                hf = (datetime.min + hf).time()
+            agendamentos_dia.append((
+                hi.hour * 60 + hi.minute,
+                hf.hour * 60 + hf.minute,
+            ))
+
+        # ── Bloqueios manuais do barbeiro naquele dia ──────────
+        cursor.execute(
+            '''SELECT hora_inicio, hora_fim FROM bloqueios_horario
+               WHERE data = %s
+                 AND (barbeiro_id = %s OR barbeiro_id IS NULL)''',
+            (data_str, barbeiro_id)
+        )
+        bloqueios_dia = []
+        for row in cursor.fetchall():
+            hi = row['hora_inicio']
+            hf = row['hora_fim']
+            if isinstance(hi, timedelta):
+                hi = (datetime.min + hi).time()
+            if isinstance(hf, timedelta):
+                hf = (datetime.min + hf).time()
+            bloqueios_dia.append((
+                hi.hour * 60 + hi.minute,
+                hf.hour * 60 + hf.minute,
+            ))
+
+        # ── Classifica cada slot ───────────────────────────────
+        available = []
+        occupied  = []
+
+        for slot_start, label in todos_slots:
+            # A janela real que o serviço ocupa a partir deste slot
+            slot_end = slot_start + duration_min
+            bloqueado = False
+
+            # Slot que ultrapassaria o fechamento não está disponível
+            if slot_end > close_min:
+                occupied.append(label)
+                continue
+
+            # Almoço
+            if almoco_start is not None and _sobrepoe(slot_start, slot_end, almoco_start, almoco_end):
+                bloqueado = True
+
+            # Agendamentos existentes
+            if not bloqueado:
+                for a_start, a_end in agendamentos_dia:
+                    if _sobrepoe(slot_start, slot_end, a_start, a_end):
+                        bloqueado = True
+                        break
+
+            # Bloqueios manuais
+            if not bloqueado:
+                for b_start, b_end in bloqueios_dia:
+                    if _sobrepoe(slot_start, slot_end, b_start, b_end):
+                        bloqueado = True
+                        break
+
+            if bloqueado:
+                occupied.append(label)
+            else:
+                available.append(label)
+
+        return jsonify({'available': available, 'occupied': occupied, 'closed': False}), 200
+
+    except Exception as e:
+        return jsonify({'error': f'Erro ao buscar disponibilidade: {e}'}), 500
     finally:
         cursor.close()
         conn.close()
@@ -1297,13 +1505,14 @@ def toggle_barbeiro_status(barbeiro_id):
 def serializar_cliente(row):
     """Converte tipos DATE do MySQL para JSON-friendly."""
     return {
-        'id':        row['id'],
-        'name':      row['nome'],
-        'phone':     row['telefone'] or '',
-        'since':     row['cliente_desde'].strftime('%Y-%m-%d') if row['cliente_desde'] else None,
-        'lastVisit': row['ultima_visita'].strftime('%Y-%m-%d') if row['ultima_visita'] else None,
-        'birthdate': row['data_nascimento'].strftime('%Y-%m-%d') if row['data_nascimento'] else None,
-        'obs':       row['observacoes'] or '',
+        'id':          row['id'],
+        'name':        row['nome'],
+        'phone':       row['telefone'] or '',
+        'since':       row['cliente_desde'].strftime('%Y-%m-%d') if row['cliente_desde'] else None,
+        'lastVisit':   row['ultima_visita'].strftime('%Y-%m-%d') if row['ultima_visita'] else None,
+        'birthdate':   row['data_nascimento'].strftime('%Y-%m-%d') if row['data_nascimento'] else None,
+        'obs':         row['observacoes'] or '',
+        'totalVisits': int(row['total_visitas']) if row.get('total_visitas') is not None else 0,
     }
 
 
@@ -1314,23 +1523,29 @@ def listar_clientes():
     cursor = conn.cursor(dictionary=True)
     try:
         if search:
-            # Modo autocomplete (Agenda): retorna apenas id, name, phone
             cursor.execute(
-                '''SELECT id, nome, telefone, cliente_desde, ultima_visita,
-                          data_nascimento, observacoes
-                   FROM clientes
-                   WHERE nome LIKE %s
-                   ORDER BY nome ASC
+                '''SELECT c.id, c.nome, c.telefone, c.cliente_desde, c.ultima_visita,
+                          c.data_nascimento, c.observacoes,
+                          COUNT(a.id) AS total_visitas
+                   FROM clientes c
+                   LEFT JOIN agendamentos a
+                     ON a.cliente_id = c.id AND a.status = 'concluido'
+                   WHERE c.nome LIKE %s
+                   GROUP BY c.id
+                   ORDER BY c.nome ASC
                    LIMIT 10''',
                 (f'%{search}%',)
             )
         else:
-            # Modo listagem completa (tela Clientes): sem limite
             cursor.execute(
-                '''SELECT id, nome, telefone, cliente_desde, ultima_visita,
-                          data_nascimento, observacoes
-                   FROM clientes
-                   ORDER BY nome ASC'''
+                '''SELECT c.id, c.nome, c.telefone, c.cliente_desde, c.ultima_visita,
+                          c.data_nascimento, c.observacoes,
+                          COUNT(a.id) AS total_visitas
+                   FROM clientes c
+                   LEFT JOIN agendamentos a
+                     ON a.cliente_id = c.id AND a.status = 'concluido'
+                   GROUP BY c.id
+                   ORDER BY c.nome ASC'''
             )
         rows = cursor.fetchall()
         # Autocomplete só precisa de id/name/phone — mantém contrato original
@@ -1343,6 +1558,59 @@ def listar_clientes():
         cursor.close()
         conn.close()
 
+@app.route('/api/clients', methods=['POST'])
+def criar_cliente():
+    data = request.get_json(silent=True) or {}
+    nome  = (data.get('name')  or '').strip()
+    phone = (data.get('phone') or '').strip()
+
+    if not nome:
+        return jsonify({'error': 'O nome é obrigatório.'}), 400
+    if not phone:
+        return jsonify({'error': 'O telefone é obrigatório.'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id FROM clientes WHERE telefone = %s', (phone,))
+        if cursor.fetchone():
+            return jsonify({'error': 'Já existe um cliente com este telefone.'}), 409
+
+        novo_id = 'c' + uuid.uuid4().hex[:12]
+        hoje = datetime.now().date().strftime('%Y-%m-%d')
+        cursor.execute(
+            '''INSERT INTO clientes
+               (id, nome, telefone, data_nascimento, observacoes, cliente_desde)
+               VALUES (%s, %s, %s, %s, %s, %s)''',
+            (
+                novo_id,
+                nome,
+                phone,
+                data.get('birthdate') or None,
+                (data.get('obs') or '').strip() or None,
+                hoje,
+            )
+        )
+        conn.commit()
+
+        cursor.execute(
+            '''SELECT c.id, c.nome, c.telefone, c.cliente_desde, c.ultima_visita,
+                      c.data_nascimento, c.observacoes,
+                      COUNT(a.id) AS total_visitas
+               FROM clientes c
+               LEFT JOIN agendamentos a
+                 ON a.cliente_id = c.id AND a.status = 'concluido'
+               WHERE c.id = %s
+               GROUP BY c.id''',
+            (novo_id,)
+        )
+        return jsonify(serializar_cliente(cursor.fetchone())), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao criar cliente: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 @app.route('/api/clients/<cliente_id>', methods=['GET'])
 def buscar_cliente(cliente_id):
@@ -1350,9 +1618,14 @@ def buscar_cliente(cliente_id):
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            '''SELECT id, nome, telefone, cliente_desde, ultima_visita,
-                      data_nascimento, observacoes
-               FROM clientes WHERE id = %s''',
+            '''SELECT c.id, c.nome, c.telefone, c.cliente_desde, c.ultima_visita,
+                      c.data_nascimento, c.observacoes,
+                      COUNT(a.id) AS total_visitas
+               FROM clientes c
+               LEFT JOIN agendamentos a
+                 ON a.cliente_id = c.id AND a.status = 'concluido'
+               WHERE c.id = %s
+               GROUP BY c.id''',
             (cliente_id,)
         )
         row = cursor.fetchone()
@@ -1365,7 +1638,47 @@ def buscar_cliente(cliente_id):
         cursor.close()
         conn.close()
 
-
+@app.route('/api/clients/<cliente_id>/visitas', methods=['GET'])
+def historico_visitas(cliente_id):
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            '''SELECT a.id, a.data, a.hora_inicio, a.hora_fim,
+                      a.status, a.valor_cobrado,
+                      s.nome AS servico_nome,
+                      b.nome AS barbeiro_nome
+               FROM agendamentos a
+               JOIN servicos  s ON s.id = a.servico_id
+               JOIN barbeiros b ON b.id = a.barbeiro_id
+               WHERE a.cliente_id = %s
+               ORDER BY a.data DESC, a.hora_inicio DESC
+               LIMIT 50''',
+            (cliente_id,)
+        )
+        rows = cursor.fetchall()
+        visitas = []
+        for r in rows:
+            hi = r['hora_inicio']
+            if isinstance(hi, timedelta):
+                total_seg = int(hi.total_seconds())
+                hi = (datetime.min + timedelta(seconds=total_seg)).time()
+            visitas.append({
+                'id':          r['id'],
+                'data':        r['data'].strftime('%Y-%m-%d'),
+                'horaInicio':  hi.strftime('%H:%M'),
+                'status':      r['status'],
+                'valorCobrado': float(r['valor_cobrado']) if r['valor_cobrado'] else None,
+                'servico':     r['servico_nome'],
+                'barbeiro':    r['barbeiro_nome'],
+            })
+        return jsonify(visitas), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao buscar histórico: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+        
 @app.route('/api/clients/<cliente_id>', methods=['PUT', 'PATCH'])
 def atualizar_cliente(cliente_id):
     data = request.get_json(silent=True) or {}

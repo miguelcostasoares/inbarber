@@ -356,14 +356,23 @@ async function saveClient() {
   btn.disabled = true;
 
   try {
-    const updated = await InBarberAPI.updateClient(STATE.editingId, {
-      name, phone, obs, birthdate: birth || null,
-    });
+    if (STATE.editingId === null) {
+      // ── Criação ──────────────────────────────────────────────────
+      const created = await InBarberAPI.createClient({
+        name, phone, obs, birthdate: birth || null,
+      });
+      CLIENTS.unshift(created);
+      showToast('success', 'Cliente cadastrado com sucesso!');
+    } else {
+      // ── Edição ───────────────────────────────────────────────────
+      const updated = await InBarberAPI.updateClient(STATE.editingId, {
+        name, phone, obs, birthdate: birth || null,
+      });
+      const idx = CLIENTS.findIndex(c => c.id === STATE.editingId);
+      if (idx !== -1) CLIENTS[idx] = updated;
+      showToast('success', 'Cliente atualizado com sucesso!');
+    }
 
-    const idx = CLIENTS.findIndex(c => c.id === STATE.editingId);
-    if (idx !== -1) CLIENTS[idx] = updated;
-
-    showToast('success', 'Cliente atualizado com sucesso!');
     closeModal('clienteModalOverlay');
     renderStats();
     renderTable();
@@ -394,24 +403,96 @@ function initClienteModal() {
 /* ─── 12. MODAL DETALHES ────────────────────────────────── */
 async function openDetailModal(id) {
   STATE.viewId = id;
-  // Abre o modal imediatamente com os dados já em memória enquanto
-  // busca a versão mais atualizada do back-end em paralelo.
   let c = CLIENTS.find(x => x.id === id);
   if (!c) return;
-  renderDetailModal(c);
+
+  // Abre imediatamente com dados em memória; histórico começa em carregando
+  renderDetailModal(c, null);
   openModal('detailModalOverlay');
 
+  // Busca dados frescos e histórico em paralelo
   try {
-    c = await InBarberAPI.getClient(id);
+    const [fresh, visitas] = await Promise.all([
+      InBarberAPI.getClient(id),
+      InBarberAPI.getClientVisitas(id).catch(() => []),
+    ]);
     const idx = CLIENTS.findIndex(x => x.id === id);
-    if (idx !== -1) CLIENTS[idx] = c;
-    renderDetailModal(c);
+    if (idx !== -1) CLIENTS[idx] = fresh;
+    renderDetailModal(fresh, visitas);
   } catch (_) {
     // Falha silenciosa: dados em memória já estão visíveis
   }
 }
 
-function renderDetailModal(c) {
+function renderVisitasTimeline(visitas) {
+  if (visitas === null) {
+    return `
+      <div class="detail-divider"></div>
+      <div class="detail-field">
+        <div class="detail-field__label">Histórico de visitas</div>
+        <div class="detail-field__value" style="color:var(--text-muted);font-size:13px;">
+          Carregando…
+        </div>
+      </div>`;
+  }
+
+  if (visitas.length === 0) {
+    return `
+      <div class="detail-divider"></div>
+      <div class="detail-field">
+        <div class="detail-field__label">Histórico de visitas</div>
+        <div class="detail-field__value" style="color:var(--text-muted);font-size:13px;">
+          Nenhuma visita registrada ainda.
+        </div>
+      </div>`;
+  }
+
+  const statusLabel = {
+    'concluido':    'Concluído',
+    'pendente':     'Pendente',
+    'confirmado':   'Confirmado',
+    'em-andamento': 'Em andamento',
+    'no-show':      'No-show',
+  };
+  const statusClass = {
+    'concluido':    'ativo',
+    'pendente':     'inativo',
+    'confirmado':   'ativo',
+    'em-andamento': 'ativo',
+    'no-show':      'inativo',
+  };
+
+  const items = visitas.map((v, i) => `
+    <div class="visit-item${i === 0 ? ' visit-item--first' : ''}">
+      <div class="visit-item__dot"></div>
+      <div class="visit-item__content">
+        <div class="visit-item__header">
+          <span class="visit-item__date">${formatDate(v.data)}</span>
+          <span class="status-badge status-badge--${statusClass[v.status] || 'inativo'}" style="font-size:10px;padding:2px 7px;">
+            ${statusLabel[v.status] || v.status}
+          </span>
+        </div>
+        <div class="visit-item__detail">
+          ${v.servico ? `<span class="visit-item__service">${v.servico}</span>` : ''}
+          ${v.barbeiro ? `<span class="visit-item__barber">com ${v.barbeiro}</span>` : ''}
+          ${v.valorCobrado ? `<span class="visit-item__value">R$ ${Number(v.valorCobrado).toFixed(2).replace('.', ',')}</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="detail-divider"></div>
+    <div class="detail-field">
+      <div class="detail-field__label">
+        Histórico de visitas
+        <span class="visit-count-badge">${visitas.length} ${visitas.length === 1 ? 'visita' : 'visitas'}</span>
+      </div>
+      <div class="visit-timeline">${items}</div>
+    </div>`;
+}
+
+function renderDetailModal(c, visitas) {
   const active   = isActive(c.lastVisit);
   const colorIdx = avatarColor(c.name);
   const initials = getInitials(c.name);
@@ -443,6 +524,10 @@ function renderDetailModal(c) {
         <div class="detail-field__label">Última visita</div>
         <div class="detail-field__value">${formatDate(c.lastVisit)}</div>
       </div>
+      <div class="detail-field">
+        <div class="detail-field__label">Total de visitas</div>
+        <div class="detail-field__value">${c.totalVisits ?? 0}</div>
+      </div>
       ${c.birthdate ? `
       <div class="detail-field">
         <div class="detail-field__label">Data de nascimento</div>
@@ -456,9 +541,10 @@ function renderDetailModal(c) {
       <div class="detail-field__label">Observações</div>
       <div class="detail-obs">${c.obs}</div>
     </div>` : ''}
+
+    ${renderVisitasTimeline(visitas)}
   `;
 
-  // Configura botões do footer
   document.getElementById('detailWhatsApp').onclick = () => {
     const num = c.phone.replace(/\D/g, '');
     window.open(`https://wa.me/55${num}`, '_blank');

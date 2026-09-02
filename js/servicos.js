@@ -79,6 +79,99 @@
       } catch (_) {}
     }
 
+    /* ─── mapa serviceId → card DOM (preenchido após renderCards) ─── */
+    const cardMap = new Map();
+
+    /* ─── renderiza cards vindos da API ─── */
+    function renderCards(services) {
+      // Grupos definidos pelo campo `tipo` retornado pela API.
+      // Fallback: tipo desconhecido cai em "Outros".
+      const GROUPS = [
+        { tipo: 'combo',  label: 'Combos' },
+        { tipo: 'padrao', label: 'Serviços' },
+      ];
+
+      // Agrupa serviços por tipo, preservando a ordem da API
+      const byTipo = {};
+      services.forEach(s => {
+        const t = s.tipo || 'padrao';
+        (byTipo[t] = byTipo[t] || []).push(s);
+      });
+
+      const pageContent = document.querySelector('.page-content');
+      // Remove listas existentes do HTML estático (se houver)
+      pageContent.querySelectorAll('.svc-group-label, .svc-list').forEach(el => el.remove());
+
+      GROUPS.forEach(g => {
+        const list = byTipo[g.tipo];
+        if (!list || list.length === 0) return;
+
+        const label = document.createElement('p');
+        label.className = 'svc-group-label';
+        label.textContent = g.label;
+        pageContent.appendChild(label);
+
+        const ul = document.createElement('ul');
+        ul.className = 'svc-list';
+        ul.setAttribute('role', 'list');
+
+        list.forEach(s => {
+          const durMin = s.duracao_min || 0;
+          const durLabel = durMin >= 60
+            ? (durMin % 60 === 0 ? `${durMin / 60}h` : `${Math.floor(durMin / 60)}h ${durMin % 60}min`)
+            : `${durMin} min`;
+          const priceLabel = 'R$ ' + Number(s.preco || 0).toLocaleString('pt-BR');
+          const badgeHTML = s.tipo === 'combo'
+            ? `<span class="svc-badge">Combo</span>` : '';
+
+          const li = document.createElement('li');
+          li.className = 'svc-card';
+          li.setAttribute('role', 'listitem');
+          li.setAttribute('tabindex', '0');
+          li.setAttribute('aria-pressed', 'false');
+          // Guarda os dados normalizados no elemento
+          li.dataset.id    = s.id;
+          li.dataset.name  = s.nome || s.name || '';
+          li.dataset.price = String(s.preco || 0);
+          li.dataset.dur   = String(durMin);
+
+          li.innerHTML = `
+            <div class="svc-card-inner">
+              <div class="svc-check" aria-hidden="true">
+                <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none">
+                  <polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="svc-meta">
+                ${badgeHTML}
+                <h2 class="svc-name">${li.dataset.name}</h2>
+                <p class="svc-desc">${s.descricao || ''}</p>
+              </div>
+              <div class="svc-foot">
+                <span class="svc-price">${priceLabel}</span>
+                <span class="svc-dur">${durLabel}</span>
+              </div>
+            </div>`;
+
+          cardMap.set(s.id, li);
+          ul.appendChild(li);
+        });
+
+        pageContent.appendChild(ul);
+        bindCards(ul);
+      });
+    }
+
+    /* ─── bind de eventos nos cards (aplicado após render) ─── */
+    function bindCards(container) {
+      container.querySelectorAll('.svc-card').forEach(card => {
+        card.addEventListener('click', () => toggleCard(card));
+        card.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCard(card); }
+        });
+      });
+    }
+
     /* ─── restaura estado do sessionStorage ─── */
     function restore() {
       try {
@@ -87,7 +180,7 @@
         const entries = JSON.parse(raw);
         entries.forEach(([id, data]) => {
           selected.set(id, data);
-          const card = document.querySelector(`[data-id="${id}"]`);
+          const card = cardMap.get(id) || document.querySelector(`[data-id="${id}"]`);
           if (card) {
             card.classList.add('selected');
             card.setAttribute('aria-pressed', 'true');
@@ -104,21 +197,15 @@
         card.classList.remove('selected');
         card.setAttribute('aria-pressed', 'false');
       } else {
-        selected.set(id, { name, price: parseInt(price, 10), dur });
+        // price e dur já vêm normalizados pelo renderCards:
+        // price = número inteiro (R$), dur = minutos (número inteiro)
+        selected.set(id, { id, name, price: parseInt(price, 10), dur: parseInt(dur, 10) });
         card.classList.add('selected');
         card.setAttribute('aria-pressed', 'true');
       }
       persist();
       updateBar();
     }
-
-    /* ─── eventos dos cards ─── */
-    document.querySelectorAll('.svc-card').forEach(card => {
-      card.addEventListener('click', () => toggleCard(card));
-      card.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCard(card); }
-      });
-    });
 
     /* ─── botão voltar ─── */
     if (backBtn) {
@@ -137,9 +224,23 @@
       });
     }
 
-    /* ─── inicializa ─── */
-    restore();
-    updateBar();
+    /* ─── carrega serviços da API e inicializa ─── */
+    InBarberAPI.listServices()
+      .then(services => {
+        renderCards(services);
+        restore();
+        updateBar();
+      })
+      .catch(() => {
+        // Fallback: ativa os cards estáticos do HTML (se existirem)
+        document.querySelectorAll('.svc-card').forEach(card => {
+          const { id, name, price, dur } = card.dataset;
+          if (id) cardMap.set(id, card);
+        });
+        bindCards(document);
+        restore();
+        updateBar();
+      });
 
   });
 

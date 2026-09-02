@@ -30,41 +30,63 @@
   }
 
   /* ─────────────────────────────────────
-     SIMULAÇÃO DE DISPONIBILIDADE
-     (substitua generateSlots por chamada de API real)
+     DISPONIBILIDADE VIA API
+     Usa InBarberAPI.getBarberAvailability(barberId, date, durationMin)
+     que retorna { available: string[], occupied: string[] }.
+     Para "qualquer barbeiro" (id === 'qualquer') omite o barberId —
+     o back-end retorna a interseção de todos os slots livres.
   ───────────────────────────────────── */
-  function generateSlots(dateStr, barber) {
-    const seed = dateStr.replace(/-/g, '') + (barber ? barber.id : 'any');
-    let h = 0;
-    for (let i = 0; i < seed.length; i++) h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
-    const rng = () => { h = Math.imul(h ^ (h >>> 16), 0x45d9f3b); h ^= h >>> 16; return ((h >>> 0) / 4294967296); };
 
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const dow = new Date(y, m - 1, d).getDay();
-    if (dow === 0) return []; // Domingo fechado
+  // Cache de slots por data para evitar chamadas redundantes durante
+  // a navegação do calendário no mesmo mês.
+  const slotsCache = {};
 
-    const start = dow === 6 ? 8 : 9;
-    const end   = dow === 6 ? 17 : 20;
-    const slots = [];
-    for (let hour = start; hour < end; hour++) {
-      for (const min of [0, 30]) {
-        if (hour * 60 + min >= end * 60) break;
-        if (rng() < 0.75) slots.push(`${pad(hour)}:${pad(min)}`);
-      }
-    }
+  function cacheKey(dateStr) {
+    const bid = (barber && barber.id !== 'qualquer') ? barber.id : 'any';
+    return `${dateStr}__${bid}__${totalMins}`;
+  }
+
+  async function fetchSlots(dateStr) {
+    const key = cacheKey(dateStr);
+    if (slotsCache[key]) return slotsCache[key];
+
+    const barberId = (barber && barber.id !== 'qualquer') ? barber.id : undefined;
+    const data = await InBarberAPI.getBarberAvailability(barberId, dateStr, totalMins || undefined);
+    const slots = (data && Array.isArray(data.available)) ? data.available : [];
+    slotsCache[key] = slots;
     return slots;
   }
 
-  function getAvailableDays(year, month, barber) {
-    const available = new Set();
+  // Verifica se um dia tem ao menos um slot disponível (para o calendário).
+  // Retorna Promise<boolean>.
+  async function dayHasSlots(dateStr) {
+    try {
+      const slots = await fetchSlots(dateStr);
+      return slots.length > 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Carrega os dias disponíveis do mês inteiro em paralelo.
+  // Retorna Promise<Set<number>> com os dias (1-31) que têm slots.
+  async function loadAvailableDays(year, month) {
     const daysInMonth = new Date(year, month, 0).getDate();
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today_ = new Date(); today_.setHours(0, 0, 0, 0);
+    const candidates = [];
 
     for (let d = 1; d <= daysInMonth; d++) {
-      const date = new Date(year, month - 1, d); date.setHours(0,0,0,0);
-      if (date < today) continue;
-      if (generateSlots(`${year}-${pad(month)}-${pad(d)}`, barber).length > 0) available.add(d);
+      const date = new Date(year, month - 1, d); date.setHours(0, 0, 0, 0);
+      if (date < today_) continue;
+      candidates.push(d);
     }
+
+    const results = await Promise.all(
+      candidates.map(d => dayHasSlots(`${year}-${pad(month)}-${pad(d)}`))
+    );
+
+    const available = new Set();
+    candidates.forEach((d, i) => { if (results[i]) available.add(d); });
     return available;
   }
 
@@ -109,7 +131,7 @@
   /* ─────────────────────────────────────
      DOM READY
   ───────────────────────────────────── */
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', async function () {
 
     /* Elementos */
     const calGrid      = document.getElementById('cal-grid');
@@ -179,7 +201,8 @@
     /* ──────────────────────────────────
        CALENDÁRIO
     ────────────────────────────────── */
-    let availableDays = getAvailableDays(viewYear, viewMonth, barber);
+    // availableDays é preenchido de forma assíncrona por refreshCalendar()
+    let availableDays = new Set();
 
     function renderCalendar() {
       if (!calGrid) return;
@@ -251,7 +274,7 @@
 
       if (slotsDateLbl) slotsDateLbl.textContent = dayLabel;
 
-      renderSlots(dateStr);
+      renderSlots(dateStr); // async — não precisa de await aqui (loading já gerido internamente)
       updateBar();
 
       setTimeout(() => {
@@ -261,9 +284,8 @@
     }
 
     /* ── Próxima data disponível ── */
-    function jumpToNextAvailable(fromDate) {
+    async function jumpToNextAvailable(fromDate) {
       let searchDate = fromDate ? new Date(fromDate) : new Date(today);
-      // Se tem data selecionada, busca a PRÓXIMA depois dela
       if (selectedDateStr && fromDate === undefined) {
         const [sy, sm, sd] = selectedDateStr.split('-').map(Number);
         searchDate = new Date(sy, sm - 1, sd);
@@ -276,86 +298,88 @@
         const m = searchDate.getMonth() + 1;
         const d = searchDate.getDate();
         const str = `${y}-${pad(m)}-${pad(d)}`;
-        if (generateSlots(str, barber).length > 0) {
-          if (y !== viewYear || m !== viewMonth) {
-            viewYear  = y; viewMonth = m;
-            availableDays = getAvailableDays(viewYear, viewMonth, barber);
-            renderCalendar();
+        try {
+          const has = await dayHasSlots(str);
+          if (has) {
+            if (y !== viewYear || m !== viewMonth) {
+              viewYear = y; viewMonth = m;
+              availableDays = await loadAvailableDays(viewYear, viewMonth).catch(() => new Set());
+              renderCalendar();
+            }
+            selectDate(str, d, new Date(y, m - 1, d));
+            return;
           }
-          selectDate(str, d, new Date(y, m - 1, d));
-          return;
-        }
+        } catch (_) { /* pula o dia em caso de erro de rede */ }
       }
     }
 
     /* ──────────────────────────────────
        SLOTS — com grupos de período
     ────────────────────────────────── */
-    function renderSlots(dateStr) {
+    async function renderSlots(dateStr) {
       if (!slotsGrid) return;
       slotsGrid.style.display   = 'none';
       if (slotsEmpty)   slotsEmpty.style.display   = 'none';
       if (slotsLoading) slotsLoading.style.display = '';
       if (slotsCount)   slotsCount.textContent = '';
 
-      setTimeout(() => {
-        const rawSlots = generateSlots(dateStr, barber);
-        if (slotsLoading) slotsLoading.style.display = 'none';
+      let rawSlots = [];
+      try {
+        rawSlots = await fetchSlots(dateStr);
+      } catch (_) {
+        rawSlots = [];
+      }
 
-        if (rawSlots.length === 0) {
-          if (slotsEmpty) slotsEmpty.style.display = '';
-          slotsGrid.style.display = 'none';
-          return;
-        }
+      if (slotsLoading) slotsLoading.style.display = 'none';
 
-        if (slotsCount) slotsCount.textContent = `${rawSlots.length} disponíveis`;
+      if (rawSlots.length === 0) {
+        if (slotsEmpty) slotsEmpty.style.display = '';
+        slotsGrid.style.display = 'none';
+        return;
+      }
 
-        slotsGrid.style.display = '';
-        slotsGrid.innerHTML = '';
+      if (slotsCount) slotsCount.textContent = `${rawSlots.length} disponíveis`;
 
-        const groups = [
-          { name: 'Manhã',  slots: rawSlots.filter(t => parseInt(t) < 12) },
-          { name: 'Tarde',  slots: rawSlots.filter(t => { const h = parseInt(t); return h >= 12 && h < 18; }) },
-          { name: 'Noite',  slots: rawSlots.filter(t => parseInt(t) >= 18) },
-        ].filter(g => g.slots.length > 0);
+      slotsGrid.style.display = '';
+      slotsGrid.innerHTML = '';
 
-        groups.forEach((group, gi) => {
-          const groupEl = document.createElement('div');
-          groupEl.className = 'slot-period-group';
-          groupEl.style.animationDelay = `${gi * 0.07}s`;
+      const groups = [
+        { name: 'Manhã',  slots: rawSlots.filter(t => parseInt(t) < 12) },
+        { name: 'Tarde',  slots: rawSlots.filter(t => { const h = parseInt(t); return h >= 12 && h < 18; }) },
+        { name: 'Noite',  slots: rawSlots.filter(t => parseInt(t) >= 18) },
+      ].filter(g => g.slots.length > 0);
 
-          // Cabeçalho do grupo
-          const header = document.createElement('div');
-          header.className = 'slot-period-header';
-          header.setAttribute('aria-hidden', 'true');
-          header.innerHTML = `
-            <div class="slot-period-icon" style="color:var(--gold)">${PERIOD_ICONS[group.name] || ''}</div>
-            <span class="slot-period-name">${group.name}</span>
-            <span class="slot-period-range">${PERIOD_RANGES[group.name] || ''}</span>`;
-          groupEl.appendChild(header);
+      groups.forEach((group, gi) => {
+        const groupEl = document.createElement('div');
+        groupEl.className = 'slot-period-group';
+        groupEl.style.animationDelay = `${gi * 0.07}s`;
 
-          // Grid de botões
-          const grid = document.createElement('div');
-          grid.className = 'slot-btns-grid';
+        const header = document.createElement('div');
+        header.className = 'slot-period-header';
+        header.setAttribute('aria-hidden', 'true');
+        header.innerHTML = `
+          <div class="slot-period-icon" style="color:var(--gold)">${PERIOD_ICONS[group.name] || ''}</div>
+          <span class="slot-period-name">${group.name}</span>
+          <span class="slot-period-range">${PERIOD_RANGES[group.name] || ''}</span>`;
+        groupEl.appendChild(header);
 
-          group.slots.forEach((time, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'slot-btn';
-            btn.setAttribute('aria-label', `${time} — disponível`);
-            btn.style.animationDelay = `${(gi * 0.07) + (i * 0.02)}s`;
-            if (time === selectedTime) btn.classList.add('selected');
+        const grid = document.createElement('div');
+        grid.className = 'slot-btns-grid';
 
-            // Horário em serif
-            btn.innerHTML = `<span>${time}</span><span class="slot-avail-dot" aria-hidden="true"></span>`;
-            btn.addEventListener('click', () => selectTime(time, btn, grid));
-            grid.appendChild(btn);
-          });
-
-          groupEl.appendChild(grid);
-          slotsGrid.appendChild(groupEl);
+        group.slots.forEach((time, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'slot-btn';
+          btn.setAttribute('aria-label', `${time} — disponível`);
+          btn.style.animationDelay = `${(gi * 0.07) + (i * 0.02)}s`;
+          if (time === selectedTime) btn.classList.add('selected');
+          btn.innerHTML = `<span>${time}</span><span class="slot-avail-dot" aria-hidden="true"></span>`;
+          btn.addEventListener('click', () => selectTime(time, btn, grid));
+          grid.appendChild(btn);
         });
 
-      }, 300);
+        groupEl.appendChild(grid);
+        slotsGrid.appendChild(groupEl);
+      });
     }
 
     /* ── Seleciona horário ── */
@@ -410,27 +434,181 @@
       if (summaryCta)    { summaryCta.disabled = false; summaryCta.setAttribute('aria-disabled','false'); }
     }
 
-    /* ── CTA confirmar ── */
+    /* ── Modal de dados do cliente ── */
+    const clientOverlay  = document.getElementById('client-modal-overlay');
+    const clientNameInp  = document.getElementById('client-name-input');
+    const clientPhoneInp = document.getElementById('client-phone-input');
+    const clientCta      = document.getElementById('client-modal-cta');
+    const clientCancel   = document.getElementById('client-modal-cancel');
+    const clientError    = document.getElementById('client-modal-error');
+    const clientSpinner  = document.getElementById('client-modal-spinner');
+
+    function openClientModal() {
+      // Pré-preenche se já tiver dados salvos (ex: login)
+      clientNameInp.value  = localStorage.getItem('client_name')  || '';
+      clientPhoneInp.value = localStorage.getItem('client_phone') || '';
+      clientError.textContent = '';
+      clientNameInp.classList.remove('error');
+      clientPhoneInp.classList.remove('error');
+      validateClientForm();
+      clientOverlay.setAttribute('aria-hidden', 'false');
+      clientOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      // Foca no primeiro campo vazio
+      setTimeout(() => {
+        (clientNameInp.value ? clientPhoneInp : clientNameInp).focus();
+      }, 320);
+    }
+
+    function closeClientModal() {
+      clientOverlay.classList.remove('open');
+      clientOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    function validateClientForm() {
+      const nameOk  = clientNameInp.value.trim().length >= 2;
+      const phoneOk = clientPhoneInp.value.replace(/\D/g, '').length >= 10;
+      clientCta.disabled = !(nameOk && phoneOk);
+      clientCta.setAttribute('aria-disabled', clientCta.disabled ? 'true' : 'false');
+    }
+
+    function phoneFormat(val) {
+      const n = val.replace(/\D/g, '').slice(0, 11);
+      if (n.length <= 2)  return n;
+      if (n.length <= 6)  return `(${n.slice(0,2)}) ${n.slice(2)}`;
+      if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+      return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+    }
+
+    if (clientNameInp)  clientNameInp.addEventListener('input',  validateClientForm);
+    if (clientPhoneInp) {
+      clientPhoneInp.addEventListener('input', () => {
+        clientPhoneInp.value = phoneFormat(clientPhoneInp.value);
+        validateClientForm();
+      });
+    }
+    if (clientCancel) clientCancel.addEventListener('click', closeClientModal);
+    if (clientOverlay) {
+      clientOverlay.addEventListener('click', e => {
+        if (e.target === clientOverlay) closeClientModal();
+      });
+    }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && clientOverlay && clientOverlay.classList.contains('open')) {
+        closeClientModal();
+      }
+    });
+
+    /* ── Monta payload e cria agendamento ── */
+    async function submitAppointment(clientName, clientPhone) {
+      const svcs = services.slice().sort((a, b) => parseInt(b.dur, 10) - parseInt(a.dur, 10));
+      const primarySvc = svcs[0];
+      const extraNames = svcs.slice(1).map(s => s.name).join(', ');
+      const barberId   = (barber && barber.id !== 'qualquer') ? barber.id : null;
+
+      const payload = {
+        client:    clientName,
+        phone:     clientPhone,
+        date:      selectedDateStr,
+        time:      selectedTime,
+        serviceId: primarySvc ? primarySvc.id : '',
+        barberId:  barberId || '',
+        notes:     extraNames ? `Serviços adicionais: ${extraNames}` : '',
+      };
+
+      const appt = await InBarberAPI.createAppointment(payload);
+
+      // Salva dados do cliente para próximas visitas (evita redigitar)
+      try {
+        localStorage.setItem('client_name',  clientName);
+        localStorage.setItem('client_phone', clientPhone);
+        sessionStorage.setItem('booking_result', JSON.stringify({
+          id:   appt.id,
+          date: selectedDateStr,
+          time: selectedTime,
+        }));
+      } catch(_) {}
+
+      window.location.href = 'confirmacao.html';
+    }
+
+    /* ── CTA do modal: finalizar agendamento ── */
+    if (clientCta) {
+      clientCta.addEventListener('click', async () => {
+        const clientName  = clientNameInp.value.trim();
+        const clientPhone = clientPhoneInp.value.trim();
+
+        // Validação visual
+        let hasErr = false;
+        if (clientName.length < 2) {
+          clientNameInp.classList.add('error');
+          hasErr = true;
+        } else {
+          clientNameInp.classList.remove('error');
+        }
+        if (clientPhoneInp.value.replace(/\D/g, '').length < 10) {
+          clientPhoneInp.classList.add('error');
+          hasErr = true;
+        } else {
+          clientPhoneInp.classList.remove('error');
+        }
+        if (hasErr) {
+          clientError.textContent = 'Preencha nome e telefone para continuar.';
+          return;
+        }
+
+        clientError.textContent = '';
+        clientCta.classList.add('loading');
+        clientCta.disabled = true;
+
+        try {
+          await submitAppointment(clientName, clientPhone);
+        } catch (err) {
+          clientCta.classList.remove('loading');
+          clientCta.disabled = false;
+          clientCta.setAttribute('aria-disabled', 'false');
+          clientError.textContent = err?.message || 'Erro ao criar agendamento. Tente novamente.';
+        }
+      });
+    }
+
+    /* ── CTA confirmar — verifica dados e abre modal se necessário ── */
     if (summaryCta) {
       summaryCta.addEventListener('click', () => {
         if (!selectedDateStr || !selectedTime || summaryCta.disabled) return;
-        try {
-          sessionStorage.setItem('booking_datetime', JSON.stringify({ date: selectedDateStr, time: selectedTime }));
-        } catch(_) {}
-        window.location.href = 'confirmacao.html';
+
+        const savedName  = localStorage.getItem('client_name')  || '';
+        const savedPhone = localStorage.getItem('client_phone') || '';
+        const phoneDigits = savedPhone.replace(/\D/g, '');
+
+        // Se já tem nome e telefone válidos (ex: veio do login), cria direto
+        if (savedName.trim().length >= 2 && phoneDigits.length >= 10) {
+          summaryCta.disabled = true;
+          summaryCta.setAttribute('aria-disabled', 'true');
+          submitAppointment(savedName.trim(), savedPhone.trim())
+            .catch(err => {
+              summaryCta.disabled = false;
+              summaryCta.setAttribute('aria-disabled', 'false');
+              clientError && (clientError.textContent = '');
+              alert(err?.message || 'Erro ao criar agendamento. Tente novamente.');
+            });
+          return;
+        }
+
+        // Não tem dados → abre modal
+        openClientModal();
       });
     }
 
     /* ── Eventos navegação ── */
-    if (calPrev) calPrev.addEventListener('click', () => {
+    if (calPrev) calPrev.addEventListener('click', async () => {
       viewMonth--; if (viewMonth < 1) { viewMonth = 12; viewYear--; }
-      availableDays = getAvailableDays(viewYear, viewMonth, barber);
-      renderCalendar();
+      await refreshCalendar();
     });
-    if (calNext) calNext.addEventListener('click', () => {
+    if (calNext) calNext.addEventListener('click', async () => {
       viewMonth++; if (viewMonth > 12) { viewMonth = 1; viewYear++; }
-      availableDays = getAvailableDays(viewYear, viewMonth, barber);
-      renderCalendar();
+      await refreshCalendar();
     });
 
     /* ── Botão "próximo disponível" no calendário ── */
@@ -448,11 +626,20 @@
     if (backBtn) backBtn.addEventListener('click', () => window.location.href = 'barbeiro.html');
 
     /* ── Init ── */
-    renderCalendar();
+    // Carrega disponibilidade do mês e (re)renderiza o calendário
+    async function refreshCalendar() {
+      if (calPrev) calPrev.disabled = true;
+      if (calNext) calNext.disabled = true;
+      availableDays = await loadAvailableDays(viewYear, viewMonth).catch(() => new Set());
+      renderCalendar();
+      if (calNext) calNext.disabled = false;
+    }
+
+    await refreshCalendar();
 
     // Auto-seleciona hoje ou amanhã
     const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
-    if (generateSlots(todayStr, barber).length > 0) {
+    if (await dayHasSlots(todayStr).catch(() => false)) {
       selectDate(todayStr, today.getDate(), today);
     } else {
       jumpToNextAvailable(new Date(today));

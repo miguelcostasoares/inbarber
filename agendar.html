@@ -171,7 +171,45 @@
     </button>
   </div>
 </div>
+<!-- ══ MODAL: DADOS DO CLIENTE ══ -->
+<div class="client-modal-overlay" id="client-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="client-modal-title">
+  <div class="client-modal" id="client-modal">
 
+    <div class="client-modal-handle" aria-hidden="true"></div>
+
+    <div class="client-modal-hd">
+      <p class="client-modal-eyebrow">Quase lá</p>
+      <h2 class="client-modal-title" id="client-modal-title">Seus dados</h2>
+      <p class="client-modal-sub">Para finalizar o agendamento precisamos do seu nome e telefone.</p>
+    </div>
+
+    <div class="client-modal-body">
+      <div class="client-field">
+        <label class="client-label" for="client-name-input">Nome completo</label>
+        <input class="client-input" id="client-name-input" type="text"
+               placeholder="Ex: João Silva" autocomplete="name" inputmode="text" maxlength="80"/>
+      </div>
+      <div class="client-field">
+        <label class="client-label" for="client-phone-input">Telefone / WhatsApp</label>
+        <input class="client-input" id="client-phone-input" type="tel"
+               placeholder="(00) 00000-0000" autocomplete="tel" inputmode="tel" maxlength="20"/>
+      </div>
+      <p class="client-modal-error" id="client-modal-error" aria-live="polite"></p>
+    </div>
+
+    <div class="client-modal-footer">
+      <button class="client-modal-cta" id="client-modal-cta" disabled aria-disabled="true">
+        <span id="client-modal-cta-label">Confirmar dados</span>
+        <span class="client-modal-arrow">→</span>
+        <span class="client-modal-spinner" id="client-modal-spinner" aria-hidden="true"></span>
+      </button>
+      <button class="client-modal-cancel" id="client-modal-cancel">Cancelar</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
 <script src="/js/agendar.js" defer></script>
 <script src="/js/profile-btn.js"></script>
 </body>

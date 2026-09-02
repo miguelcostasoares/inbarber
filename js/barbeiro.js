@@ -4,72 +4,17 @@
   /* ════════════════════════════════════════
      DADOS
   ════════════════════════════════════════ */
-  const BARBERS = {
-    daniel: {
-      name: 'Daniel', initial: 'D',
-      /* photo: '/img/barbeiros/daniel.jpg', */
-      rating: 5.0, ratingCount: 51,
-      cortes: 390, clientes: 194, anos: 4,
-      role: 'Sênior · 4 anos',
-      langs: ['Inglês', 'Espanhol', 'Francês', 'Português'],
-      bio: 'Especialista em cortes clássicos e modernos. Formado pela Academia Nacional de Barbeiros, com passagem por barbearias em Lisboa e Porto. Atenção total ao detalhe e ao que o cliente quer.',
-      portfolio: [
-        { label: 'Degradê fechado' }, { label: 'Corte + Barba' }, { label: 'Corte Social' },
-        { label: 'Fade com risco'  }, { label: 'Hot Towel Shave'}, { label: 'Barba clássica' },
-      ],
-      ratingDist: { 5: 44, 4: 5, 3: 2, 2: 0, 1: 0 },
-      reviews: [
-        { init: 'C', name: 'Carlos F',    date: 'qui., 25 jun. 2026', stars: 5, text: '' },
-        { init: 'S', name: 'Stéphane L', date: 'qua., 24 jun. 2026', stars: 5, text: 'Fui cortado pelo Daniel e fiquei muito satisfeito. Desde o primeiro momento, o acolhimento foi excelente: simpático, atento e com muito bom ouvido para o que eu queria.' },
-        { init: 'R', name: 'Rui I',       date: 'sáb., 20 jun. 2026', stars: 5, text: '' },
-        { init: 'P', name: 'Paulo C',     date: 'sex., 19 jun. 2026', stars: 5, text: 'Casa muito acolhedora e com profissionais a trabalhar lindamente, recomendo vivamente a experiência.' },
-        { init: 'M', name: 'Miguel A',    date: 'ter., 17 jun. 2026', stars: 4, text: 'Muito bom serviço, só demorou um bocado mais que o esperado.' },
-      ],
-    },
-    rafael: {
-      name: 'Rafael', initial: 'R',
-      rating: 4.9, ratingCount: 38,
-      cortes: 520, clientes: 280, anos: 6,
-      role: 'Sênior · 6 anos',
-      langs: ['Português', 'Inglês'],
-      bio: 'Mestre do fade e especialista em cortes texturizados. Seis anos de experiência em barbearias premium, com foco em atendimento personalizado e técnicas contemporâneas.',
-      portfolio: [
-        { label: 'Fade alto'  }, { label: 'Texturizado'    }, { label: 'Corte + Barba'  },
-        { label: 'Drop fade'  }, { label: 'Risco duplo'    }, { label: 'Barba desenhada' },
-      ],
-      ratingDist: { 5: 32, 4: 5, 3: 1, 2: 0, 1: 0 },
-      reviews: [
-        { init: 'A', name: 'André M',  date: 'sex., 26 jun. 2026', stars: 5, text: 'Rafael tem mãos de artista. Fade perfeito, sem marcas, acabamento impecável. Já é o meu barbeiro fixo.' },
-        { init: 'L', name: 'Luís B',   date: 'ter., 23 jun. 2026', stars: 5, text: '' },
-        { init: 'J', name: 'João F',   date: 'dom., 21 jun. 2026', stars: 5, text: 'Excelente serviço, atendimento top e resultado incrível!' },
-        { init: 'T', name: 'Tomás N',  date: 'qui., 18 jun. 2026', stars: 4, text: 'Muito bom, mas o espaço estava cheio nesse dia.' },
-      ],
-    },
-    marcos: {
-      name: 'Marcos', initial: 'M',
-      rating: 4.8, ratingCount: 22,
-      cortes: 210, clientes: 130, anos: 3,
-      role: 'Pleno · 3 anos',
-      langs: ['Português', 'Espanhol'],
-      bio: 'Dedicado e criterioso em cada detalhe. Três anos de experiência com foco em cortes sociais e barba clássica. Sempre com boa conversa e ambiente descontraído.',
-      portfolio: [
-        { label: 'Corte Social'     }, { label: 'Barba clássica' }, { label: 'Sobrancelha'     },
-        { label: 'Corte texturizado'}, { label: 'Navalha reta'   }, { label: 'Pigmentação'     },
-      ],
-      ratingDist: { 5: 17, 4: 4, 3: 1, 2: 0, 1: 0 },
-      reviews: [
-        { init: 'T', name: 'Tiago R',   date: 'qui., 25 jun. 2026', stars: 5, text: 'Muito profissional e cuidadoso com os detalhes. Saí muito satisfeito.' },
-        { init: 'G', name: 'Gabriel S', date: 'seg., 22 jun. 2026', stars: 5, text: '' },
-        { init: 'N', name: 'Nuno P',    date: 'sáb., 14 jun. 2026', stars: 4, text: 'Bom trabalho, ainda a ganhar experiência mas nota-se dedicação.' },
-      ],
-    },
-    qualquer: {
-      name: 'Sem preferência', initial: '',
-      rating: null, ratingCount: null,
-      cortes: null, clientes: null, anos: null,
-      role: 'Primeiro disponível',
-      langs: [], bio: '', portfolio: [], ratingDist: {}, reviews: [],
-    },
+    // Barbeiros carregados da API (listBarbers). Preenchido no init().
+  // O objeto 'qualquer' é sintético — nunca vem do back-end.
+  let BARBERS_MAP = {};   // id → objeto barbeiro (API + campos extras de UI)
+
+  const BARBER_QUALQUER = {
+    id: 'qualquer',
+    name: 'Sem preferência', initial: '',
+    rating: null, ratingCount: null,
+    cortes: null, clientes: null, anos: null,
+    role: 'Primeiro disponível',
+    langs: [], bio: '', portfolio: [], ratingDist: {}, reviews: [],
   };
 
   /* ════════════════════════════════════════
@@ -115,11 +60,11 @@
     try {
       if (selectedId) {
         sessionStorage.setItem('barber_selected', selectedId);
-        // Formato lido pelo agendar.js
-        const b = BARBERS[selectedId];
+        const b = BARBERS_MAP[selectedId] || BARBER_QUALQUER;
         sessionStorage.setItem('selected_barber', JSON.stringify({
           id: selectedId,
-          name: b ? b.name : selectedId
+          name: b.name,
+          role: b.role || '',
         }));
       } else {
         sessionStorage.removeItem('barber_selected');
@@ -130,7 +75,7 @@
   function restore() {
     try {
       const id = sessionStorage.getItem('barber_selected');
-      if (id && BARBERS[id]) selectBarber(id, false);
+      if (id && (BARBERS_MAP[id] || id === 'qualquer')) selectBarber(id, false);
     } catch (_) {}
   }
 
@@ -144,9 +89,9 @@
     const card = document.querySelector(`.barber-card[data-id="${id}"]`);
     if (card) { card.classList.add('selected'); card.setAttribute('aria-pressed', 'true'); }
     selectedId = id;
-    const b = BARBERS[id];
-    document.getElementById('bar-name').textContent = b.name;
-    document.getElementById('bar-sub').textContent  = id === 'qualquer' ? 'Primeiro horário disponível' : b.role;
+    const b = id === 'qualquer' ? BARBER_QUALQUER : (BARBERS_MAP[id] || {});
+    document.getElementById('bar-name').textContent = b.name || id;
+    document.getElementById('bar-sub').textContent  = id === 'qualquer' ? 'Primeiro horário disponível' : (b.role || '');
     document.getElementById('summary-bar').classList.add('visible');
     if (openBarber) updateProfileSelectBtn();
     if (save) persist();
@@ -204,7 +149,7 @@
      ABRIR PERFIL
   ════════════════════════════════════════ */
   function openProfile(id) {
-    const b = BARBERS[id];
+    const b = id === 'qualquer' ? BARBER_QUALQUER : (BARBERS_MAP[id] || {});
     openBarber = id;
 
     /* Hero */
@@ -334,26 +279,152 @@
   ════════════════════════════════════════ */
   document.addEventListener('DOMContentLoaded', function () {
 
-    /* Cards */
-    document.querySelectorAll('.barber-card').forEach(card => {
-      const id = card.dataset.id;
-      card.addEventListener('click', e => {
-        if (e.target.closest('.avatar-wrap[data-id]') || e.target.closest('.view-profile-btn')) return;
+    /* ── helpers de render de card ── */
+    function initials(name) {
+      return (name || '').split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+    }
+
+    function renderBarberCard(b) {
+      const ini = initials(b.name);
+      const ratingStr = b.rating != null ? b.rating.toFixed(1).replace('.', ',') : '';
+
+      const li = document.createElement('li');
+      li.className = 'barber-card';
+      li.setAttribute('role', 'listitem');
+      li.setAttribute('tabindex', '0');
+      li.setAttribute('aria-pressed', 'false');
+      li.dataset.id = b.id;
+
+      li.innerHTML = `
+        <div class="barber-check" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none">
+            <polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="avatar-wrap" data-id="${b.id}" role="button"
+             aria-label="Ver perfil de ${b.name}" tabindex="0">
+          <div class="avatar-initials">${ini}</div>
+          ${ratingStr ? `
+          <div class="avatar-rating">
+            <svg viewBox="0 0 12 12">
+              <path d="M6 1l1.3 2.7L10 4.1 7.8 6.3l.5 3.1L6 8l-2.3 1.4.5-3.1L2 4.1l2.7-.4z"/>
+            </svg>${ratingStr}
+          </div>` : ''}
+        </div>
+        <p class="barber-name">${b.name}</p>
+        <p class="barber-role">${b.role || ''}</p>
+        <div class="barber-stats">
+          <span class="barber-stat">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+              <circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/>
+            </svg>${b.cortes != null ? b.cortes + ' cortes' : ''}
+          </span>
+          <span class="barber-stat">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2l3 2 3-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/>
+            </svg>${b.ratingCount != null ? b.ratingCount + ' av.' : ''}
+          </span>
+        </div>`;
+
+      return li;
+    }
+
+    function renderQualquerCard() {
+      const b = BARBER_QUALQUER;
+      const li = document.createElement('li');
+      li.className = 'barber-card barber-card--any';
+      li.setAttribute('role', 'listitem');
+      li.setAttribute('tabindex', '0');
+      li.setAttribute('aria-pressed', 'false');
+      li.dataset.id = 'qualquer';
+
+      li.innerHTML = `
+        <div class="barber-check" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none">
+            <polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="avatar-wrap avatar-wrap--static" aria-hidden="true">
+          <div class="avatar-initials avatar-initials--any">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="7" r="3"/>
+              <path d="M3 19c0-3.3 2.7-6 6-6"/>
+              <circle cx="16" cy="7" r="3" opacity=".5"/>
+              <path d="M13 19c0-3.3 2.7-6 6-6" opacity=".5"/>
+              <path d="M19 13l2 2-2 2" stroke-width="1.2"/>
+              <path d="M5 15h4" stroke-width="1.2" opacity=".5"/>
+            </svg>
+          </div>
+        </div>
+        <p class="barber-name barber-name--sm">${b.name}</p>
+        <p class="barber-role">${b.role}</p>
+        <div class="barber-stats">
+          <span class="barber-stat barber-stat--hint">qualquer horário</span>
+        </div>`;
+
+      return li;
+    }
+
+    function bindCard(li) {
+      const id = li.dataset.id;
+      li.addEventListener('click', e => {
+        if (e.target.closest('.avatar-wrap[data-id]')) return;
         if (id) selectBarber(id);
       });
-      card.addEventListener('keydown', e => {
+      li.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (id) selectBarber(id); }
       });
-    });
 
-    /* Avatar — abre sheet */
-    document.querySelectorAll('.avatar-wrap[data-id]').forEach(el => {
-      const id = el.dataset.id; if (!id) return;
-      el.addEventListener('click', e => { e.stopPropagation(); openProfile(id); });
-      el.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openProfile(id); }
+      const avatarWrap = li.querySelector('.avatar-wrap[data-id]');
+      if (avatarWrap) {
+        avatarWrap.addEventListener('click', e => { e.stopPropagation(); openProfile(id); });
+        avatarWrap.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openProfile(id); }
+        });
+      }
+    }
+
+    function renderBarbers(barbers) {
+      const grid = document.getElementById('barbers-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      barbers.forEach(b => {
+        // Normaliza campos da API para o shape interno
+        BARBERS_MAP[b.id] = {
+          id: b.id,
+          name: b.nome || b.name || '',
+          initial: (b.nome || b.name || ' ')[0].toUpperCase(),
+          rating: b.rating != null ? parseFloat(b.rating) : null,
+          ratingCount: b.ratingCount || b.rating_count || null,
+          cortes: b.cortes || b.agendamentos_concluidos || null,
+          clientes: b.clientes || null,
+          anos: b.anos || null,
+          role: b.role || b.cargo || '',
+          photo: b.photo || b.foto || null,
+          langs: b.langs || [],
+          bio: b.bio || '',
+          portfolio: b.portfolio || [],
+          ratingDist: b.ratingDist || b.rating_dist || {},
+          reviews: b.reviews || [],
+        };
+
+        const li = renderBarberCard(BARBERS_MAP[b.id]);
+        bindCard(li);
+        grid.appendChild(li);
       });
-    });
+
+      // Card "Sem preferência" — sempre por último, sintético
+      const anyLi = renderQualquerCard();
+      grid.appendChild(anyLi);
+      // Não tem avatar clicável — só seleciona
+      anyLi.addEventListener('click', () => selectBarber('qualquer'));
+      anyLi.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectBarber('qualquer'); }
+      });
+    }
 
     /* Tabs */
     document.querySelectorAll('.tab-btn').forEach(btn =>
@@ -396,7 +467,26 @@
     /* Voltar */
     document.getElementById('back-btn').addEventListener('click', () => { persist(); window.location.href = 'servicos.html'; });
 
-    restore();
+    /* ── Carrega barbeiros da API e inicializa ── */
+    InBarberAPI.listBarbers()
+      .then(barbers => {
+        renderBarbers(barbers);
+        restore();
+      })
+      .catch(() => {
+        // Fallback: mantém os cards estáticos já no HTML
+        document.querySelectorAll('.barber-card').forEach(card => {
+          const id = card.dataset.id;
+          if (!id) return;
+          if (id !== 'qualquer') {
+            BARBERS_MAP[id] = { id, name: id, role: '', rating: null, ratingCount: null,
+              cortes: null, clientes: null, anos: null, photo: null,
+              langs: [], bio: '', portfolio: [], ratingDist: {}, reviews: [] };
+          }
+          bindCard(card);
+        });
+        restore();
+      });
   });
 
 })();

@@ -1012,7 +1012,7 @@
     } else {
       card.classList.add('selected');
       card.setAttribute('aria-pressed', 'true');
-      selected.set(id, { name, price: parseInt(price, 10), dur });
+      selected.set(id, { id, name, price: parseInt(price, 10), dur });
       addDropItem(id, name, parseInt(price, 10), dur);
       updateBadge(selected.size);
       updateSummary();
@@ -1106,12 +1106,88 @@
     if (e.key === 'Escape' && dropdownOpen) closeDropdown();
   });
 
-  /* ── Cards de serviço ──
-     Já são <button>: Enter e Espaço vêm do próprio elemento, o
-     keydown manual deixou de ser preciso. */
-  $$('.svc-card').forEach(card => {
-    card.addEventListener('click', () => toggleCard(card));
-  });
+  function restoreFromSession() {
+    try {
+      const raw = sessionStorage.getItem('svc_selected');
+      if (!raw) return;
+      const entries = JSON.parse(raw);
+      if (!entries || !entries.length) return;
+
+      entries.forEach(([id, data]) => {
+        if (selected.has(id)) return;
+
+        const card = document.querySelector(`[data-id="${id}"]`);
+        if (!card) return;
+
+        data.name = cardLabel(card);
+        selected.set(id, data);
+        card.classList.add('selected');
+        card.setAttribute('aria-pressed', 'true');
+
+        addDropItem(id, data.name, data.price, data.dur);
+      });
+
+      if (selected.size > 0) {
+        updateBadge(selected.size);
+        updateSummary();
+        updateTotals();
+        showBar();
+      }
+    } catch (_) {}
+  }
+
+  function bindSvcCards() {
+    $$('.svc-card').forEach(card => {
+      card.addEventListener('click', () => toggleCard(card));
+    });
+    restoreFromSession();
+  }
+
+    /* ── Carrega serviços da API e monta os cards ── */
+  async function loadAndRenderServices() {
+    const list = $('#svc-list');
+    if (!list) return;
+
+    let services;
+    try {
+      services = await InBarberAPI.listServices();
+    } catch (_) {
+      list.innerHTML = '<li class="svc-load-error">Não foi possível carregar os serviços. Tente novamente.</li>';
+      return;
+    }
+
+    list.innerHTML = '';
+
+    services.forEach(svc => {
+      const durStr = svc.duration ? `${svc.duration} min` : '—';
+      const priceInt = Math.round(svc.price);
+
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <button type="button" class="svc-card"
+                data-id="${svc.id}"
+                data-name="${svc.name.replace(/"/g, '&quot;')}"
+                data-price="${priceInt}"
+                data-dur="${durStr}"
+                aria-pressed="false">
+          <span class="svc-card-inner">
+            <span class="svc-check" aria-hidden="true">
+              <svg class="svc-check-icon" viewBox="0 0 16 16" fill="none"><polyline points="3,8 6.5,11.5 13,4.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="svc-meta">
+              <span class="svc-name">${svc.name}</span>
+            </span>
+            <span class="svc-foot">
+              <span class="svc-price">R$&nbsp;${priceInt.toLocaleString('pt-BR')}</span>
+              <span class="svc-dur">${durStr}</span>
+            </span>
+          </span>
+        </button>`;
+      list.appendChild(li);
+    });
+
+    bindSvcCards();
+  }
 
   /* ── Trocar de idioma redesenha o que já está no carrinho ── */
   document.addEventListener('i18n:change', () => {
@@ -1614,36 +1690,7 @@
       } catch (_) {}
     }
 
-    /* ── Restaura estado salvo (vindo da página de serviços) ── */
-    function restoreFromSession() {
-      try {
-        const raw = sessionStorage.getItem(SVC_KEY);
-        if (!raw) return;
-        const entries = JSON.parse(raw);
-        if (!entries || !entries.length) return;
 
-        entries.forEach(([id, data]) => {
-          if (selected.has(id)) return;
-
-          const card = document.querySelector(`[data-id="${id}"]`);
-          if (!card) return;
-
-          data.name = cardLabel(card);
-          selected.set(id, data);
-          card.classList.add('selected');
-          card.setAttribute('aria-pressed', 'true');
-
-          addDropItem(id, data.name, data.price, data.dur);
-        });
-
-        if (selected.size > 0) {
-          updateBadge(selected.size);
-          updateSummary();
-          updateTotals();
-          showBar();
-        }
-      } catch (_) {}
-    }
 
     /* ── Botões de agendamento ──
        Antes, todos os CTAs eram href="#agendar" e o JS fazia
@@ -1658,9 +1705,82 @@
       el.addEventListener('click', persistSelected);
     });
 
-    restoreFromSession();
+    
   })();
+  loadAndRenderServices();
 
+  /* ════════════════════════════════════════
+     EQUIPA — carrega barbeiros do backend
+  ════════════════════════════════════════ */
+  (function loadAndRenderTeam() {
+    const list = document.getElementById('team-list');
+    if (!list) return;
+
+    function initials(name) {
+      return name.split(' ').slice(0, 2).map(w => w[0].toUpperCase()).join('');
+    }
+
+    function slugify(name) {
+      return name.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '');
+    }
+
+    InBarberAPI.listBarbers().then(function(barbers) {
+      list.innerHTML = '';
+
+      barbers.forEach(function(b) {
+        const slug    = b.id || slugify(b.name);
+        const ini     = initials(b.name);
+        const first   = b.name.split(' ')[0];
+        const hasPhoto = b.avatar && b.avatar.trim();
+        const avStyle  = hasPhoto ? `style="background-image:url('${b.avatar}')"` : '';
+        const avClass  = hasPhoto ? 'team-av team-av--photo' : 'team-av';
+
+        const li = document.createElement('li');
+        li.className = 'team-card';
+        li.dataset.barber = slug;
+        li.innerHTML = `
+          <button type="button" class="${avClass}" aria-label="Ver perfil de ${b.name}" ${avStyle}>
+            <span class="team-av-initials">${ini}</span>
+            <span class="team-av-hint" data-i18n="team.avHint">ver perfil</span>
+          </button>
+          <div class="team-body">
+            <h3 class="team-name">${b.name}</h3>
+          </div>
+          <a class="team-cta" href="servicos.html" data-book>
+            <span data-i18n="team.cta">Agendar com</span> ${first}
+          </a>`;
+        list.appendChild(li);
+
+        li.querySelector('.team-cta').addEventListener('click', function(e) {
+          e.preventDefault();
+          try {
+            sessionStorage.setItem('barber_selected', b.id);
+            sessionStorage.setItem('selected_barber', JSON.stringify({
+              id:   b.id,
+              name: b.name,
+              role: b.role || '',
+            }));
+          } catch (_) {}
+          window.location.href = 'servicos.html';
+        });
+      });
+
+      /* Rebinda os avatares ao profile sheet após renderização */
+      list.querySelectorAll('.team-av--photo, .team-av').forEach(function(av) {
+        av.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const card = av.closest('.team-card');
+          if (card && typeof openProfile === 'function') openProfile(card.dataset.barber);
+        });
+      });
+
+    }).catch(function() {
+      list.innerHTML = '<li class="team-load-error">Não foi possível carregar a equipa.</li>';
+    });
+  })();
   /* ════════════════════════════════════════
      PRÓXIMOS HORÁRIOS NO HERO
 

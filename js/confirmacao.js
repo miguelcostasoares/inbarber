@@ -110,16 +110,22 @@
   }
 
   /* ══ Lê dados do sessionStorage ══ */
-  let services = [];
-  let barber   = null;
-  let datetime = null;
+  let services      = [];
+  let barber        = null;
+  let bookingResult = null;  // { id, date, time } gravado pelo agendar.js
 
-  try { services  = JSON.parse(sessionStorage.getItem('svc_selected')   || '[]').map(([, d]) => d); } catch (_) {}
-  try { barber    = JSON.parse(sessionStorage.getItem('selected_barber') || 'null'); } catch (_) {}
-  try { datetime  = JSON.parse(sessionStorage.getItem('booking_datetime') || 'null'); } catch (_) {}
+  try { services      = JSON.parse(sessionStorage.getItem('svc_selected')    || '[]').map(([, d]) => d); } catch (_) {}
+  try { barber        = JSON.parse(sessionStorage.getItem('selected_barber') || 'null'); } catch (_) {}
+  try { bookingResult = JSON.parse(sessionStorage.getItem('booking_result')  || 'null'); } catch (_) {}
 
-  const totalPrice = services.reduce((s, sv) => s + (sv.price    || 0), 0);
-  const totalDur   = services.reduce((s, sv) => s + (sv.duration || 0), 0);
+  // 'dur' é o campo gravado pelo servicos.js (número inteiro de minutos)
+  const totalPrice = services.reduce((s, sv) => s + (sv.price || 0), 0);
+  const totalDur   = services.reduce((s, sv) => s + (parseInt(sv.dur, 10) || 0), 0);
+
+  // Compatibilidade: monta o shape 'datetime' que o resto do código já usa
+  const datetime = bookingResult
+    ? { date: bookingResult.date, time: bookingResult.time }
+    : null;
 
   /* ══ Renderiza conteúdo ══ */
   function render() {
@@ -151,7 +157,7 @@
 
     $('barber-name').textContent = barberName;
     $('barber-role').textContent = barber && barber.id !== 'qualquer'
-      ? (barber.specialty || 'Barbeiro') + (barber.experience ? ' · ' + barber.experience : '')
+      ? (barber.role || 'Barbeiro')
       : 'Qualquer profissional disponível';
 
     /* — Data & Hora — */
@@ -226,8 +232,9 @@
       <span>Confirmando…</span>
     `;
 
-    /* Simula chamada à API */
-    setTimeout(showSuccess, 1200);
+    // O agendamento já foi criado no banco pelo agendar.js (POST /api/appointments).
+    // Aqui só exibimos o sucesso — sem segunda chamada à API.
+    setTimeout(showSuccess, 800);
   });
 
   /* ══ Evento de calendário (.ics / Google Agenda) ══ */

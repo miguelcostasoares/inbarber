@@ -2227,6 +2227,17 @@ def atualizar_produto(produto_id):
             campos.append('i18n = %s')
             params.append(json.dumps(data['i18n'], ensure_ascii=False) if data['i18n'] else None)
 
+        if 'novo' in data:
+            campos.append('novo = %s')
+            params.append(int(bool(data['novo'])))
+
+        if 'img' in data:
+            img_val = _validar_img(data['img'])
+            if isinstance(img_val, tuple):
+                return img_val
+            campos.append('img = %s')
+            params.append(img_val)
+
         if not campos:
             return jsonify({'error': 'Nenhum campo para atualizar.'}), 400
 

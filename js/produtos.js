@@ -1,24 +1,427 @@
 /* ════════════════════════════════════════════════════════════════
-   InBarber — PRODUTOS · UI do catálogo
+   InBarber — PRODUTOS · Módulo unificado
 
-   Só trata de DOM. Todo o acesso a dados passa por
-   window.ProdutosData (js/produtos-data.js).
+   Reúne em um único arquivo o que antes estava dividido em três:
+     • produtos-data.js   → camada de dados (ProdutosData)
+     • produtos-landing.js → vitrine na landing (index.html)
+     • produtos.js        → UI do catálogo (produtos.html)
+
+   Carregado em dois contextos:
+     index.html   → executa apenas o bloco da vitrine
+     produtos.html → executa apenas o bloco do catálogo
+
+   Dependências externas mantidas:
+     window.I18N         (i18n.js)
+     window.InBarberAPI  (api.js — modo 'api')
+     window.CampoTelefone (telefone.js — apenas produtos.html)
+
+   MODO = 'mock' → tudo em localStorage (sem back-end)
+   MODO = 'api'  → delega em window.InBarberAPI (Flask/MySQL)
 ════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
+  /* ══════════════════════════════════════════════════════════════
+     BLOCO 1 — CAMADA DE DADOS (window.ProdutosData)
+     Antes: js/produtos-data.js
+  ══════════════════════════════════════════════════════════════ */
+
+  /* ─── 1. CHAVES DE SESSÃO ──────────────────────────────────── */
+  var K_CART = 'inbarber.carrinho_produtos';
+  var K_LAST = 'inbarber.ultima_reserva';
+
+    var CATEGORIAS = [
+    { id: 'todos',      i18n: 'prod.cat_all' },
+    { id: 'pomadas',    i18n: 'prod.cat_pomadas' },
+    { id: 'cabelo',     i18n: 'prod.cat_cabelo' },
+    { id: 'barba',      i18n: 'prod.cat_barba' },
+    { id: 'acessorios', i18n: 'prod.cat_acessorios' }
+  ];
+
+  /* ─── 2. HELPERS DE SESSÃO ──────────────────────────────────── */
+  function readJSON(store, key, fallback) {
+    try {
+      var raw = store.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (_) { return fallback; }
+  }
+
+  function writeJSON(store, key, value) {
+    try { store.setItem(key, JSON.stringify(value)); return true; }
+    catch (_) { return false; }
+  }
+
+  /* ─── 3. CAMADA API ─────────────────────────────────────────── */
+  var lang = function () {
+    return (window.I18N && window.I18N.lang) || 'pt';
+  };
+
+  function traduzir(p) {
+    var l    = lang();
+    var trad = (l !== 'pt' && p && p.i18n && p.i18n[l]) || null;
+    if (!trad) return p;
+    var copia = {};
+    for (var k in p) { if (Object.prototype.hasOwnProperty.call(p, k)) copia[k] = p[k]; }
+    copia.nome      = trad[0];
+    copia.descricao = trad[1];
+    return copia;
+  }
+
+  function traduzirLista(ps) {
+    return (ps || []).map(traduzir);
+  }
+
+  function API() {
+    if (!window.InBarberAPI) throw new Error('js/api.js não foi carregado nesta página.');
+    return window.InBarberAPI;
+  }
+
+  var impl = {
+    listar:           function ()      { return API().listProducts({ disponivel: true }).then(traduzirLista); },
+    listarTodos:      function ()      { return API().listProducts().then(traduzirLista); },
+    obter:            function (id)    { return API().getProduct(id).then(traduzir); },
+    atualizar:        function (id, d) { return API().updateProduct(id, d).then(traduzir); },
+    criar:            function (d)     { return API().createProduct(d).then(traduzir); },
+    criarReserva:     function (dados) { return API().createProductReservation(dados); },
+    listarReservas:   function (e)     { return API().listProductReservations(e ? { estado: e } : {}); },
+    obterReserva:     function (id)    { return API().getProductReservation(id); },
+    confirmarReserva: function (id)    { return API().confirmProductReservation(id); },
+    libertarReserva:  function (id)    { return API().releaseProductReservation(id); }
+  };
+
+  /* ─── 8. CARRINHO (sempre local — é estado de sessão) ──────── */
+  var carrinho = {
+    ler: function () {
+      var itens = readJSON(sessionStorage, K_CART, []);
+      return Array.isArray(itens) ? itens : [];
+    },
+    guardar: function (itens) {
+      writeJSON(sessionStorage, K_CART, itens);
+      document.dispatchEvent(new CustomEvent('carrinho:change', { detail: { itens: itens } }));
+      return itens;
+    },
+    quantidadeDe: function (produtoId) {
+      var it = carrinho.ler().filter(function (x) { return x.produtoId === produtoId; })[0];
+      return it ? it.quantidade : 0;
+    },
+    definir: function (produtoId, quantidade) {
+      var itens = carrinho.ler().filter(function (x) { return x.produtoId !== produtoId; });
+      if (quantidade > 0) itens.push({ produtoId: produtoId, quantidade: quantidade });
+      return carrinho.guardar(itens);
+    },
+    adicionar: function (produtoId, quantidade) {
+      return carrinho.definir(produtoId, carrinho.quantidadeDe(produtoId) + (quantidade || 1));
+    },
+    remover: function (produtoId) { return carrinho.definir(produtoId, 0); },
+    limpar:  function ()          { return carrinho.guardar([]); },
+    contar:  function () {
+      return carrinho.ler().reduce(function (s, i) { return s + i.quantidade; }, 0);
+    },
+    detalhar: function () {
+      return impl.listarTodos().then(function (produtos) {
+        var mapa = {};
+        produtos.forEach(function (p) { mapa[p.id] = p; });
+        var linhas = [];
+        carrinho.ler().forEach(function (i) {
+          var p = mapa[i.produtoId];
+          if (!p || !p.ativo) return;
+          var qtd = Math.min(i.quantidade, p.disponivel);
+          if (qtd <= 0) return;
+          linhas.push({
+            produtoId: p.id, nome: p.nome, img: p.img,
+            preco: p.precoFinal,
+            precoTabela: p.emPromocao ? p.preco : null,
+            emPromocao: p.emPromocao,
+            descontoPct: p.descontoPct,
+            categoria: p.categoria, disponivel: p.disponivel,
+            quantidade: qtd, subtotal: +(p.precoFinal * qtd).toFixed(2)
+          });
+        });
+        return linhas;
+      });
+    },
+    total: function () {
+      return carrinho.detalhar().then(function (linhas) {
+        return +linhas.reduce(function (s, l) { return s + l.subtotal; }, 0).toFixed(2);
+      });
+    }
+  };
+
+  /* ─── 9. ÚLTIMA RESERVA (ponte para confirmacao.html) ──────── */
+  var ultimaReserva = {
+    guardar: function (reserva) { writeJSON(sessionStorage, K_LAST, reserva); },
+    ler:     function ()        { return readJSON(sessionStorage, K_LAST, null); },
+    limpar:  function ()        { try { sessionStorage.removeItem(K_LAST); } catch (_) {} }
+  };
+
+  /* ─── 10. UTILITÁRIOS ───────────────────────────────────────── */
+  function fmtPreco(n) {
+    return 'R$ ' + Number(n || 0).toFixed(2).replace('.', ',');
+  }
+
+  var GLIFOS = {
+    pomadas:    '<path d="M9 3h6v3H9zM7.5 6h9l1 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 6.5 19.5v-9z"/><path d="M9.5 13h5"/>',
+    cabelo:     '<path d="M10 2.5h4l.8 3H9.2zM8.5 5.5h7l1 5v10a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 7.5 20.5v-10z"/><path d="M9.5 11.5h5"/>',
+    barba:      '<path d="M12 2.5c-3 3-4.5 5.5-4.5 9 0 4 2 8 4.5 10 2.5-2 4.5-6 4.5-10 0-3.5-1.5-6-4.5-9z"/><path d="M12 8v9"/>',
+    acessorios: '<path d="M4 8h16v3H4z"/><path d="M6 11v9M9 11v9M12 11v9M15 11v9M18 11v9"/>',
+    _:          '<rect x="4" y="7" width="16" height="14" rx="2"/><path d="M4 11h16M9 7V4h6v3"/>'
+  };
+
+  function placeholderHTML(categoria) {
+    return '<div class="prod-thumb-ph" aria-hidden="true"><svg viewBox="0 0 24 24">' +
+           (GLIFOS[categoria] || GLIFOS._) + '</svg></div>';
+  }
+
+  function nivelStock(produto) {
+    if (!produto.stock) return 'baixo';
+    var pct = produto.disponivel / produto.stock;
+    if (pct > 0.5)  return 'alto';
+    if (pct >= 0.1) return 'medio';
+    return 'baixo';
+  }
+
+  /* ─── 11. EXPORT window.ProdutosData ───────────────────────── */
+  var D = window.ProdutosData = {
+    categorias: function () { return CATEGORIAS.slice(); },
+
+    listar:           impl.listar,
+    listarTodos:      impl.listarTodos,
+    obter:            impl.obter,
+    atualizar:        impl.atualizar,
+    criar:            impl.criar,
+    listarDestaques:  function () {
+      return impl.listar().then(function (ps) {
+        return ps.filter(function (p) { return p.destaque; });
+      });
+    },
+
+    vitrine: function (n) {
+      n = n || 4;
+      return Promise.all([impl.listar(), impl.listarTodos()]).then(function (res) {
+        var disponiveis = res[0];
+        var todos       = res[1];
+
+        var destaques = disponiveis.filter(function (p) { return p.destaque; });
+        var resto     = disponiveis.filter(function (p) { return !p.destaque; });
+        var fila      = destaques.concat(resto);
+
+        fila.sort(function (a, b) {
+          if (a.emPromocao !== b.emPromocao) return a.emPromocao ? -1 : 1;
+          if (a.destaque   !== b.destaque)   return a.destaque   ? -1 : 1;
+          return b.descontoPct - a.descontoPct;
+        });
+
+        var escolhidos = fila.slice(0, n);
+        return {
+          hero: escolhidos[0] || null,
+          lado: escolhidos.slice(1),
+          total: todos.length
+        };
+      });
+    },
+
+    criarReserva:     impl.criarReserva,
+    listarReservas:   impl.listarReservas,
+    obterReserva:     impl.obterReserva,
+    confirmarReserva: impl.confirmarReserva,
+    libertarReserva:  impl.libertarReserva,
+
+    carrinho:      carrinho,
+    ultimaReserva: ultimaReserva,
+    fmtPreco:        fmtPreco,
+    nivelStock:     nivelStock,
+    placeholderHTML: placeholderHTML,
+
+    reset: function () {
+      try {
+        sessionStorage.removeItem(K_CART);
+        sessionStorage.removeItem(K_LAST);
+      } catch (_) {}
+    }
+  };
+
+  /* ══════════════════════════════════════════════════════════════
+     BLOCO 2 — VITRINE DA LANDING (index.html)
+     Antes: js/produtos-landing.js
+
+     Só executa quando os elementos #produtos e #shop-showcase
+     existem na página — exclusivo do index.html.
+  ══════════════════════════════════════════════════════════════ */
+  var secao  = document.getElementById('produtos');
+  var caixa  = document.getElementById('shop-showcase');
+
+  if (secao && caixa) {
+    var t = function (key, vars) { return window.I18N ? window.I18N.t(key, vars) : key; };
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function thumbLanding(p, classe) {
+      return p.img
+        ? '<img class="' + classe + '" src="' + esc(p.img) + '" alt="" loading="lazy" ' +
+          'decoding="async" data-ph="' + esc(p.categoria) + '">'
+        : D.placeholderHTML(p.categoria);
+    }
+
+    function precoLanding(p, classe) {
+      if (!p.emPromocao) {
+        return '<span class="shop-price ' + classe + '">' + esc(D.fmtPreco(p.preco)) + '</span>';
+      }
+      return '' +
+        '<span class="shop-price-was">' + esc(D.fmtPreco(p.preco)) + '</span>' +
+        '<span class="shop-price ' + classe + ' is-promo">' + esc(D.fmtPreco(p.precoFinal)) + '</span>';
+    }
+
+    function seloLanding(p) {
+      if (p.novo)                          return '<span class="shop-badge new">' + esc(t('prod.new')) + '</span>';
+      if (p.emPromocao)                    return '<span class="shop-badge promo">−' + p.descontoPct + '%</span>';
+      if (D.nivelStock(p) === 'baixo')     return '<span class="shop-badge low">' + esc(t('prod.low_stock')) + '</span>';
+      if (p.destaque)                      return '<span class="shop-badge">' + esc(t('prod.featured')) + '</span>';
+      return '';
+    }
+
+    function stockTxtLanding(p) {
+      return p.disponivel + ' ' + t(p.disponivel === 1 ? 'prod.available' : 'prod.available_pl');
+    }
+
+    function heroHTML(p) {
+      var poupa = p.emPromocao
+        ? '<span class="shop-save">' + esc(t('prod.save', { valor: D.fmtPreco(p.preco - p.precoFinal) })) + '</span>'
+        : '';
+
+      return '' +
+        '<article class="shop-hero">' +
+          '<a class="shop-hero-media" href="produtos.html?cat=' + esc(p.categoria) + '" tabindex="-1" aria-hidden="true">' +
+            thumbLanding(p, 'prod-thumb-img') + seloLanding(p) +
+          '</a>' +
+          '<div class="shop-hero-body">' +
+            '<p class="shop-cat">' + esc(t('prod.cat_' + p.categoria)) + '</p>' +
+            '<h3 class="shop-hero-name">' +
+              '<a href="produtos.html?cat=' + esc(p.categoria) + '">' + esc(p.nome) + '</a>' +
+            '</h3>' +
+            '<p class="shop-hero-desc">' + esc(p.descricao) + '</p>' +
+            '<div class="shop-price-row">' + precoLanding(p, 'lg') + poupa + '</div>' +
+            '<div class="shop-hero-actions">' +
+              '<button type="button" class="shop-add" data-add="' + p.id + '">' +
+                esc(t('prod.add')) +
+                '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                  '<path d="M2.5 7h9M8 3.5L11.5 7 8 10.5"/></svg>' +
+              '</button>' +
+              '<p class="shop-stock">' + esc(stockTxtLanding(p)) + '</p>' +
+            '</div>' +
+          '</div>' +
+        '</article>';
+    }
+
+    function miniHTML(p) {
+      return '' +
+        '<li class="shop-mini">' +
+          '<a class="shop-mini-link" href="produtos.html?cat=' + esc(p.categoria) + '">' +
+            '<span class="shop-mini-thumb">' + thumbLanding(p, 'prod-thumb-img') + seloLanding(p) + '</span>' +
+            '<span class="shop-mini-info">' +
+              '<span class="shop-cat">' + esc(t('prod.cat_' + p.categoria)) + '</span>' +
+              '<span class="shop-mini-name">' + esc(p.nome) + '</span>' +
+              '<span class="shop-price-row">' + precoLanding(p, 'sm') + '</span>' +
+            '</span>' +
+          '</a>' +
+          '<button type="button" class="shop-mini-add" data-add="' + p.id + '" ' +
+            'aria-label="' + esc(t('prod.add')) + ' — ' + esc(p.nome) + '">' +
+            '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">' +
+              '<path d="M7 2.5v9M2.5 7h9"/></svg>' +
+          '</button>' +
+        '</li>';
+    }
+
+    function observarLanding() {
+      var alvos = Array.prototype.slice.call(caixa.querySelectorAll('.shop-hero, .shop-mini'));
+      if (!('IntersectionObserver' in window)) {
+        alvos.forEach(function (c) { c.classList.add('in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entradas) {
+        entradas.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          var i = alvos.indexOf(e.target);
+          e.target.style.transitionDelay = (i > 0 ? i * 0.07 : 0) + 's';
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        });
+      }, { rootMargin: '0px 0px -10% 0px' });
+      alvos.forEach(function (c) { io.observe(c); });
+    }
+
+    function renderLanding() {
+      return D.vitrine(4).then(function (v) {
+        if (!v.hero) { secao.hidden = true; return; }
+
+        caixa.innerHTML =
+          heroHTML(v.hero) +
+          (v.lado.length
+            ? '<ul class="shop-side" role="list">' + v.lado.map(miniHTML).join('') + '</ul>'
+            : '');
+        secao.hidden = false;
+
+        Array.prototype.forEach.call(caixa.querySelectorAll('.prod-thumb-img'), function (img) {
+          img.addEventListener('error', function () {
+            var box  = img.parentNode;
+            var flag = box.querySelector('.shop-badge');
+            box.innerHTML = D.placeholderHTML(img.dataset.ph) + (flag ? flag.outerHTML : '');
+          });
+        });
+
+        observarLanding();
+      }).catch(function (err) {
+        console.error('[produtos-landing]', err);
+        secao.hidden = true;
+      });
+    }
+
+    caixa.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-add]');
+      if (!btn) return;
+      e.preventDefault();
+      D.carrinho.adicionar(btn.dataset.add, 1);
+      window.location.href = 'produtos.html?cat=todos';
+    });
+
+    document.addEventListener('i18n:change', renderLanding);
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderLanding);
+    } else {
+      renderLanding();
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     BLOCO 3 — UI DO CATÁLOGO (produtos.html)
+     Antes: js/produtos.js
+
+     Só executa quando o elemento #prod-grid existe na página —
+     exclusivo do produtos.html.
+  ══════════════════════════════════════════════════════════════ */
+  if (!document.getElementById('prod-grid')) return;
+
   var $  = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
-  var D = window.ProdutosData;
-  if (!D) { console.error('[produtos] js/produtos-data.js não carregou.'); return; }
-
-  var t = function (key, vars) {
+  var tCat = function (key, vars) {
     return window.I18N ? window.I18N.t(key, vars) : key;
   };
 
-  /* Categoria inicial: aceita produtos.html?cat=barba vindo da vitrine
-     da landing, e ignora um valor que não exista. */
+  function escCat(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  /* Alias local para não poluir o escopo do bloco anterior */
+  var esc = escCat;
+  var t   = tCat;
+
   function categoriaInicial() {
     try {
       var q = new URLSearchParams(location.search).get('cat');
@@ -27,31 +430,19 @@
     } catch (_) { return 'todos'; }
   }
 
-  /* ─── Estado da vista ─── */
   var state = {
     categoria: categoriaInicial(),
-    produtos: [],          /* catálogo disponível, já hidratado */
-    qtd: {},               /* quantidade escolhida em cada card, antes de ir ao carrinho */
+    produtos: [],
+    qtd: {},
     sheetAberto: false,
-    passo: 1,              /* 1 = dados do cliente · 2 = revisão */
+    passo: 1,
     ultimoFoco: null
   };
 
-  /* Dados do último cliente, para não repetir a digitação na próxima */
-  var K_CLIENTE = 'inbarber.cliente';
-
-  /* Placeholder vem da camada de dados — o mesmo desenho na landing e aqui */
+  var K_CLIENTE  = 'inbarber.cliente';
   var placeholder = D.placeholderHTML;
 
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-  /* ══════════════════════════════════════════
-     FILTROS
-  ══════════════════════════════════════════ */
+  /* ── Filtros ── */
   function renderFiltros() {
     var wrap = $('#prod-filters');
     if (!wrap) return;
@@ -71,9 +462,7 @@
     });
   }
 
-  /* ══════════════════════════════════════════
-     GRELHA DE PRODUTOS
-  ══════════════════════════════════════════ */
+  /* ── Grelha de produtos ── */
   function cardHTML(p) {
     var noCarrinho = D.carrinho.quantidadeDe(p.id);
     var qtd  = state.qtd[p.id] || 1;
@@ -81,7 +470,6 @@
     var nivel = D.nivelStock(p);
     var catLabel = t('prod.cat_' + p.categoria);
 
-    /* Um selo de cada vez, por ordem de interesse para quem compra */
     var flag = '';
     if (p.novo)              flag = '<span class="prod-flag new">' + esc(t('prod.new')) + '</span>';
     else if (p.emPromocao)   flag = '<span class="prod-flag promo">−' + p.descontoPct + '%</span>';
@@ -129,7 +517,7 @@
   }
 
   function renderGrelha() {
-    var grid = $('#prod-grid');
+    var grid  = $('#prod-grid');
     var vazio = $('#prod-empty');
     if (!grid) return;
 
@@ -141,17 +529,15 @@
     grid.hidden = lista.length === 0;
     if (vazio) vazio.hidden = lista.length > 0;
 
-    /* Imagem em falta → placeholder desenhado */
     $$('.prod-thumb-img', grid).forEach(function (img) {
       img.addEventListener('error', function () {
-        var box = img.parentNode;
+        var box  = img.parentNode;
         var flag = $('.prod-flag', box);
         box.innerHTML = placeholder(img.dataset.ph) + (flag ? flag.outerHTML : '');
       });
     });
   }
 
-  /* Delegação de eventos da grelha */
   function ligarGrelha() {
     var grid = $('#prod-grid');
     if (!grid) return;
@@ -188,7 +574,7 @@
   }
 
   function atualizarStepper(card, p) {
-    var q = state.qtd[p.id] || 1;
+    var q   = state.qtd[p.id] || 1;
     var val = $('.qty-val', card);
     if (val) val.textContent = q;
     var btns = $$('.qty-btn', card);
@@ -209,9 +595,7 @@
     }, 1400);
   }
 
-  /* ══════════════════════════════════════════
-     CARRINHO
-  ══════════════════════════════════════════ */
+  /* ── Carrinho ── */
   function renderCarrinho() {
     return D.carrinho.detalhar().then(function (linhas) {
       var lista  = $('#cart-list');
@@ -256,7 +640,6 @@
       var cta = $('#cart-cta');
       if (cta) cta.disabled = linhas.length === 0;
 
-      /* Barra flutuante do telemóvel */
       var bar = $('#cart-bar');
       if (bar) bar.classList.toggle('visible', count > 0 && !state.sheetAberto);
       var bc = $('#cart-bar-count'); if (bc) bc.textContent = count;
@@ -264,7 +647,6 @@
       var bl = $('#cart-bar-label');
       if (bl) bl.textContent = t(count === 1 ? 'prod.cart_item' : 'prod.cart_items');
 
-      /* Realce nos cards que já estão no carrinho */
       $$('.prod-card').forEach(function (card) {
         card.classList.toggle('in-cart', D.carrinho.quantidadeDe(card.dataset.id) > 0);
       });
@@ -296,7 +678,6 @@
       });
     }
 
-    /* Bottom sheet (telemóvel) */
     var barBtn = $('#cart-bar-btn');
     if (barBtn) barBtn.addEventListener('click', abrirSheet);
 
@@ -313,7 +694,7 @@
   }
 
   function abrirSheet() {
-    var panel = $('#cart-panel');
+    var panel    = $('#cart-panel');
     var backdrop = $('#cart-backdrop');
     if (!panel) return;
     state.sheetAberto = true;
@@ -329,10 +710,10 @@
   }
 
   function fecharSheet() {
-    var panel = $('#cart-panel');
+    var panel    = $('#cart-panel');
     var backdrop = $('#cart-backdrop');
     state.sheetAberto = false;
-    if (panel) panel.classList.remove('open');
+    if (panel)    panel.classList.remove('open');
     if (backdrop) {
       backdrop.classList.remove('visible');
       setTimeout(function () { backdrop.hidden = true; }, 240);
@@ -340,13 +721,7 @@
     renderCarrinho();
   }
 
-  /* ══════════════════════════════════════════
-     TELEFONE — seletor de país + máscara
-
-     O componente vive em js/telefone.js e não sabe nada de produtos:
-     escolhe-se o país pela bandeira e ele trata do indicativo, da
-     máscara e de dizer se o número está completo.
-  ══════════════════════════════════════════ */
+  /* ── Telefone ── */
   var telefone = null;
 
   function ligarTelefone() {
@@ -369,12 +744,7 @@
     } catch (_) { return 'BR'; }
   }
 
-  /* ══════════════════════════════════════════
-     NOME — letras, não números
-
-     Nome de pessoa não leva dígitos. Em vez de deixar escrever e só
-     reclamar no fim, o campo recusa o dígito na hora e explica porquê.
-  ══════════════════════════════════════════ */
+  /* ── Validação do nome ── */
   var RE_DIGITO   = /[0-9]/;
   var RE_PROIBIDO = /[0-9_@#$%^&*()+=\[\]{}<>\/\\|~`]/g;
 
@@ -387,7 +757,7 @@
   function ligarFiltroNome(input) {
     if (!input) return;
     input.addEventListener('input', function () {
-      var antes = input.value;
+      var antes  = input.value;
       var depois = limparNome(antes);
       if (depois === antes) return;
 
@@ -395,21 +765,13 @@
       input.value = depois;
       try { input.setSelectionRange(pos, pos); } catch (_) {}
 
-      /* O carácter desaparece do campo; sem esta mensagem a pessoa não
-         percebe porquê. Fica de pé alguns segundos para ser lida — a
-         revalidação normal não a apaga durante esse tempo. */
       marcarErro(input, RE_DIGITO.test(antes) ? t('prod.err_name_digits') : t('prod.err_name_chars'));
       avisoNomeAte = Date.now() + 2600;
       setTimeout(function () { validarNome(false); }, 2700);
     });
   }
 
-  /* ══════════════════════════════════════════
-     VALIDAÇÃO
-
-     Cada campo diz o que está errado, e diz na hora em que a pessoa
-     sai do campo — não só quando carrega no botão.
-  ══════════════════════════════════════════ */
+  /* ── Validação ── */
   function campoDe(input) { return input.closest('.field'); }
 
   function marcarErro(input, mensagem) {
@@ -423,14 +785,13 @@
   }
 
   function validarNome(mostrar) {
-    var el = $('#f-nome');
-    var v  = el.value.trim();
+    var el     = $('#f-nome');
+    var v      = el.value.trim();
     var letras = v.replace(/[^\p{L}]/gu, '').length;
     var msg = !v ? t('prod.err_name')
             : RE_DIGITO.test(v) ? t('prod.err_name_digits')
             : letras < 2 ? t('prod.err_name_short')
             : '';
-    /* Enquanto o aviso de carácter inválido está de pé, não o apagamos */
     if (!mostrar && Date.now() < avisoNomeAte) return !msg;
     if (mostrar || campoDe(el).classList.contains('invalid')) marcarErro(el, msg);
     return !msg;
@@ -454,9 +815,7 @@
     return true;
   }
 
-  /* ══════════════════════════════════════════
-     MODAL DE RESERVA — dois passos
-  ══════════════════════════════════════════ */
+  /* ── Modal de reserva — dois passos ── */
   function irParaPasso(n) {
     state.passo = n;
     var dados   = $('#pane-dados');
@@ -500,7 +859,6 @@
     if (state.ultimoFoco && state.ultimoFoco.focus) state.ultimoFoco.focus();
   }
 
-  /* Se o cliente já reservou antes ou tem perfil, poupa-lhe a digitação */
   function preencherComPerfil() {
     var nome = $('#f-nome'), tel = $('#f-tel');
     if (!nome || !tel) return;
@@ -527,7 +885,6 @@
     } catch (_) {}
   }
 
-  /* ─── Passo 2: o que a pessoa está mesmo a confirmar ─── */
   function renderRevisao() {
     return D.carrinho.detalhar().then(function (linhas) {
       var lista = $('#rev-list');
@@ -550,8 +907,8 @@
         }).join('');
       }
 
-      var total   = linhas.reduce(function (s, l) { return s + l.subtotal; }, 0);
-      var cheio   = linhas.reduce(function (s, l) {
+      var total    = linhas.reduce(function (s, l) { return s + l.subtotal; }, 0);
+      var cheio    = linhas.reduce(function (s, l) {
         return s + (l.precoTabela || l.preco) * l.quantidade;
       }, 0);
       var poupanca = +(cheio - total).toFixed(2);
@@ -605,7 +962,6 @@
     var back = $('#res-modal-backdrop');
     if (back) back.addEventListener('click', fecharModal);
 
-    /* Ciclo de foco dentro do diálogo — só entre o que está visível */
     modal.addEventListener('keydown', function (e) {
       if (e.key !== 'Tab') return;
       var focaveis = $$('button, input, textarea, a[href]', modal)
@@ -619,7 +975,6 @@
     ligarTelefone();
     ligarFiltroNome($('#f-nome'));
 
-    /* Valida ao sair do campo, limpa o erro assim que a pessoa corrige */
     var nome = $('#f-nome'), tel = $('#f-tel'), obs = $('#f-obs');
     if (nome) {
       nome.addEventListener('blur',  function () { validarNome(true); });
@@ -638,7 +993,6 @@
       atualizaContador();
     }
 
-    /* Passo 1 → 2 */
     var form = $('#res-form');
     if (form) {
       form.addEventListener('submit', function (e) {
@@ -653,7 +1007,6 @@
       });
     }
 
-    /* Passo 2 → 1 */
     [$('#res-back'), $('#res-edit')].forEach(function (b) {
       if (!b) return;
       b.addEventListener('click', function () {
@@ -667,12 +1020,12 @@
     if (submit) submit.addEventListener('click', confirmar);
   }
 
-  /* ─── Criação da reserva — só acontece no passo 2 ─── */
+  /* ── Criação da reserva ── */
   function confirmar() {
     var erroBox = $('#res-error');
     if (erroBox) erroBox.hidden = true;
 
-    var btn = $('#res-submit');
+    var btn      = $('#res-submit');
     var original = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML =
@@ -710,28 +1063,23 @@
           erroBox.textContent = err && err.message ? err.message : t('prod.err_generic');
           erroBox.hidden = false;
         }
-        /* O stock mudou por baixo dos pés: recarrega e volta à revisão */
         carregar().then(renderRevisao);
       });
   }
 
-  /* ══════════════════════════════════════════
-     TOAST
-  ══════════════════════════════════════════ */
+  /* ── Toast ── */
   var toastTimer = null;
-  function toast(msg, erro) {
+  function toast(msg, isErro) {
     var el = $('#prod-toast');
     if (!el) return;
     el.textContent = msg;
-    el.classList.toggle('err', !!erro);
+    el.classList.toggle('err', !!isErro);
     el.classList.add('visible');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { el.classList.remove('visible'); }, 2600);
   }
 
-  /* ══════════════════════════════════════════
-     ARRANQUE
-  ══════════════════════════════════════════ */
+  /* ── Arranque ── */
   function carregar() {
     return D.listar().then(function (produtos) {
       state.produtos = produtos;
@@ -759,14 +1107,12 @@
 
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
-      /* Uma lista de países aberta apanha o Escape primeiro */
       if ($('.tel-drop:not([hidden])')) return;
       var modal = $('#res-modal');
       if (modal && !modal.hidden) { fecharModal(); return; }
       if (state.sheetAberto) fecharSheet();
     });
 
-    /* Mudança de idioma: nomes e etiquetas voltam a ser desenhados */
     document.addEventListener('i18n:change', function () {
       if (telefone) telefone.repintar();
       carregar();
@@ -780,4 +1126,5 @@
   } else {
     boot();
   }
+
 })();

@@ -25,9 +25,12 @@ async function apiRequest(path, options = {}) {
   let response;
 
   try {
+    const defaultHeaders = { 'Content-Type': 'application/json' };
+    const mergedHeaders  = Object.assign({}, defaultHeaders, options.headers || {});
+    const { headers: _h, ...restOptions } = options;
     response = await fetch(`${API_BASE_URL}${path}`, {
-      headers: { 'Content-Type': 'application/json' },
-      ...options,
+      headers: mergedHeaders,
+      ...restOptions,
     });
   } catch (networkErr) {
     // Erro de rede: back-end fora do ar, sem conexão, CORS, etc.
@@ -817,6 +820,109 @@ function getDashboard() {
   return apiRequest('/dashboard', { method: 'GET' });
 }
 
+/* ─── 12. AUTH — Usuários ────────────────────────────────────
+   POST /api/auth/signup  → cadastrar
+   POST /api/auth/login   → login
+   POST /api/auth/logout  → logout
+   GET  /api/auth/me      → dados do usuário logado
+──────────────────────────────────────────────────────────── */
+
+/**
+ * Cadastra um novo usuário.
+ * @param {{ primeiroNome, sobrenome, email, telefone, senha }} data
+ * @returns {Promise<{ token: string, usuario: Object }>}
+ */
+function signup(data) {
+  return apiRequest('/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Login com email e senha.
+ * @param {{ email: string, senha: string }} data
+ * @returns {Promise<{ token: string, usuario: Object }>}
+ */
+function login(data) {
+  return apiRequest('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Logout — invalida o token no servidor.
+ * @returns {Promise<{ ok: boolean }>}
+ */
+function logout() {
+  const token = localStorage.getItem('inbarber_token') || '';
+  return apiRequest('/auth/logout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+}
+
+/**
+ * Busca os dados do usuário logado (hidratação ao carregar a página).
+ * @returns {Promise<{ usuario: Object }>}
+ */
+function getMe() {
+  const token = localStorage.getItem('inbarber_token') || '';
+  return apiRequest('/auth/me', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+}
+
+/**
+ * Atualiza dados pessoais do usuário logado.
+ * @param {{ primeiroNome?, sobrenome?, email?, telefone?, dataNascimento? }} data
+ * @returns {Promise<{ usuario: Object }>}
+ */
+function updateProfile(data) {
+  const token = localStorage.getItem('inbarber_token') || '';
+  return apiRequest('/auth/profile', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Atualiza preferências do usuário logado.
+ * @param {Object} data - qualquer subconjunto das chaves de prefs
+ * @returns {Promise<{ usuario: Object }>}
+ */
+function updatePrefs(data) {
+  const token = localStorage.getItem('inbarber_token') || '';
+  return apiRequest('/auth/prefs', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Altera a senha do usuário logado.
+ * @param {{ senhaAtual: string, novaSenha: string }} data
+ * @returns {Promise<{ token: string, ok: boolean }>}
+ */
+function updatePassword(data) {
+  const token = localStorage.getItem('inbarber_token') || '';
+  return apiRequest('/auth/password', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+}
+
 window.InBarberAPI = {
   listAppointments,
   getAppointment,
@@ -868,4 +974,11 @@ window.InBarberAPI = {
   getVisaoGeralFinanceiro,
   getBarberAvailability,
   getDashboard,
+  signup,
+  login,
+  logout,
+  getMe,
+  updateProfile,
+  updatePrefs,
+  updatePassword,
 };

@@ -1,6 +1,8 @@
 /* ═══════════════════════════════════════════════════════════
    InBarber — Perfil / Conta
-   Sem dependências. Estado guardado em localStorage.
+   Dados pessoais e preferências persistidos via API (backend).
+   localStorage usado apenas para lang e compatibilidade com
+   outros módulos (inbarber.cliente, inbarber.avatar).
 ═══════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -8,9 +10,11 @@
   var $  = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return [].slice.call((c || document).querySelectorAll(s)); };
 
-  var KEY_LANG  = 'lang';               /* partilhada com js/main.js */
-  var KEY_USER  = 'inbarber.profile';
-  var KEY_PREFS = 'inbarber.prefs';
+  var KEY_LANG = 'lang';    /* partilhada com js/main.js */
+  var API = window.InBarberAPI;
+
+  /* usuarioAtual: shape vindo de serializar_usuario() no backend */
+  var usuarioAtual = null;
 
   /* ════════════════════════════════════════
      1. TRADUÇÕES
@@ -519,14 +523,17 @@
      (pais + e164) e o antigo, em que só havia a string 'f-phone'. */
   function reporTelefone(data) {
     var e164 = data && data.e164;
+    /* Tem número e164 válido vindo da API (ex: '+5511988887777') */
     if (e164 && String(e164).replace(/\D/g, '').length > 4) {
       telefone.definir(e164);
       return;
     }
-    if (data && data.pais) telefone.definirPais(data.pais, true);
+    /* Sem número: respeita o país salvo, se houver; senão limpa o campo */
+    if (data && data.pais) {
+      telefone.definirPais(data.pais, true);
+    }
     var local = data && data['f-phone'];
-    if (local) telefone.definir(local);
-    else telefone.definir('');
+    telefone.definir(local || '');
   }
 
   function isDirty() {
@@ -723,33 +730,37 @@
     $('#f-last').value  = saved['f-last'];
     $('#f-email').value = saved['f-email'];
 
-    try { localStorage.setItem(KEY_USER, JSON.stringify(saved)); } catch (e) {}
+    var payload = {
+      primeiroNome:   saved['f-first'],
+      sobrenome:      saved['f-last'],
+      email:          saved['f-email'],
+      telefone:       saved.e164 || saved['f-phone'] || null,
+      dataNascimento: saved['f-birth'] || null,
+    };
 
-    /* O modal de produtos lê esta chave para não pedir os dados
-       outra vez — vale a pena mantê-la em dia. */
-    try {
-      localStorage.setItem('inbarber.cliente', JSON.stringify({
-        nome: (saved['f-first'] + ' ' + saved['f-last']).trim(),
-        pais: saved.pais,
-        e164: saved.e164
-      }));
-    } catch (e) {}
+    var btnSave = $('#save-personal');
+    var btnBar  = $('#savebar-save');
+    if (btnSave) btnSave.disabled = true;
+    if (btnBar)  btnBar.disabled  = true;
 
-    paintHero();
-    refreshSaveBar();
-    toast(t('toast.saved'), 'ok');
+    API.updateProfile(payload).then(function (res) {
+      usuarioAtual = res.usuario;
+      sincronizarLocalStorage(res.usuario);
+      paintHero();
+      refreshSaveBar();
+      toast(t('toast.saved'), 'ok');
+    }).catch(function (err) {
+      toast(err.message || t('toast.form_err'), 'error');
+    }).finally(function () {
+      if (btnSave) btnSave.disabled = false;
+      if (btnBar)  btnBar.disabled  = false;
+    });
   }
 
   function initPersonal() {
     ligarTelefone();
 
-    var stored = {};
-    try { stored = JSON.parse(localStorage.getItem(KEY_USER) || '{}'); } catch (e) {}
-    if (!stored || typeof stored !== 'object') stored = {};
-    /* Sem nada guardado, o mockup arranca com o número de exemplo */
-    if (!stored.e164 && !stored['f-phone']) stored.e164 = '+351912345678';
-    writeForm(stored);
-
+    /* Formulário começa vazio — a API preenche a seguir */
     saved = readForm();
     paintHero();
 
@@ -801,36 +812,7 @@
      juntam-se compras antigas de exemplo, para o mockup nunca aparecer
      vazio a quem entra pela primeira vez.
   ════════════════════════════════════════ */
-  var DEMO_COMPRAS = [
-    { id: 'demo_5', numero: '0031', dataReserva: '2026-08-12T18:20:00', estado: 'confirmado',
-      total: 88, poupanca: 9, observacoes: '',
-      produtos: [
-        { produtoId: 'prod_001', nome: 'Pomada Matte Black',    quantidade: 1, preco: 36, precoTabela: 45, subtotal: 36 },
-        { produtoId: 'prod_003', nome: 'Óleo de Barba Premium', quantidade: 1, preco: 52, precoTabela: null, subtotal: 52 }
-      ] },
-    { id: 'demo_4', numero: '0024', dataReserva: '2026-06-03T11:05:00', estado: 'confirmado',
-      total: 99, poupanca: 30, observacoes: 'Presente — embrulhar.',
-      produtos: [
-        { produtoId: 'prod_008', nome: 'Kit Barba Completo', quantidade: 1, preco: 99, precoTabela: 129, subtotal: 99 }
-      ] },
-    { id: 'demo_3', numero: '0018', dataReserva: '2026-04-21T17:40:00', estado: 'confirmado',
-      total: 104, poupanca: 0, observacoes: '',
-      produtos: [
-        { produtoId: 'prod_002', nome: 'Shampoo Anticaspa Pro', quantidade: 2, preco: 38, precoTabela: null, subtotal: 76 },
-        { produtoId: 'prod_007', nome: 'Pente de Madeira',      quantidade: 1, preco: 28, precoTabela: null, subtotal: 28 }
-      ] },
-    { id: 'demo_2', numero: '0009', dataReserva: '2025-12-14T10:15:00', estado: 'libertado',
-      total: 35, poupanca: 0, observacoes: '',
-      produtos: [
-        { produtoId: 'prod_004', nome: 'Cera Modeladora', quantidade: 1, preco: 35, precoTabela: null, subtotal: 35 }
-      ] },
-    { id: 'demo_1', numero: '0004', dataReserva: '2025-09-02T19:00:00', estado: 'confirmado',
-      total: 66, poupanca: 18, observacoes: '',
-      produtos: [
-        { produtoId: 'prod_005', nome: 'Bálsamo Pós-Barba', quantidade: 2, preco: 33, precoTabela: 42, subtotal: 66 }
-      ] }
-  ];
-
+  
   var VISIVEIS = 3;
   var compras = [];
   var comprasAbertas = {};
@@ -981,7 +963,7 @@
     setTimeout(function () { window.location.href = '/produtos.html'; }, 700);
   }
 
-  function initCompras() {
+function initCompras() {
     var lista = $('#buy-list');
     if (!lista) return;
 
@@ -998,17 +980,38 @@
       renderCompras();
     });
 
-    compras = DEMO_COMPRAS.slice();
+    /* Começa vazio — carregado após a hidratação do usuário em bootPerfil() */
     renderCompras();
+  }
 
-    /* As reservas reais entram à frente das de exemplo */
-    if (window.ProdutosData && window.ProdutosData.listarReservas) {
-      window.ProdutosData.listarReservas().then(function (reais) {
-        if (!reais || !reais.length) return;
-        compras = reais.concat(DEMO_COMPRAS);
-        renderCompras();
-      }).catch(function () {});
-    }
+  function carregarCompras() {
+    API.listProductReservations().then(function (reais) {
+      compras = (reais || []).map(function (r) {
+        return {
+          id:          r.id,
+          numero:      r.numero,
+          dataReserva: r.dataReserva || r.data_reserva,
+          estado:      r.estado,
+          total:       r.total,
+          poupanca:    r.poupanca || 0,
+          observacoes: r.observacoes || '',
+          produtos:    (r.itens || r.produtos || []).map(function (l) {
+            return {
+              produtoId:   l.produtoId   || l.produto_id,
+              nome:        l.nome,
+              quantidade:  l.quantidade,
+              preco:       l.preco,
+              precoTabela: l.precoTabela || l.preco_tabela || null,
+              subtotal:    l.subtotal,
+            };
+          }),
+        };
+      });
+      renderCompras();
+    }).catch(function () {
+      /* Silencioso: lista fica vazia se a API falhar */
+      renderCompras();
+    });
   }
 
   /* ════════════════════════════════════════
@@ -1045,10 +1048,17 @@
   var prefs = {};
 
   function loadPrefs() {
-    try { prefs = JSON.parse(localStorage.getItem(KEY_PREFS) || '{}') || {}; } catch (e) { prefs = {}; }
+    /* Preenchido pelo objeto usuario.prefs vindo da API em bootPerfil().
+       Esta função agora só serve de fallback se a API ainda não respondeu. */
+    prefs = {};
   }
-  function storePrefs() {
-    try { localStorage.setItem(KEY_PREFS, JSON.stringify(prefs)); } catch (e) {}
+
+  function storePrefs(patch) {
+    /* Persiste no backend; atualiza prefs local otimisticamente */
+    Object.assign(prefs, patch);
+    API.updatePrefs(patch).catch(function () {
+      /* silencioso: o estado local já está atualizado e toast já foi dado */
+    });
   }
 
   function applyDisplayPrefs() {
@@ -1066,8 +1076,9 @@
       else prefs[key] = input.checked;
 
       input.addEventListener('change', function () {
-        prefs[key] = input.checked;
-        storePrefs();
+        var patch = {};
+        patch[key] = input.checked;
+        storePrefs(patch);
         if (key === 'reduceMotion') applyDisplayPrefs();
         toast(t('toast.pref'), 'ok');
       });
@@ -1080,8 +1091,9 @@
       else prefs[key] = sel.value;
 
       sel.addEventListener('change', function () {
-        prefs[key] = sel.value;
-        storePrefs();
+        var patch = {};
+        patch[key] = sel.value;
+        storePrefs(patch);
         toast(t('toast.pref'), 'ok');
       });
     });
@@ -1106,8 +1118,9 @@
           btns.forEach(function (o) { o.classList.remove('active'); o.setAttribute('aria-pressed', 'false'); });
           b.classList.add('active');
           b.setAttribute('aria-pressed', 'true');
-          prefs[key] = b.getAttribute(pair[1]);
-          storePrefs();
+          var patch = {};
+          patch[key] = b.getAttribute(pair[1]);
+          storePrefs(patch);
           applyDisplayPrefs();
           toast(t('toast.pref'), 'ok');
         });
@@ -1221,10 +1234,24 @@
         return;
       }
 
-      cur.value = pwNew.value = confirm.value = '';
-      updateStrength();
-      revokeAll(true);
-      toast(t('toast.pass'), 'ok');
+      var payload = { senhaAtual: cur.value, novaSenha: pwNew.value };
+      var btnSave = $('#save-password');
+      if (btnSave) btnSave.disabled = true;
+
+      API.updatePassword(payload).then(function (res) {
+        /* Rotaciona o token salvo localmente */
+        try { localStorage.setItem('inbarber_token', res.token); } catch (e) {}
+        cur.value = pwNew.value = confirm.value = '';
+        updateStrength();
+        toast(t('toast.pass'), 'ok');
+      }).catch(function (err) {
+        /* Senha atual incorreta ou outro erro de servidor */
+        cur.setAttribute('aria-invalid', 'true');
+        if (errCur) { errCur.textContent = err.message || t('sec.err_current'); errCur.hidden = false; }
+        toast(t('toast.pass_err'), 'error');
+      }).finally(function () {
+        if (btnSave) btnSave.disabled = false;
+      });
     });
   }
 
@@ -1267,13 +1294,16 @@
   ════════════════════════════════════════ */
   function initData() {
     $('#logout-btn').addEventListener('click', function () {
-      try {
-        localStorage.removeItem('inbarber_user');
-        localStorage.removeItem('inbarber.profile');
-        localStorage.removeItem('inbarber.avatar');
-      } catch (e) {}
-      toast(t('toast.logout'), 'info');
-      setTimeout(function () { window.location.href = '/index.html'; }, 900);
+      API.logout().catch(function () {}).finally(function () {
+        try {
+          localStorage.removeItem('inbarber_token');
+          localStorage.removeItem('inbarber_user');
+          localStorage.removeItem('inbarber.profile');
+          localStorage.removeItem('inbarber.avatar');
+        } catch (e) {}
+        toast(t('toast.logout'), 'info');
+        setTimeout(function () { window.location.href = '/index.html'; }, 900);
+      });
     });
 
     $('#row-history').addEventListener('click', function (e) {
@@ -1344,6 +1374,149 @@
   /* ════════════════════════════════════════
      10. BOOT
   ════════════════════════════════════════ */
+  function sincronizarLocalStorage(u) {
+    /* Mantém compatibilidade com modal de produtos (inbarber.cliente) */
+    try {
+      localStorage.setItem('inbarber_user', JSON.stringify({
+        id:           u.id,
+        nome:         u.primeiroNome,
+        sobrenome:    u.sobrenome,
+        nomeCompleto: u.nomeCompleto,
+        email:        u.email,
+        telefone:     u.telefone,
+      }));
+      localStorage.setItem('inbarber.profile', JSON.stringify({
+        'f-first': u.primeiroNome,
+        'f-last':  u.sobrenome,
+        'f-email': u.email,
+        'f-phone': u.telefone || '',
+        'f-birth': u.dataNascimento || '',
+        e164:      u.telefone || '',
+      }));
+      localStorage.setItem('inbarber.cliente', JSON.stringify({
+        nome: u.nomeCompleto,
+        e164: u.telefone || '',
+      }));
+    } catch (e) {}
+  }
+
+  function preencherPrefsDaAPI(u) {
+    var p = u.prefs || {};
+
+    /* Mapeamento entre chaves da API → chaves usadas nos selects/toggles */
+    var MAPA_PREF = {
+      barber:         p.barbeiroId  || '',
+      slot:           p.horario     || '',
+      pay:            p.pagamento   || '',
+      notifReminder:  p.notifLembrete,
+      notifEmail:     p.notifEmail,
+      notifSms:       p.notifSms,
+      notifPromos:    p.notifPromos,
+      lead:           String(p.leadHoras || 24),
+      reduceMotion:   p.reduceMotion,
+    };
+
+    prefs = Object.assign({}, MAPA_PREF);
+
+    /* Toggles */
+    $$('.js-toggle').forEach(function (input) {
+      var key = input.dataset.pref;
+      if (typeof prefs[key] === 'boolean') input.checked = prefs[key];
+    });
+
+    /* Selects */
+    $$('.js-pref').forEach(function (sel) {
+      var key = sel.dataset.pref;
+      if (typeof prefs[key] === 'string') sel.value = prefs[key];
+    });
+
+    /* Idioma */
+    var idioma = p.idioma || 'pt';
+    applyLang(idioma, false);
+
+    /* Formato de hora */
+    var fmt = String(p.formatoHora || 24);
+    $$('[data-timefmt]').forEach(function (b) {
+      var on = b.dataset.timefmt === fmt;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    prefs.timefmt = fmt;
+
+    /* Tamanho de texto */
+    var txt = p.tamanhoTexto || 'default';
+    $$('[data-textsize]').forEach(function (b) {
+      var on = b.dataset.textsize === txt;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    prefs.textsize = txt;
+
+    applyDisplayPrefs();
+  }
+
+  function preencherStatsDaAPI(u) {
+    /* Stats do cartão lateral (agendamentos, cliente desde, última visita) */
+    /* Esses dados virão do cliente_id quando vinculado — por ora mostramos
+       os campos que já temos na tabela usuarios */
+    var desde = u.createdAt ? new Date(u.createdAt).getFullYear() : '—';
+    var statSince = $('.acct-stat-num:nth-child(1)', $('.acct-stats'));
+
+    var stats = $$('.acct-stat');
+    /* stat[0] = agendamentos, stat[1] = cliente desde, stat[2] = última visita */
+    if (stats[1]) {
+      var numEl = stats[1].querySelector('.acct-stat-num');
+      if (numEl) numEl.textContent = desde;
+    }
+    /* stat[0] e stat[2] ficam para etapa futura (requerem join com agendamentos via cliente_id) */
+  }
+
+  function bootPerfil() {
+    var token = '';
+    try { token = localStorage.getItem('inbarber_token') || ''; } catch (e) {}
+
+    if (!token) {
+      window.location.href = '/login.html';
+      return;
+    }
+
+    API.getMe().then(function (res) {
+      usuarioAtual = res.usuario;
+      var u = usuarioAtual;
+
+      /* 1. Preenche formulário de dados pessoais */
+      writeForm({
+        'f-first': u.primeiroNome || '',
+        'f-last':  u.sobrenome    || '',
+        'f-email': u.email        || '',
+        'f-birth': u.dataNascimento || '',
+        e164:      u.telefone     || '',
+      });
+      saved = readForm();
+
+      /* 2. Pinta hero / avatar initials */
+      paintHero();
+
+      /* 3. Badge de email verificado */
+      var badge = $('.acct-badges');
+      if (badge) badge.hidden = !u.emailVerificado;
+
+      /* 4. Estatísticas */
+      preencherStatsDaAPI(u);
+
+      /* 5. Preferências */
+      preencherPrefsDaAPI(u);
+
+      /* 6. Histórico de compras (filtra pelo clienteId se disponível) */
+      carregarCompras();
+
+    }).catch(function () {
+      /* Token expirado ou inválido → manda para login */
+      try { localStorage.removeItem('inbarber_token'); } catch (e) {}
+      window.location.href = '/login.html';
+    });
+  }
+
   function initBack() {
     $('#back-btn').addEventListener('click', function () {
       if (history.length > 1) history.back();
@@ -1362,7 +1535,6 @@
     initSessions();
     initData();
     initDelete();
-    applyLang(currentLang, false);
-    paintHero();
+    bootPerfil();   /* hidrata tudo via API — substitui applyLang + paintHero diretos */
   });
 })();

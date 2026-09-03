@@ -34,7 +34,7 @@
 
   <div class="page-hd">
     <p class="label-tag" data-i18n="hd.tag">A sua conta</p>
-    <h1><span data-i18n="hd.hello">Olá,</span><br><em id="hd-name">Ricardo.</em></h1>
+    <h1><span data-i18n="hd.hello"></span><br><em id="hd-name"></em></h1>
     <p class="page-hd-hint" data-i18n="hd.hint">Os seus dados, preferências e segurança — tudo num só lugar.</p>
   </div>
 
@@ -55,8 +55,8 @@
       </div>
 
       <div class="acct-id">
-        <p class="acct-name" id="acct-name">Ricardo Almeida</p>
-        <p class="acct-mail" id="acct-mail">ricardo.almeida@email.com</p>
+        <p class="acct-name" id="acct-name"></p>
+        <p class="acct-mail" id="acct-mail"></p>
         <div class="acct-badges">
           <span class="badge badge--green">
             <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5,6.2 5,8.7 9.5,3.5"/></svg>
@@ -126,13 +126,13 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="f-first" data-i18n="f.first">Nome</label>
-              <input class="form-input js-dirty js-nome" id="f-first" type="text" value="Ricardo"
+              <input class="form-input js-dirty js-nome" id="f-first" type="text" value=""
                      autocomplete="given-name" maxlength="40" spellcheck="false">
               <p class="form-error" id="err-first" hidden></p>
             </div>
             <div class="form-group">
               <label class="form-label" for="f-last" data-i18n="f.last">Sobrenome</label>
-              <input class="form-input js-dirty js-nome" id="f-last" type="text" value="Almeida"
+              <input class="form-input js-dirty js-nome" id="f-last" type="text" value=""
                      autocomplete="family-name" maxlength="40" spellcheck="false">
               <p class="form-error" id="err-last" hidden></p>
             </div>
@@ -140,7 +140,7 @@
 
           <div class="form-group">
             <label class="form-label" for="f-email" data-i18n="f.email">Email</label>
-            <input class="form-input js-dirty" id="f-email" type="email" value="ricardo.almeida@email.com"
+            <input class="form-input js-dirty" id="f-email" type="email" value=""
                    autocomplete="email" maxlength="80" spellcheck="false" inputmode="email">
             <p class="form-hint" data-i18n="f.email_hint">Enviamos as confirmações de reserva para este endereço.</p>
             <p class="form-error" id="err-email" hidden data-i18n="f.email_err">Escreva um email válido.</p>
@@ -158,7 +158,7 @@
             </div>
             <div class="form-group">
               <label class="form-label" for="f-birth" data-i18n="f.birth">Data de nascimento</label>
-              <input class="form-input js-dirty" id="f-birth" type="date" value="1992-04-17" max="2026-12-31">
+              <input class="form-input js-dirty" id="f-birth" type="date" value="" max="2026-12-31">
               <p class="form-error" id="err-birth" hidden></p>
             </div>
           </div>
@@ -685,7 +685,7 @@
   </div>
 </div>
 
-<script src="/js/produtos-data.js"></script>
+<script src="/js/api.js"></script>
 <script src="/js/telefone.js"></script>
 <script src="/js/profile-btn.js"></script>
 <script src="/js/perfil.js"></script>

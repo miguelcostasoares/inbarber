@@ -5,6 +5,7 @@ import os as _os
 import bcrypt
 import uuid
 import json
+import secrets
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timedelta, timezone
 from flask_cors import CORS
@@ -31,6 +32,64 @@ def hash_password(password):
 
 def check_password(password, hashed):
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+
+# ─── Auth helpers ─────────────────────────────────────────────
+def gerar_token():
+    """Gera um token opaco de 64 hex-chars (256 bits de entropia)."""
+    return secrets.token_hex(32)
+
+
+def usuario_do_token(cursor, token):
+    """Retorna a linha de `usuarios` se o token for válido e não expirado."""
+    if not token:
+        return None
+    cursor.execute(
+        '''SELECT * FROM usuarios
+           WHERE token_sessao = %s
+             AND token_expira_em > NOW()
+             AND ativo = 1''',
+        (token,)
+    )
+    return cursor.fetchone()
+
+
+def token_do_request():
+    """Extrai o token do header Authorization: Bearer <token>."""
+    auth = request.headers.get('Authorization', '')
+    if auth.startswith('Bearer '):
+        return auth[7:].strip()
+    return None
+
+
+def serializar_usuario(row):
+    """Serializa um usuário para o front (nunca expõe senha_hash nem token)."""
+    return {
+        'id':              row['id'],
+        'primeiroNome':    row['primeiro_nome'],
+        'sobrenome':       row['sobrenome'],
+        'nomeCompleto':    f"{row['primeiro_nome']} {row['sobrenome']}",
+        'email':           row['email'],
+        'telefone':        row['telefone'],
+        'dataNascimento':  row['data_nascimento'].isoformat() if row.get('data_nascimento') else None,
+        'emailVerificado': bool(row['email_verificado']),
+        'clienteId':       row['cliente_id'],
+        'prefs': {
+            'barbeiroId':    row['pref_barbeiro_id'],
+            'horario':       row['pref_horario'],
+            'pagamento':     row['pref_pagamento'],
+            'notifLembrete': bool(row['pref_notif_lembrete']),
+            'notifEmail':    bool(row['pref_notif_email']),
+            'notifSms':      bool(row['pref_notif_sms']),
+            'notifPromos':   bool(row['pref_notif_promos']),
+            'leadHoras':     row['pref_lead_horas'],
+            'idioma':        row['pref_idioma'],
+            'formatoHora':   row['pref_formato_hora'],
+            'tamanhoTexto':  row['pref_tamanho_texto'],
+            'reduceMotion':  bool(row['pref_reduce_motion']),
+        },
+        'createdAt': row['created_at'].isoformat() if row.get('created_at') else None,
+    }
 
 
 # ═══════════════════════════════════════════════════════════
@@ -4228,6 +4287,316 @@ def dashboard_summary():
 
     except Exception as e:
         return jsonify({'error': f'Erro ao carregar dashboard: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# ═══════════════════════════════════════════════════════════
+# AUTH — Usuários (tela de login/cadastro da LP)
+# ═══════════════════════════════════════════════════════════
+
+TOKEN_TTL_HORAS = 720  # 30 dias
+
+
+@app.route('/api/auth/signup', methods=['POST'])
+def cadastrar_usuario():
+    """Cadastra novo usuário da LP. Campos: primeiroNome, sobrenome, email, telefone, senha."""
+    dados = request.get_json(silent=True) or {}
+    primeiro_nome = (dados.get('primeiroNome') or '').strip()
+    sobrenome     = (dados.get('sobrenome')     or '').strip()
+    email         = (dados.get('email')         or '').strip().lower()
+    telefone      = (dados.get('telefone')      or '').strip() or None
+    senha         = dados.get('senha', '')
+
+    if not primeiro_nome:
+        return jsonify({'error': 'O nome é obrigatório.'}), 400
+    if not sobrenome:
+        return jsonify({'error': 'O sobrenome é obrigatório.'}), 400
+    if not email or '@' not in email:
+        return jsonify({'error': 'E-mail inválido.'}), 400
+    if not senha or len(senha) < 8:
+        return jsonify({'error': 'A senha deve ter pelo menos 8 caracteres.'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute('SELECT id FROM usuarios WHERE email = %s', (email,))
+        if cursor.fetchone():
+            return jsonify({'error': 'Este e-mail já está em uso.'}), 409
+
+        usuario_id   = 'u' + uuid.uuid4().hex[:12]
+        senha_hash   = hash_password(senha)
+        token        = gerar_token()
+        token_expira = datetime.now(timezone.utc) + timedelta(hours=TOKEN_TTL_HORAS)
+
+        cursor.execute(
+            '''INSERT INTO usuarios
+               (id, primeiro_nome, sobrenome, email, telefone,
+                senha_hash, token_sessao, token_expira_em)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''',
+            (usuario_id, primeiro_nome, sobrenome, email, telefone,
+             senha_hash, token, token_expira)
+        )
+        conn.commit()
+
+        cursor.execute('SELECT * FROM usuarios WHERE id = %s', (usuario_id,))
+        usuario = cursor.fetchone()
+        return jsonify({
+            'token':   token,
+            'usuario': serializar_usuario(usuario),
+        }), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao cadastrar: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def login_usuario():
+    """Login com email e senha. Retorna token + dados do usuário."""
+    dados = request.get_json(silent=True) or {}
+    email = (dados.get('email') or '').strip().lower()
+    senha = dados.get('senha', '')
+
+    if not email or not senha:
+        return jsonify({'error': 'E-mail e senha são obrigatórios.'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            'SELECT * FROM usuarios WHERE email = %s AND ativo = 1',
+            (email,)
+        )
+        usuario = cursor.fetchone()
+
+        if not usuario or not check_password(senha, usuario['senha_hash']):
+            return jsonify({'error': 'E-mail ou senha incorretos.'}), 401
+
+        token        = gerar_token()
+        token_expira = datetime.now(timezone.utc) + timedelta(hours=TOKEN_TTL_HORAS)
+
+        cursor.execute(
+            'UPDATE usuarios SET token_sessao = %s, token_expira_em = %s WHERE id = %s',
+            (token, token_expira, usuario['id'])
+        )
+        conn.commit()
+
+        cursor.execute('SELECT * FROM usuarios WHERE id = %s', (usuario['id'],))
+        usuario = cursor.fetchone()
+        return jsonify({
+            'token':   token,
+            'usuario': serializar_usuario(usuario),
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': f'Erro ao fazer login: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout_usuario():
+    """Invalida o token da sessão atual."""
+    token = token_do_request()
+    if not token:
+        return jsonify({'error': 'Não autenticado.'}), 401
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            'UPDATE usuarios SET token_sessao = NULL, token_expira_em = NULL WHERE token_sessao = %s',
+            (token,)
+        )
+        conn.commit()
+        return jsonify({'ok': True}), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao fazer logout: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/auth/me', methods=['GET'])
+def me_usuario():
+    """Retorna os dados do usuário logado a partir do token. Usado para hidratar o front ao recarregar."""
+    token = token_do_request()
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        usuario = usuario_do_token(cursor, token)
+        if not usuario:
+            return jsonify({'error': 'Token inválido ou expirado.'}), 401
+        return jsonify({'usuario': serializar_usuario(usuario)}), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/auth/profile', methods=['PATCH'])
+def atualizar_perfil():
+    """Atualiza dados pessoais do usuário logado (nome, email, telefone, data_nascimento)."""
+    token = token_do_request()
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        usuario = usuario_do_token(cursor, token)
+        if not usuario:
+            return jsonify({'error': 'Não autenticado.'}), 401
+
+        dados = request.get_json(silent=True) or {}
+        campos = {}
+
+        if 'primeiroNome' in dados:
+            v = str(dados['primeiroNome']).strip()
+            if not v:
+                return jsonify({'error': 'O nome é obrigatório.'}), 400
+            campos['primeiro_nome'] = v
+
+        if 'sobrenome' in dados:
+            v = str(dados['sobrenome']).strip()
+            if not v:
+                return jsonify({'error': 'O sobrenome é obrigatório.'}), 400
+            campos['sobrenome'] = v
+
+        if 'email' in dados:
+            v = str(dados['email']).strip().lower()
+            if not v or '@' not in v:
+                return jsonify({'error': 'E-mail inválido.'}), 400
+            cursor.execute(
+                'SELECT id FROM usuarios WHERE email = %s AND id != %s',
+                (v, usuario['id'])
+            )
+            if cursor.fetchone():
+                return jsonify({'error': 'Este e-mail já está em uso.'}), 409
+            campos['email'] = v
+
+        if 'telefone' in dados:
+            campos['telefone'] = str(dados['telefone']).strip() or None
+
+        if 'dataNascimento' in dados:
+            campos['data_nascimento'] = dados['dataNascimento'] or None
+
+        if not campos:
+            return jsonify({'error': 'Nenhum campo enviado.'}), 400
+
+        set_clause = ', '.join(f'`{k}` = %s' for k in campos)
+        cursor.execute(
+            f'UPDATE usuarios SET {set_clause} WHERE id = %s',
+            list(campos.values()) + [usuario['id']]
+        )
+        conn.commit()
+
+        cursor.execute('SELECT * FROM usuarios WHERE id = %s', (usuario['id'],))
+        return jsonify({'usuario': serializar_usuario(cursor.fetchone())}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao atualizar perfil: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/auth/prefs', methods=['PATCH'])
+def atualizar_prefs():
+    """Atualiza preferências do usuário logado (notificações, idioma, aparência, reserva)."""
+    token = token_do_request()
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        usuario = usuario_do_token(cursor, token)
+        if not usuario:
+            return jsonify({'error': 'Não autenticado.'}), 401
+
+        dados = request.get_json(silent=True) or {}
+
+        MAPA = {
+            'barbeiroId':   'pref_barbeiro_id',
+            'horario':      'pref_horario',
+            'pagamento':    'pref_pagamento',
+            'notifLembrete':'pref_notif_lembrete',
+            'notifEmail':   'pref_notif_email',
+            'notifSms':     'pref_notif_sms',
+            'notifPromos':  'pref_notif_promos',
+            'leadHoras':    'pref_lead_horas',
+            'idioma':       'pref_idioma',
+            'formatoHora':  'pref_formato_hora',
+            'tamanhoTexto': 'pref_tamanho_texto',
+            'reduceMotion': 'pref_reduce_motion',
+        }
+
+        campos = {}
+        for chave_front, col in MAPA.items():
+            if chave_front in dados:
+                campos[col] = dados[chave_front]
+
+        if not campos:
+            return jsonify({'error': 'Nenhum campo enviado.'}), 400
+
+        set_clause = ', '.join(f'`{k}` = %s' for k in campos)
+        cursor.execute(
+            f'UPDATE usuarios SET {set_clause} WHERE id = %s',
+            list(campos.values()) + [usuario['id']]
+        )
+        conn.commit()
+
+        cursor.execute('SELECT * FROM usuarios WHERE id = %s', (usuario['id'],))
+        return jsonify({'usuario': serializar_usuario(cursor.fetchone())}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao atualizar preferências: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/auth/password', methods=['PATCH'])
+def alterar_senha():
+    """Altera a senha do usuário logado. Exige senhaAtual + novaSenha."""
+    token = token_do_request()
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        usuario = usuario_do_token(cursor, token)
+        if not usuario:
+            return jsonify({'error': 'Não autenticado.'}), 401
+
+        dados = request.get_json(silent=True) or {}
+        senha_atual = dados.get('senhaAtual', '')
+        nova_senha  = dados.get('novaSenha', '')
+
+        if not senha_atual:
+            return jsonify({'error': 'Senha atual obrigatória.'}), 400
+        if not nova_senha or len(nova_senha) < 8:
+            return jsonify({'error': 'A nova senha deve ter pelo menos 8 caracteres.'}), 400
+        if not check_password(senha_atual, usuario['senha_hash']):
+            return jsonify({'error': 'Senha atual incorreta.'}), 401
+
+        novo_hash   = hash_password(nova_senha)
+        novo_token  = gerar_token()
+        token_expira = datetime.now(timezone.utc) + timedelta(hours=TOKEN_TTL_HORAS)
+
+        cursor.execute(
+            'UPDATE usuarios SET senha_hash = %s, token_sessao = %s, token_expira_em = %s WHERE id = %s',
+            (novo_hash, novo_token, token_expira, usuario['id'])
+        )
+        conn.commit()
+
+        return jsonify({'token': novo_token, 'ok': True}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao alterar senha: {e}'}), 500
     finally:
         cursor.close()
         conn.close()

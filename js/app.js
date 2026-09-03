@@ -1782,20 +1782,86 @@
     });
   })();
   /* ════════════════════════════════════════
-     PRÓXIMOS HORÁRIOS NO HERO
+     PRÓXIMOS HORÁRIOS NO HERO — por barbeiro
 
-     A alavanca de conversão da página. Mostrar disponibilidade
-     antes de pedir compromisso corta o funil de quatro passos
-     (serviço → barbeiro → dia → confirmação) para um.
+     Busca os horários reais de disponibilidade do último barbeiro
+     atendido (sessionStorage: selected_barber). Se não houver
+     barbeiro salvo, exibe os slots calculados localmente como
+     fallback (sem barbeiro específico visível).
+
+     Clique num slot → salva data/hora + barbeiro → servicos.html.
   ════════════════════════════════════════ */
   (function initHeroSlots() {
     const wrap = $('#hero-slots');
     const row  = $('#hero-slots-row');
+    const label = wrap ? wrap.querySelector('.hero-slots-label') : null;
     if (!wrap || !row) return;
 
-    function render() {
-      const slots = Schedule.nextSlots(3);
+    /* ── Lê o barbeiro salvo no sessionStorage ── */
+    function savedBarber() {
+      try {
+        const raw = sessionStorage.getItem('selected_barber');
+        if (!raw) return null;
+        const b = JSON.parse(raw);
+        return (b && b.id && b.name) ? b : null;
+      } catch (_) { return null; }
+    }
+
+    /* ── Datas dos próximos 3 dias úteis (YYYY-MM-DD) ── */
+    function nextWorkingDates(count) {
+      const out = [];
+      const cursor = new Date();
+      cursor.setHours(0, 0, 0, 0);
+      for (let guard = 0; guard < 30 && out.length < count; guard++) {
+        const dow = cursor.getDay();    /* 0=dom … 6=sab */
+        if (BUSINESS_HOURS[dow]) {
+          const pad = n => String(n).padStart(2, '0');
+          out.push(
+            cursor.getFullYear() + '-' +
+            pad(cursor.getMonth() + 1) + '-' +
+            pad(cursor.getDate())
+          );
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      return out;
+    }
+
+    /* ── Converte "HH:MM" num Date de hoje (ou da data passada) ── */
+    function timeToDate(dateStr, timeStr) {
+      const [h, m] = timeStr.split(':').map(Number);
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setHours(h, m, 0, 0);
+      return d;
+    }
+
+    /* ── Busca slots reais do backend para um barbeiro e data ── */
+    async function fetchSlotsForDate(barberId, dateStr) {
+      const url = '/api/barber-availability?barberId='
+                + encodeURIComponent(barberId)
+                + '&date=' + encodeURIComponent(dateStr);
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const data = await res.json();
+      if (data.closed || !Array.isArray(data.available)) return [];
+      /* Filtra horários que já passaram (incluindo 30 min de antecedência) */
+      const cutoff = Date.now() + 30 * 60 * 1000;
+      return data.available
+        .map(t => timeToDate(dateStr, t))
+        .filter(d => d.getTime() > cutoff);
+    }
+
+    /* ── Renderiza os chips ── */
+    function renderSlots(slots, barber) {
       row.textContent = '';
+
+      /* Atualiza o label com o nome do barbeiro */
+      if (label) {
+        label.textContent = barber
+          ? t('slots.labelBarber', { name: barber.name.split(' ')[0] },
+              'Horários de ' + barber.name.split(' ')[0])
+          : t('slots.label', null, 'Próximos horários livres');
+      }
 
       if (!slots.length) {
         const p = document.createElement('p');
@@ -1806,15 +1872,31 @@
         return;
       }
 
-      slots.forEach(slot => {
-        const day  = Schedule.dayLabel(slot.date);
-        const time = Schedule.timeLabel(slot.date);
+      slots.forEach(slotDate => {
+        const day  = Schedule.dayLabel(slotDate);
+        const time = Schedule.timeLabel(slotDate);
 
         const a = document.createElement('a');
         a.className = 'hero-slot';
-        a.href = 'agendar.html?slot=' + encodeURIComponent(Schedule.isoLocal(slot.date));
         a.setAttribute('data-book', '');
         a.setAttribute('aria-label', t('slots.aria', { day: day, time: time }));
+
+        /* Clique: guarda slot + barbeiro → vai direto para serviços */
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          try {
+            sessionStorage.setItem('slot_preselected', Schedule.isoLocal(slotDate));
+            if (barber) {
+              sessionStorage.setItem('barber_selected', barber.id);
+              sessionStorage.setItem('selected_barber', JSON.stringify({
+                id:   barber.id,
+                name: barber.name,
+                role: barber.role || '',
+              }));
+            }
+          } catch (_) {}
+          window.location.href = 'servicos.html';
+        });
 
         const d = document.createElement('span');
         d.className = 'hero-slot-day';
@@ -1831,12 +1913,42 @@
       wrap.hidden = false;
     }
 
-    render();
-    document.addEventListener('i18n:change', render);
+    /* ── Renderiza fallback local (sem barbeiro específico) ── */
+    function renderFallback() {
+      const slots = Schedule.nextSlots(3).map(s => s.date);
+      renderSlots(slots, null);
+    }
 
-    /* Os horários envelhecem: recalcula de 5 em 5 minutos para o
-       chip nunca mostrar uma hora que já passou. */
-    setInterval(render, 5 * 60 * 1000);
+    /* ── Fluxo principal ── */
+    async function loadAndRender() {
+      const barber = savedBarber();
+
+      if (!barber) {
+        /* Sem barbeiro salvo: fallback com slots locais, sem nome */
+        renderFallback();
+        return;
+      }
+
+      try {
+        const dates = nextWorkingDates(3);
+        let slots = [];
+        for (const dateStr of dates) {
+          if (slots.length >= 3) break;
+          const found = await fetchSlotsForDate(barber.id, dateStr);
+          slots = slots.concat(found);
+        }
+        renderSlots(slots.slice(0, 3), barber);
+      } catch (_) {
+        /* Falha de rede: fallback sem expor o erro ao utilizador */
+        renderFallback();
+      }
+    }
+
+    loadAndRender();
+    document.addEventListener('i18n:change', loadAndRender);
+
+    /* Recalcula de 5 em 5 minutos — slots envelhecem */
+    setInterval(loadAndRender, 5 * 60 * 1000);
   })();
 
   /* ════════════════════════════════════════

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — InBarber</title>
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body class="auth-page">
+
+  <div class="auth-wrap">
+
+    <!-- ── Logo / marca ── -->
+    <div class="auth-brand">
+      <a href="/index.html" class="auth-brand-link" aria-label="Voltar à página principal">
+        <span class="auth-brand-name">InBarber</span>
+      </a>
+    </div>
+
+    <!-- ── Card principal ── -->
+    <div class="auth-card">
+
+      <!-- Abas: Entrar / Criar conta -->
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab auth-tab--active" role="tab" aria-selected="true"
+                id="tab-login-btn" aria-controls="tab-login" data-tab="login">
+          Entrar
+        </button>
+        <button class="auth-tab" role="tab" aria-selected="false"
+                id="tab-signup-btn" aria-controls="tab-signup" data-tab="signup">
+          Criar conta
+        </button>
+        <span class="auth-tab-line" id="auth-tab-line"></span>
+      </div>
+
+      <!-- ══ PAINEL: LOGIN ══ -->
+      <div class="auth-panel" id="tab-login" role="tabpanel" aria-labelledby="tab-login-btn">
+        <div class="auth-panel-inner">
+          <div class="form-group">
+            <label class="form-label" for="login-email">E-mail</label>
+            <input class="form-input" id="login-email" type="email"
+                   autocomplete="email" inputmode="email" placeholder="seu@email.com">
+            <p class="form-error" id="err-login-email" hidden></p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-senha">Senha</label>
+            <div class="input-affix">
+              <input class="form-input" id="login-senha" type="password"
+                     autocomplete="current-password" placeholder="••••••••">
+              <button class="affix-btn js-reveal" data-target="login-senha" type="button" aria-label="Mostrar senha">
+                <svg class="icon-on" viewBox="0 0 20 20"><path d="M1.8 10S4.5 4.8 10 4.8 18.2 10 18.2 10 15.5 15.2 10 15.2 1.8 10 1.8 10z"/><circle cx="10" cy="10" r="2.4"/></svg>
+                <svg class="icon-off" viewBox="0 0 20 20"><path d="M8 5.1A7 7 0 0 1 10 4.8c5.5 0 8.2 5.2 8.2 5.2a15 15 0 0 1-2.6 3.3M5.4 6.1A15 15 0 0 0 1.8 10S4.5 15.2 10 15.2c1 0 1.9-.2 2.7-.5M2.5 2.5l15 15"/></svg>
+              </button>
+            </div>
+            <p class="form-error" id="err-login-senha" hidden></p>
+          </div>
+
+          <p class="form-error auth-error" id="err-login-geral" hidden></p>
+
+          <button class="btn-auth" id="btn-login" type="button">
+            <span class="btn-label">Entrar</span>
+            <span class="btn-spinner" hidden aria-hidden="true"></span>
+          </button>
+
+          <p class="auth-switch">
+            Ainda não tem conta?
+            <button class="auth-link" data-switch="signup" type="button">Criar conta</button>
+          </p>
+        </div>
+      </div>
+
+      <!-- ══ PAINEL: CADASTRO ══ -->
+      <div class="auth-panel auth-panel--hidden" id="tab-signup" role="tabpanel" aria-labelledby="tab-signup-btn">
+        <div class="auth-panel-inner">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="signup-nome">Nome</label>
+              <input class="form-input" id="signup-nome" type="text"
+                     autocomplete="given-name" maxlength="40" placeholder="Ricardo">
+              <p class="form-error" id="err-signup-nome" hidden></p>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signup-sobrenome">Sobrenome</label>
+              <input class="form-input" id="signup-sobrenome" type="text"
+                     autocomplete="family-name" maxlength="40" placeholder="Almeida">
+              <p class="form-error" id="err-signup-sobrenome" hidden></p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-email">E-mail</label>
+            <input class="form-input" id="signup-email" type="email"
+                   autocomplete="email" inputmode="email" placeholder="seu@email.com">
+            <p class="form-error" id="err-signup-email" hidden></p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-telefone">Telefone <span class="form-label-opt">(opcional)</span></label>
+            <input class="form-input" id="signup-telefone" type="tel"
+                   autocomplete="tel" inputmode="tel" placeholder="+55 11 99999-9999">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-senha">Senha</label>
+            <div class="input-affix">
+              <input class="form-input" id="signup-senha" type="password"
+                     autocomplete="new-password" placeholder="••••••••">
+              <button class="affix-btn js-reveal" data-target="signup-senha" type="button" aria-label="Mostrar senha">
+                <svg class="icon-on" viewBox="0 0 20 20"><path d="M1.8 10S4.5 4.8 10 4.8 18.2 10 18.2 10 15.5 15.2 10 15.2 1.8 10 1.8 10z"/><circle cx="10" cy="10" r="2.4"/></svg>
+                <svg class="icon-off" viewBox="0 0 20 20"><path d="M8 5.1A7 7 0 0 1 10 4.8c5.5 0 8.2 5.2 8.2 5.2a15 15 0 0 1-2.6 3.3M5.4 6.1A15 15 0 0 0 1.8 10S4.5 15.2 10 15.2c1 0 1.9-.2 2.7-.5M2.5 2.5l15 15"/></svg>
+              </button>
+            </div>
+            <p class="form-hint">Mínimo 8 caracteres.</p>
+            <p class="form-error" id="err-signup-senha" hidden></p>
+          </div>
+
+          <p class="form-error auth-error" id="err-signup-geral" hidden></p>
+
+          <button class="btn-auth" id="btn-signup" type="button">
+            <span class="btn-label">Criar conta</span>
+            <span class="btn-spinner" hidden aria-hidden="true"></span>
+          </button>
+
+          <p class="auth-switch">
+            Já tem conta?
+            <button class="auth-link" data-switch="login" type="button">Entrar</button>
+          </p>
+        </div>
+      </div>
+
+    </div>
+    <!-- /auth-card -->
+
+  </div>
+  <!-- /auth-wrap -->
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+</body>
+</html>

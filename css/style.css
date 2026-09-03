@@ -885,7 +885,14 @@ a.brand:active .brand-mark { transform: scale(0.96); }
 @media (min-width: 1024px) {
   .hero-scroll { right: 4rem; }
 }
- 
+
+.hero-slots-label {
+  transition: opacity 180ms ease-out;
+}
+.hero-slots-label.is-loading {
+  opacity: 0.4;
+}
+
 /* ─────────────────────────────────────────
    STICKY CTA — coordenação com a booking bar
    As duas são fixed no fundo. Quando a booking bar

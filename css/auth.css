@@ -1,0 +1,454 @@
+/* ═══════════════════════════════════════════════════════════
+   InBarber — Auth (login / cadastro)
+   100 % autossuficiente. Não depende de nenhum outro CSS.
+   Tokens e componentes extraídos do projeto (style.css /
+   perfil.css) para manter a identidade visual exata.
+═══════════════════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────
+   1. TOKENS
+──────────────────────────────────────── */
+:root {
+  --bg:        #0A0A0A;
+  --bg-2:      #111111;
+  --bg-3:      #1A1A1A;
+  --bg-4:      #242424;
+  --divider:   rgba(255,255,255,0.06);
+  --cream:     #F0EBE1;
+  --cream-2:   #C8C0B4;
+  --muted:     #6B6762;
+  --gold:      #0047ff;
+  --gold-lt:   #00f0ff;
+  --gold-dim:  #8b5cf6;
+  --gold-bg:   rgba(0,71,255,0.07);
+  --white:     #FFFFFF;
+
+  --ff-d: 'DM Serif Display', Georgia, serif;
+  --ff-b: 'DM Sans', system-ui, sans-serif;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  --r-sm:   6px;
+  --r-md:   12px;
+  --r-lg:   20px;
+  --r-full: 9999px;
+}
+
+/* ────────────────────────────────────────
+   2. RESET & BASE
+──────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--ff-b);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: var(--ff-b);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ────────────────────────────────────────
+   3. LAYOUT DA PÁGINA
+──────────────────────────────────────── */
+.auth-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem 3rem;
+}
+
+.auth-wrap {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* ────────────────────────────────────────
+   4. MARCA
+──────────────────────────────────────── */
+.auth-brand {
+  text-align: center;
+}
+
+.auth-brand-link {
+  display: inline-block;
+}
+
+.auth-brand-name {
+  font-family: var(--ff-d);
+  font-size: 2rem;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--cream);
+}
+
+/* ────────────────────────────────────────
+   5. CARD
+──────────────────────────────────────── */
+.auth-card {
+  background: var(--bg-3);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+/* ────────────────────────────────────────
+   6. ABAS
+──────────────────────────────────────── */
+.auth-tabs {
+  display: flex;
+  position: relative;
+  border-bottom: 1px solid var(--divider);
+}
+
+.auth-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 1rem 0;
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color .2s ease;
+  position: relative;
+  z-index: 1;
+  letter-spacing: 0;
+}
+
+.auth-tab--active {
+  color: var(--cream);
+}
+
+.auth-tab-line {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 50%;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 2px 2px 0 0;
+  transition: transform .25s var(--ease-out);
+}
+
+.auth-tab-line--right {
+  transform: translateX(100%);
+}
+
+/* ────────────────────────────────────────
+   7. PAINÉIS
+──────────────────────────────────────── */
+.auth-panel {
+  display: block;
+}
+
+.auth-panel--hidden {
+  display: none;
+}
+
+.auth-panel-inner {
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+}
+
+/* ────────────────────────────────────────
+   8. CAMPOS DE FORMULÁRIO
+──────────────────────────────────────── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: .375rem;
+}
+
+.form-label {
+  font-size: .8125rem;
+  font-weight: 500;
+  color: var(--cream-2);
+  letter-spacing: .01em;
+}
+
+.form-label-opt {
+  font-size: .75rem;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: .2rem;
+}
+
+.form-input {
+  width: 100%;
+  background: var(--bg-4);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--r-sm);
+  color: var(--cream);
+  font-family: var(--ff-b);
+  font-size: .9375rem;
+  line-height: 1.4;
+  padding: .6875rem .875rem;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form-input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.form-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(0,71,255,.15);
+}
+
+.form-input:autofill,
+.form-input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 100px var(--bg-4) inset;
+  -webkit-text-fill-color: var(--cream);
+  caret-color: var(--cream);
+}
+
+.form-hint {
+  font-size: .78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.form-error {
+  font-size: .78rem;
+  color: #f87171;
+  line-height: 1.4;
+}
+
+.form-error[hidden] {
+  display: none;
+}
+
+/* ────────────────────────────────────────
+   9. INPUT COM BOTÃO AFIXADO (mostrar senha)
+──────────────────────────────────────── */
+.input-affix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-affix .form-input {
+  padding-right: 2.75rem;
+}
+
+.affix-btn {
+  position: absolute;
+  right: .75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: .25rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .15s ease;
+  line-height: 0;
+}
+
+.affix-btn:hover {
+  color: var(--cream-2);
+}
+
+.affix-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
+}
+
+/* estado: senha visível */
+.affix-btn .icon-off        { display: none; }
+.affix-btn.is-visible .icon-on  { display: none; }
+.affix-btn.is-visible .icon-off { display: block; }
+
+/* ────────────────────────────────────────
+   10. ERRO GERAL (vindo do servidor)
+──────────────────────────────────────── */
+.auth-error {
+  background: rgba(220,38,38,.07);
+  border: 1px solid rgba(248,113,113,.25);
+  border-radius: var(--r-sm);
+  padding: .625rem .875rem;
+  font-size: .8125rem;
+  color: #f87171;
+  line-height: 1.4;
+}
+
+.auth-error[hidden] {
+  display: none;
+}
+
+/* ────────────────────────────────────────
+   11. BOTÃO PRIMÁRIO
+──────────────────────────────────────── */
+.btn-auth {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: 100%;
+  background: var(--gold);
+  color: var(--white);
+  font-family: var(--ff-b);
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: .875rem 1.5rem;
+  border: none;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: opacity .15s ease, transform .1s ease, box-shadow .2s ease;
+  box-shadow: 0 4px 20px rgba(0,71,255,.3);
+  margin-top: .25rem;
+}
+
+.btn-auth:hover:not(:disabled) {
+  opacity: .9;
+  box-shadow: 0 6px 28px rgba(0,71,255,.45);
+}
+
+.btn-auth:active:not(:disabled) {
+  transform: scale(.97);
+}
+
+.btn-auth:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.btn-auth:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* Label e spinner dentro do botão */
+.btn-label {
+  transition: opacity .15s ease;
+}
+
+.btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: auth-spin .65s linear infinite;
+  position: absolute;
+  right: 1.25rem;
+}
+
+.btn-spinner[hidden] {
+  display: none;
+}
+
+@keyframes auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ────────────────────────────────────────
+   12. LINK DE ALTERNÂNCIA ENTRAR ↔ CRIAR
+──────────────────────────────────────── */
+.auth-switch {
+  text-align: center;
+  font-size: .8125rem;
+  color: var(--muted);
+  padding-top: .125rem;
+}
+
+.auth-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gold-lt);
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity .15s ease;
+}
+
+.auth-link:hover {
+  opacity: .8;
+}
+
+/* ────────────────────────────────────────
+   13. RESPONSIVO
+──────────────────────────────────────── */
+@media (max-width: 440px) {
+  .auth-wrap {
+    max-width: 100%;
+  }
+
+  .auth-panel-inner {
+    padding: 1.5rem 1.125rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-brand-name {
+    font-size: 1.75rem;
+  }
+}
+
+/* ────────────────────────────────────────
+   14. ACESSIBILIDADE — REDUCED MOTION
+──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .auth-tab-line,
+  .btn-auth,
+  .form-input,
+  .affix-btn {
+    transition: none;
+  }
+
+  .btn-spinner {
+    animation: none;
+    opacity: .7;
+  }
+}

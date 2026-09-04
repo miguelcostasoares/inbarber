@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var $  = function (s, c) { return (c || document).querySelector(s); };
+  var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return [].slice.call((c || document).querySelectorAll(s)); };
 
   var KEY_LANG = 'lang';    /* partilhada com js/main.js */
@@ -352,8 +352,8 @@
   if (!window.I18N) {
     var PONTE = {
       'prod.tel_country': 'tel.country',
-      'prod.tel_search':  'tel.search',
-      'prod.tel_nofind':  'tel.nofind'
+      'prod.tel_search': 'tel.search',
+      'prod.tel_nofind': 'tel.nofind'
     };
     window.I18N = {
       get lang() { return currentLang; },
@@ -577,8 +577,8 @@
     var v = el.value.trim();
     var vazio = id === 'f-first' ? t('f.name_err') : t('f.last_err');
     var msg = !v ? vazio
-            : contarLetras(v) < 2 ? t('f.name_err_short')
-            : '';
+      : contarLetras(v) < 2 ? t('f.name_err_short')
+        : '';
     /* Enquanto o aviso de carácter inválido está de pé, não o apagamos */
     if (!mostrar && Date.now() < (avisoNomeAte[id] || 0)) return !msg;
     if (mostrar || el.getAttribute('aria-invalid') === 'true') marcarErro(el, '#err-' + id.slice(2), msg);
@@ -595,7 +595,7 @@
       if (depois !== antes) {
         var pos = el.selectionStart - (antes.length - depois.length);
         el.value = depois;
-        try { el.setSelectionRange(pos, pos); } catch (_) {}
+        try { el.setSelectionRange(pos, pos); } catch (_) { }
 
         /* O carácter desaparece do campo; sem esta mensagem a pessoa
            não percebe porquê. Fica de pé uns segundos para ser lida. */
@@ -627,8 +627,8 @@
     var el = $('#f-phone');
     if (!el || !telefone) return true;
     var msg = telefone.vazio() ? t('f.phone_err')
-            : !telefone.valido() ? t('f.phone_err_short')
-            : '';
+      : !telefone.valido() ? t('f.phone_err_short')
+        : '';
     var box = el.closest('.form-tel');
     if (mostrar || (box && box.classList.contains('is-invalid'))) marcarErro(el, '#err-phone', msg);
     return !msg;
@@ -688,15 +688,29 @@
     $('#hd-name').textContent = first ? first + '.' : '';
     $('#acct-name').textContent = (first + ' ' + last).trim();
     $('#acct-mail').textContent = saved['f-email'] || '';
-    var ini = $('#avatar-initials');
-    if (ini) ini.textContent = initialsOf(first, last);
+
+    var avatar = $('#avatar');
+    var fotoUrl = usuarioAtual && usuarioAtual.fotoUrl;
+    if (avatar) {
+      if (fotoUrl) {
+        avatar.innerHTML = '<img src="' + fotoUrl + '" alt="">';
+      } else {
+        var ini = avatar.querySelector('#avatar-initials');
+        var txt = initialsOf(first, last);
+        if (ini) {
+          ini.textContent = txt;
+        } else {
+          avatar.innerHTML = '<span id="avatar-initials">' + txt + '</span>';
+        }
+      }
+    }
   }
 
   /* Valida tudo e devolve o primeiro campo por corrigir */
   function primeiroInvalido() {
     var ordem = [
       ['f-first', validarNome('f-first', true)],
-      ['f-last',  validarNome('f-last', true)],
+      ['f-last', validarNome('f-last', true)],
       ['f-email', validarEmail(true)],
       ['f-phone', validarTel(true)],
       ['f-birth', validarNasc(true)]
@@ -707,7 +721,7 @@
 
   function limparErros() {
     [['f-first', '#err-first'], ['f-last', '#err-last'], ['f-email', '#err-email'],
-     ['f-phone', '#err-phone'], ['f-birth', '#err-birth']].forEach(function (par) {
+    ['f-phone', '#err-phone'], ['f-birth', '#err-birth']].forEach(function (par) {
       marcarErro($('#' + par[0]), par[1], '');
     });
     avisoNomeAte = {};
@@ -724,24 +738,24 @@
 
     saved = readForm();
     saved['f-first'] = saved['f-first'].trim();
-    saved['f-last']  = saved['f-last'].trim();
+    saved['f-last'] = saved['f-last'].trim();
     saved['f-email'] = saved['f-email'].trim();
     $('#f-first').value = saved['f-first'];
-    $('#f-last').value  = saved['f-last'];
+    $('#f-last').value = saved['f-last'];
     $('#f-email').value = saved['f-email'];
 
     var payload = {
-      primeiroNome:   saved['f-first'],
-      sobrenome:      saved['f-last'],
-      email:          saved['f-email'],
-      telefone:       saved.e164 || saved['f-phone'] || null,
+      primeiroNome: saved['f-first'],
+      sobrenome: saved['f-last'],
+      email: saved['f-email'],
+      telefone: saved.e164 || saved['f-phone'] || null,
       dataNascimento: saved['f-birth'] || null,
     };
 
     var btnSave = $('#save-personal');
-    var btnBar  = $('#savebar-save');
+    var btnBar = $('#savebar-save');
     if (btnSave) btnSave.disabled = true;
-    if (btnBar)  btnBar.disabled  = true;
+    if (btnBar) btnBar.disabled = true;
 
     API.updateProfile(payload).then(function (res) {
       usuarioAtual = res.usuario;
@@ -753,7 +767,7 @@
       toast(err.message || t('toast.form_err'), 'error');
     }).finally(function () {
       if (btnSave) btnSave.disabled = false;
-      if (btnBar)  btnBar.disabled  = false;
+      if (btnBar) btnBar.disabled = false;
     });
   }
 
@@ -769,7 +783,7 @@
     var email = $('#f-email');
     if (email) {
       email.addEventListener('input', function () { validarEmail(false); });
-      email.addEventListener('blur',  function () { validarEmail(true); });
+      email.addEventListener('blur', function () { validarEmail(true); });
     }
     var nasc = $('#f-birth');
     if (nasc) nasc.addEventListener('change', function () { validarNasc(true); });
@@ -808,11 +822,11 @@
   /* ════════════════════════════════════════
      4b. HISTÓRICO DE COMPRAS DE PRODUTOS
 
-     As reservas feitas em produtos.html vivem em ProdutosData; a estas
-     juntam-se compras antigas de exemplo, para o mockup nunca aparecer
-     vazio a quem entra pela primeira vez.
+     Carregado via API em carregarCompras(), filtrado pelo telefone
+     e164 do usuário logado (cliente_telefone_e164 da reserva).
+     Sem cliente_id na tabela reservas_produtos — o vínculo é pelo e164.
   ════════════════════════════════════════ */
-  
+
   var VISIVEIS = 3;
   var compras = [];
   var comprasAbertas = {};
@@ -820,8 +834,8 @@
 
   var ESTADOS = {
     confirmado: ['done', 'buy.state_done'],
-    reservado:  ['hold', 'buy.state_hold'],
-    libertado:  ['off',  'buy.state_off']
+    reservado: ['hold', 'buy.state_hold'],
+    libertado: ['off', 'buy.state_off']
   };
 
   function esc(s) {
@@ -856,10 +870,10 @@
 
     var linhas = (c.produtos || []).map(function (l) {
       return '<li class="buy-line">' +
-               '<span class="buy-q">' + l.quantidade + '×</span>' +
-               '<span class="buy-n">' + esc(l.nome) + '</span>' +
-               '<span class="buy-p">' + preco(l.subtotal) + '</span>' +
-             '</li>';
+        '<span class="buy-q">' + l.quantidade + '×</span>' +
+        '<span class="buy-n">' + esc(l.nome) + '</span>' +
+        '<span class="buy-p">' + preco(l.subtotal) + '</span>' +
+        '</li>';
     }).join('');
 
     var resumo = '<div class="buy-sum">' +
@@ -875,29 +889,29 @@
 
     var acoes = c.estado === 'libertado' ? '' :
       '<div class="buy-actions">' +
-        '<button type="button" class="btn btn--ghost btn--sm js-buy-again" data-id="' + esc(c.id) + '">' +
-          t('buy.again') + '</button>' +
+      '<button type="button" class="btn btn--ghost btn--sm js-buy-again" data-id="' + esc(c.id) + '">' +
+      t('buy.again') + '</button>' +
       '</div>';
 
     return '' +
       '<div class="buy-item' + (aberta ? ' is-open' : '') + '" data-id="' + esc(c.id) + '" role="listitem"' +
-        (escondida ? ' hidden' : '') + '>' +
-        '<button type="button" class="row row--link buy-hd" aria-expanded="' + aberta + '" ' +
-                'aria-controls="buy-body-' + esc(c.id) + '">' +
-          '<span class="row-icon">' + ICO_SACO + '</span>' +
-          '<span class="row-text">' +
-            '<strong>' + (n === 1 ? t('buy.items_one') : t('buy.items_many', { n: n })) + '</strong>' +
-            '<small class="buy-when">' + fmtData(c.dataReserva) +
-              ' <span class="buy-num">· ' + t('buy.order') + ' #' + esc(c.numero) + '</span></small>' +
-          '</span>' +
-          '<span class="buy-total">' + preco(c.total) + '</span>' +
-          '<span class="buy-state buy-state--' + est[0] + '">' + t(est[1]) + '</span>' +
-          ICO_CHEV +
-        '</button>' +
-        '<div class="buy-body" id="buy-body-' + esc(c.id) + '"' + (aberta ? '' : ' hidden') + '>' +
-          '<ul class="buy-lines" role="list">' + linhas + '</ul>' +
-          resumo + obs + acoes +
-        '</div>' +
+      (escondida ? ' hidden' : '') + '>' +
+      '<button type="button" class="row row--link buy-hd" aria-expanded="' + aberta + '" ' +
+      'aria-controls="buy-body-' + esc(c.id) + '">' +
+      '<span class="row-icon">' + ICO_SACO + '</span>' +
+      '<span class="row-text">' +
+      '<strong>' + (n === 1 ? t('buy.items_one') : t('buy.items_many', { n: n })) + '</strong>' +
+      '<small class="buy-when">' + fmtData(c.dataReserva) +
+      ' <span class="buy-num">· ' + t('buy.order') + ' #' + esc(c.numero) + '</span></small>' +
+      '</span>' +
+      '<span class="buy-total">' + preco(c.total) + '</span>' +
+      '<span class="buy-state buy-state--' + est[0] + '">' + t(est[1]) + '</span>' +
+      ICO_CHEV +
+      '</button>' +
+      '<div class="buy-body" id="buy-body-' + esc(c.id) + '"' + (aberta ? '' : ' hidden') + '>' +
+      '<ul class="buy-lines" role="list">' + linhas + '</ul>' +
+      resumo + obs + acoes +
+      '</div>' +
       '</div>';
   }
 
@@ -906,15 +920,15 @@
     if (!lista) return;
 
     var vazio = $('#buy-empty');
-    var foot  = $('#buy-foot');
+    var foot = $('#buy-foot');
     var spent = $('#buy-spent');
-    var nota  = $('#buy-note');
-    var more  = $('#buy-more');
+    var nota = $('#buy-note');
+    var more = $('#buy-more');
 
     if (!compras.length) {
       lista.innerHTML = '';
       if (vazio) vazio.hidden = false;
-      if (foot)  foot.hidden = true;
+      if (foot) foot.hidden = true;
       if (spent) spent.hidden = true;
       return;
     }
@@ -963,7 +977,7 @@
     setTimeout(function () { window.location.href = '/produtos.html'; }, 700);
   }
 
-function initCompras() {
+  function initCompras() {
     var lista = $('#buy-list');
     if (!lista) return;
 
@@ -985,31 +999,37 @@ function initCompras() {
   }
 
   function carregarCompras() {
-    API.listProductReservations().then(function (reais) {
-      compras = (reais || []).map(function (r) {
+    /* Filtra pelo e164 do usuário logado — vínculo disponível sem
+       alterar o schema (reservas_produtos não tem usuario_id). */
+    var e164Atual = (usuarioAtual && usuarioAtual.telefone) || '';
+    var filtro = e164Atual ? { clienteTelE164: e164Atual } : {};
+
+    API.listProductReservations(filtro).then(function (reais) {
+      /* Se não há e164, mostra vazio em vez de todas as reservas */
+      var lista = e164Atual ? (reais || []) : [];
+      compras = lista.map(function (r) {
         return {
-          id:          r.id,
-          numero:      r.numero,
+          id: r.id,
+          numero: r.numero,
           dataReserva: r.dataReserva || r.data_reserva,
-          estado:      r.estado,
-          total:       r.total,
-          poupanca:    r.poupanca || 0,
+          estado: r.estado,
+          total: r.total,
+          poupanca: r.poupanca || 0,
           observacoes: r.observacoes || '',
-          produtos:    (r.itens || r.produtos || []).map(function (l) {
+          produtos: (r.itens || r.produtos || []).map(function (l) {
             return {
-              produtoId:   l.produtoId   || l.produto_id,
-              nome:        l.nome,
-              quantidade:  l.quantidade,
-              preco:       l.preco,
+              produtoId: l.produtoId || l.produto_id,
+              nome: l.nome,
+              quantidade: l.quantidade,
+              preco: l.preco,
               precoTabela: l.precoTabela || l.preco_tabela || null,
-              subtotal:    l.subtotal,
+              subtotal: l.subtotal,
             };
           }),
         };
       });
       renderCompras();
     }).catch(function () {
-      /* Silencioso: lista fica vazia se a API falhar */
       renderCompras();
     });
   }
@@ -1023,10 +1043,6 @@ function initCompras() {
     var avatar = $('#avatar');
     if (!btn || !input || !avatar) return;
 
-    var stored = null;
-    try { stored = localStorage.getItem('inbarber.avatar'); } catch (e) {}
-    if (stored) avatar.innerHTML = '<img src="' + stored + '" alt="">';
-
     btn.addEventListener('click', function () { input.click(); });
 
     input.addEventListener('change', function () {
@@ -1034,9 +1050,37 @@ function initCompras() {
       if (!file) return;
       var reader = new FileReader();
       reader.onload = function () {
-        avatar.innerHTML = '<img src="' + reader.result + '" alt="">';
-        try { localStorage.setItem('inbarber.avatar', reader.result); } catch (e) {}
-        toast(t('toast.avatar'), 'ok');
+        var dataUri = reader.result;
+
+        var img = new Image();
+        img.onload = function () {
+          var MAX = 256;
+          var w = img.width;
+          var h = img.height;
+          var scale = Math.min(MAX / w, MAX / h, 1);
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.round(w * scale);
+          canvas.height = Math.round(h * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          var comprimido = canvas.toDataURL('image/jpeg', 0.82);
+
+          avatar.innerHTML = '<img src="' + dataUri + '" alt="">';
+
+          /* Persiste no banco */
+          API.uploadAvatar(comprimido).then(function (res) {
+            usuarioAtual = res.usuario;
+            toast(t('toast.avatar'), 'ok');
+          }).catch(function () {
+            var ini = initialsOf(
+              usuarioAtual && usuarioAtual.primeiroNome,
+              usuarioAtual && usuarioAtual.sobrenome
+            );
+            avatar.innerHTML = '<span id="avatar-initials">' + ini + '</span>';
+            toast(t('toast.form_err'), 'error');
+          });
+        };
+        img.src = dataUri;
+
       };
       reader.readAsDataURL(file);
     });
@@ -1128,6 +1172,24 @@ function initCompras() {
     });
 
     applyDisplayPrefs();
+
+    /* Barbeiros — carrega da API e preenche o select dinamicamente */
+    var selBarber = $('#p-barber');
+    if (selBarber) {
+      API.listBarbers().then(function (lista) {
+        var valorAtual = selBarber.value;
+        /* Remove opções antigas (exceto a primeira "Sem preferência") */
+        while (selBarber.options.length > 1) selBarber.remove(1);
+        (lista || []).forEach(function (b) {
+          var opt = document.createElement('option');
+          opt.value = b.id;
+          opt.textContent = b.nome;
+          selBarber.appendChild(opt);
+        });
+        /* Reaplica o valor salvo nas prefs */
+        if (valorAtual) selBarber.value = valorAtual;
+      }).catch(function () { /* silencioso */ });
+    }
 
     /* Idioma */
     $$('.seg-btn[data-lang]').forEach(function (b) {
@@ -1240,7 +1302,7 @@ function initCompras() {
 
       API.updatePassword(payload).then(function (res) {
         /* Rotaciona o token salvo localmente */
-        try { localStorage.setItem('inbarber_token', res.token); } catch (e) {}
+        try { localStorage.setItem('inbarber_token', res.token); } catch (e) { }
         cur.value = pwNew.value = confirm.value = '';
         updateStrength();
         toast(t('toast.pass'), 'ok');
@@ -1279,14 +1341,67 @@ function initCompras() {
     if (!silent) toast(t('toast.sessions_all'), 'ok');
   }
 
+  /* ── Ícones SVG de tipo de dispositivo ───────────────────── */
+  var ICO_MOBILE = '<svg viewBox="0 0 20 20"><rect x="6" y="2.5" width="8" height="15" rx="2"/><path d="M9 15h2"/></svg>';
+  var ICO_DESKTOP = '<svg viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="10" rx="1.5"/><path d="M7 17h6"/></svg>';
+  var ICO_TABLET = '<svg viewBox="0 0 20 20"><rect x="4" y="3" width="12" height="14" rx="2"/><path d="M8.5 14.5h3"/></svg>';
+
+  function sessionRowHTML(s) {
+    var isCurrent = !!s.isCurrent;
+    var ico = s.tipo === 'mobile' ? ICO_MOBILE : s.tipo === 'tablet' ? ICO_TABLET : ICO_DESKTOP;
+    var iconClass = 'row-icon' + (isCurrent ? ' row-icon--green' : '');
+    var acao = isCurrent
+      ? '<span class="session-dot" aria-hidden="true"></span>'
+      : '<button class="btn btn--ghost btn--sm js-revoke" data-session-id="' + esc(s.id) + '" data-i18n="sec.revoke">' + t('sec.revoke') + '</button>';
+    return '<div class="row" data-session-id="' + esc(s.id) + '">' +
+      '<span class="' + iconClass + '">' + ico + '</span>' +
+      '<span class="row-text">' +
+      '<strong>' + esc(s.dispositivo || 'Dispositivo desconhecido') + '</strong>' +
+      '<small>' + esc(s.local || '') + (isCurrent ? ' · ' + t('sec.this_device') : '') + '</small>' +
+      '</span>' +
+      acao +
+      '</div>';
+  }
+
   function initSessions() {
+    /* Backend não expõe listagem de sessões nesta versão — exibimos
+       apenas a sessão atual (token ativo) de forma determinística. */
+    var lista = $('#sessions-list');
+    if (lista) {
+      lista.innerHTML = sessionRowHTML({
+        id: 'current',
+        isCurrent: true,
+        tipo: _detectarTipoDispositivo(),
+        dispositivo: _detectarNomeDispositivo(),
+        local: '',
+      });
+    }
+
     document.addEventListener('click', function (e) {
       var btn = e.target.closest('.js-revoke');
       if (!btn) return;
       removeRow(btn.closest('.row'));
       toast(t('toast.session'), 'ok');
     });
+
     $('#revoke-all').addEventListener('click', function () { revokeAll(false); });
+  }
+
+  function _detectarTipoDispositivo() {
+    var ua = navigator.userAgent;
+    if (/tablet|ipad/i.test(ua)) return 'tablet';
+    if (/mobile|android|iphone/i.test(ua)) return 'mobile';
+    return 'desktop';
+  }
+
+  function _detectarNomeDispositivo() {
+    var ua = navigator.userAgent;
+    if (/iPhone/.test(ua)) return 'iPhone — Safari';
+    if (/iPad/.test(ua)) return 'iPad — Safari';
+    if (/Android/.test(ua)) return 'Android — Chrome';
+    if (/Macintosh/.test(ua)) return 'Mac — ' + (/Chrome/.test(ua) ? 'Chrome' : 'Safari');
+    if (/Windows/.test(ua)) return 'Windows — ' + (/Chrome/.test(ua) ? 'Chrome' : 'Edge');
+    return navigator.platform || 'Dispositivo atual';
   }
 
   /* ════════════════════════════════════════
@@ -1294,13 +1409,11 @@ function initCompras() {
   ════════════════════════════════════════ */
   function initData() {
     $('#logout-btn').addEventListener('click', function () {
-      API.logout().catch(function () {}).finally(function () {
+      API.logout().catch(function () { }).finally(function () {
         try {
           localStorage.removeItem('inbarber_token');
-          localStorage.removeItem('inbarber_user');
-          localStorage.removeItem('inbarber.profile');
-          localStorage.removeItem('inbarber.avatar');
-        } catch (e) {}
+          localStorage.removeItem('inbarber.cliente');
+        } catch (e) { }
         toast(t('toast.logout'), 'info');
         setTimeout(function () { window.location.href = '/index.html'; }, 900);
       });
@@ -1375,29 +1488,15 @@ function initCompras() {
      10. BOOT
   ════════════════════════════════════════ */
   function sincronizarLocalStorage(u) {
-    /* Mantém compatibilidade com modal de produtos (inbarber.cliente) */
+    /* Mantém apenas inbarber.cliente — usado pelo modal de reserva de produtos
+       para pré-preencher nome/telefone. Os demais espelhos foram removidos:
+       inbarber_user e inbarber.profile não têm mais consumidores. */
     try {
-      localStorage.setItem('inbarber_user', JSON.stringify({
-        id:           u.id,
-        nome:         u.primeiroNome,
-        sobrenome:    u.sobrenome,
-        nomeCompleto: u.nomeCompleto,
-        email:        u.email,
-        telefone:     u.telefone,
-      }));
-      localStorage.setItem('inbarber.profile', JSON.stringify({
-        'f-first': u.primeiroNome,
-        'f-last':  u.sobrenome,
-        'f-email': u.email,
-        'f-phone': u.telefone || '',
-        'f-birth': u.dataNascimento || '',
-        e164:      u.telefone || '',
-      }));
       localStorage.setItem('inbarber.cliente', JSON.stringify({
         nome: u.nomeCompleto,
         e164: u.telefone || '',
       }));
-    } catch (e) {}
+    } catch (e) { }
   }
 
   function preencherPrefsDaAPI(u) {
@@ -1405,15 +1504,15 @@ function initCompras() {
 
     /* Mapeamento entre chaves da API → chaves usadas nos selects/toggles */
     var MAPA_PREF = {
-      barber:         p.barbeiroId  || '',
-      slot:           p.horario     || '',
-      pay:            p.pagamento   || '',
-      notifReminder:  p.notifLembrete,
-      notifEmail:     p.notifEmail,
-      notifSms:       p.notifSms,
-      notifPromos:    p.notifPromos,
-      lead:           String(p.leadHoras || 24),
-      reduceMotion:   p.reduceMotion,
+      barber: p.barbeiroId || '',
+      slot: p.horario || '',
+      pay: p.pagamento || '',
+      notifReminder: p.notifLembrete,
+      notifEmail: p.notifEmail,
+      notifSms: p.notifSms,
+      notifPromos: p.notifPromos,
+      lead: String(p.leadHoras || 24),
+      reduceMotion: p.reduceMotion,
     };
 
     prefs = Object.assign({}, MAPA_PREF);
@@ -1456,24 +1555,38 @@ function initCompras() {
   }
 
   function preencherStatsDaAPI(u) {
-    /* Stats do cartão lateral (agendamentos, cliente desde, última visita) */
-    /* Esses dados virão do cliente_id quando vinculado — por ora mostramos
-       os campos que já temos na tabela usuarios */
+    /* "Cliente desde" vem de createdAt — já disponível em serializar_usuario() */
     var desde = u.createdAt ? new Date(u.createdAt).getFullYear() : '—';
-    var statSince = $('.acct-stat-num:nth-child(1)', $('.acct-stats'));
+    var elSince = $('#stat-since');
+    if (elSince) elSince.textContent = desde;
 
-    var stats = $$('.acct-stat');
-    /* stat[0] = agendamentos, stat[1] = cliente desde, stat[2] = última visita */
-    if (stats[1]) {
-      var numEl = stats[1].querySelector('.acct-stat-num');
-      if (numEl) numEl.textContent = desde;
-    }
-    /* stat[0] e stat[2] ficam para etapa futura (requerem join com agendamentos via cliente_id) */
+    /* Agendamentos e última visita: requerem cliente_id vinculado */
+    var clienteId = u.clienteId || null;
+    if (!clienteId) return;
+
+    API.getClientVisitas(clienteId).then(function (visitas) {
+      var total = visitas.length;
+      var elAppts = $('#stat-appts');
+      if (elAppts) elAppts.textContent = total > 0 ? total : '0';
+
+      /* Última visita = a mais recente (já vem por data DESC da API) */
+      var elLast = $('#stat-last');
+      if (elLast && visitas.length > 0) {
+        var ultima = visitas[0];
+        var d = new Date(ultima.data + 'T00:00:00');
+        var loc = currentLang === 'en' ? 'en-GB' : currentLang === 'es' ? 'es-ES' : 'pt-PT';
+        elLast.textContent = d.toLocaleDateString(loc, { day: '2-digit', month: 'short' });
+      } else if (elLast) {
+        elLast.textContent = '—';
+      }
+    }).catch(function () {
+      /* Silencioso: mantém "—" se falhar */
+    });
   }
 
   function bootPerfil() {
     var token = '';
-    try { token = localStorage.getItem('inbarber_token') || ''; } catch (e) {}
+    try { token = localStorage.getItem('inbarber_token') || ''; } catch (e) { }
 
     if (!token) {
       window.location.href = '/login.html';
@@ -1487,10 +1600,10 @@ function initCompras() {
       /* 1. Preenche formulário de dados pessoais */
       writeForm({
         'f-first': u.primeiroNome || '',
-        'f-last':  u.sobrenome    || '',
-        'f-email': u.email        || '',
+        'f-last': u.sobrenome || '',
+        'f-email': u.email || '',
         'f-birth': u.dataNascimento || '',
-        e164:      u.telefone     || '',
+        e164: u.telefone || '',
       });
       saved = readForm();
 
@@ -1512,7 +1625,7 @@ function initCompras() {
 
     }).catch(function () {
       /* Token expirado ou inválido → manda para login */
-      try { localStorage.removeItem('inbarber_token'); } catch (e) {}
+      try { localStorage.removeItem('inbarber_token'); } catch (e) { }
       window.location.href = '/login.html';
     });
   }

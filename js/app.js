@@ -1680,6 +1680,127 @@
      - Os serviços selecionados vão no sessionStorage e são
        restaurados ao voltar
   ════════════════════════════════════════ */
+  /* ════════════════════════════════════════
+     AUTH MODAL — login rápido antes de agendar
+  ════════════════════════════════════════ */
+  const AuthModal = (() => {
+    const backdrop  = document.getElementById('auth-modal-backdrop');
+    const closeBtn  = document.getElementById('auth-modal-close');
+    const emailEl   = document.getElementById('auth-modal-email');
+    const senhaEl   = document.getElementById('auth-modal-senha');
+    const submitBtn = document.getElementById('auth-modal-submit');
+    const errorEl   = document.getElementById('auth-modal-error');
+
+    if (!backdrop) return { isLoggedIn: () => false, guard: fn => fn() };
+
+    let afterLoginFn = null;
+
+    /* ── Estado de sessão ── */
+    function isLoggedIn() {
+      try { return !!localStorage.getItem('inbarber_token'); } catch (_) { return false; }
+    }
+
+    /* ── Abre / fecha ── */
+    function open(onSuccess) {
+      afterLoginFn = onSuccess || null;
+      clearError();
+      emailEl.value = '';
+      senhaEl.value = '';
+      backdrop.classList.add('open');
+      backdrop.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => emailEl.focus(), 60);
+    }
+
+    function close() {
+      backdrop.classList.remove('open');
+      backdrop.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      afterLoginFn = null;
+    }
+
+    /* ── Erro ── */
+    function clearError() {
+      errorEl.textContent = '';
+      errorEl.classList.remove('visible');
+      emailEl.classList.remove('is-error');
+      senhaEl.classList.remove('is-error');
+    }
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.classList.add('visible');
+      emailEl.classList.add('is-error');
+      senhaEl.classList.add('is-error');
+      senhaEl.value = '';
+      senhaEl.focus();
+    }
+
+    /* ── Loading state ── */
+    function setLoading(state) {
+      submitBtn.disabled = state;
+      submitBtn.classList.toggle('loading', state);
+    }
+
+    /* ── Submit ── */
+    async function submit() {
+      clearError();
+      const email = emailEl.value.trim();
+      const senha = senhaEl.value;
+
+      if (!email || !senha) {
+        showError('Preencha e-mail e senha.');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const data = await InBarberAPI.login({ email, senha });
+        if (data && data.token) {
+          try { localStorage.setItem('inbarber_token', data.token); } catch (_) {}
+          close();
+          if (typeof afterLoginFn === 'function') afterLoginFn();
+        } else {
+          showError('Resposta inesperada do servidor. Tente novamente.');
+        }
+      } catch (err) {
+        const msg = (err && err.message) || 'E-mail ou senha incorretos.';
+        showError(msg);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    /* ── Eventos ── */
+    closeBtn.addEventListener('click', close);
+
+    backdrop.addEventListener('click', e => {
+      if (e.target === backdrop) close();
+    });
+
+    submitBtn.addEventListener('click', submit);
+
+    [emailEl, senhaEl].forEach(el => {
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') submit();
+      });
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && backdrop.classList.contains('open')) close();
+    });
+
+    /* ── Guard: executa fn se logado, senão abre o modal ── */
+    function guard(fn) {
+      if (isLoggedIn()) { fn(); return; }
+      open(fn);
+    }
+
+    var api = { isLoggedIn: isLoggedIn, open: open, close: close, guard: guard };
+    window.AuthModal = api;
+    return api;
+  })();
+
   (function initAgendarNavigation() {
     const SVC_KEY = 'svc_selected';
 
@@ -1690,19 +1811,21 @@
       } catch (_) {}
     }
 
-
+    /* ── Navega para a página de serviços ── */
+    function goBook() {
+      persistSelected();
+      window.location.href = 'servicos.html';
+    }
 
     /* ── Botões de agendamento ──
-       Antes, todos os CTAs eram href="#agendar" e o JS fazia
-       preventDefault() para os redirecionar. Como o id="agendar"
-       estava no próprio botão do hero, sem JS o utilizador era
-       atirado para o topo da página em vez de agendar.
-
-       Agora o href leva o destino real e o JS só acrescenta a
-       persistência da seleção. O link funciona sozinho; o script
-       apenas melhora. Marcar um CTA novo = pôr-lhe data-book. */
+       Intercepta o clique: se o utilizador não estiver logado, abre o
+       modal de login rápido antes de prosseguir. Ao fazer login com
+       sucesso, o goBook() é chamado automaticamente como callback. */
     document.querySelectorAll('[data-book]').forEach(el => {
-      el.addEventListener('click', persistSelected);
+      el.addEventListener('click', e => {
+        e.preventDefault();
+        AuthModal.guard(goBook);
+      });
     });
 
     
@@ -1756,15 +1879,20 @@
 
         li.querySelector('.team-cta').addEventListener('click', function(e) {
           e.preventDefault();
-          try {
-            sessionStorage.setItem('barber_selected', b.id);
-            sessionStorage.setItem('selected_barber', JSON.stringify({
-              id:   b.id,
-              name: b.name,
-              role: b.role || '',
-            }));
-          } catch (_) {}
-          window.location.href = 'servicos.html';
+
+          function persistBarberAndGo() {
+            try {
+              sessionStorage.setItem('barber_selected', b.id);
+              sessionStorage.setItem('selected_barber', JSON.stringify({
+                id:   b.id,
+                name: b.name,
+                role: b.role || '',
+              }));
+            } catch (_) {}
+            window.location.href = 'servicos.html';
+          }
+
+          AuthModal.guard(persistBarberAndGo);
         });
       });
 
@@ -1837,18 +1965,17 @@
 
     /* ── Busca slots reais do backend para um barbeiro e data ── */
     async function fetchSlotsForDate(barberId, dateStr) {
-      const url = '/api/barber-availability?barberId='
-                + encodeURIComponent(barberId)
-                + '&date=' + encodeURIComponent(dateStr);
-      const res = await fetch(url);
-      if (!res.ok) return [];
-      const data = await res.json();
-      if (data.closed || !Array.isArray(data.available)) return [];
-      /* Filtra horários que já passaram (incluindo 30 min de antecedência) */
-      const cutoff = Date.now() + 30 * 60 * 1000;
-      return data.available
-        .map(t => timeToDate(dateStr, t))
-        .filter(d => d.getTime() > cutoff);
+      try {
+        const data = await InBarberAPI.getBarberAvailability(barberId, dateStr);
+        if (data.closed || !Array.isArray(data.available)) return [];
+        /* Filtra horários que já passaram (incluindo 30 min de antecedência) */
+        const cutoff = Date.now() + 30 * 60 * 1000;
+        return data.available
+          .map(t => timeToDate(dateStr, t))
+          .filter(d => d.getTime() > cutoff);
+      } catch (_) {
+        return [];
+      }
     }
 
     /* ── Renderiza os chips ── */
@@ -1884,18 +2011,23 @@
         /* Clique: guarda slot + barbeiro → vai direto para serviços */
         a.addEventListener('click', function (e) {
           e.preventDefault();
-          try {
-            sessionStorage.setItem('slot_preselected', Schedule.isoLocal(slotDate));
-            if (barber) {
-              sessionStorage.setItem('barber_selected', barber.id);
-              sessionStorage.setItem('selected_barber', JSON.stringify({
-                id:   barber.id,
-                name: barber.name,
-                role: barber.role || '',
-              }));
-            }
-          } catch (_) {}
-          window.location.href = 'servicos.html';
+
+          function persistSlotAndGo() {
+            try {
+              sessionStorage.setItem('slot_preselected', Schedule.isoLocal(slotDate));
+              if (barber) {
+                sessionStorage.setItem('barber_selected', barber.id);
+                sessionStorage.setItem('selected_barber', JSON.stringify({
+                  id:   barber.id,
+                  name: barber.name,
+                  role: barber.role || '',
+                }));
+              }
+            } catch (_) {}
+            window.location.href = 'servicos.html';
+          }
+
+          AuthModal.guard(persistSlotAndGo);
         });
 
         const d = document.createElement('span');

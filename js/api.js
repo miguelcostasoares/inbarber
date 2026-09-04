@@ -571,7 +571,12 @@ function createProductReservation(data) {
  * @returns {Promise<Array>}
  */
 function listProductReservations(filters = {}) {
-  return apiRequest(`/product-reservations${buildQueryString(filters)}`);
+  return apiRequest(`/product-reservations${buildQueryString({
+    estado:          filters.estado,
+    agendamentoId:   filters.agendamentoId,
+    clienteTelE164:  filters.clienteTelE164,
+    search:          filters.search,
+  })}`);
 }
 
 /**
@@ -923,6 +928,20 @@ function updatePassword(data) {
   });
 }
 
+/**
+ * Envia o avatar do usuário como data URI.
+ * @param {string} dataUri  - data:image/... em base64
+ * @returns {Promise<{ usuario: Object }>}
+ */
+function uploadAvatar(dataUri) {
+  const token = localStorage.getItem('inbarber_token') || '';
+  return apiRequest('/auth/avatar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ dataUri }),
+  });
+}
+
 window.InBarberAPI = {
   listAppointments,
   getAppointment,
@@ -981,4 +1000,6 @@ window.InBarberAPI = {
   updateProfile,
   updatePrefs,
   updatePassword,
+  updatePassword,
+  uploadAvatar,
 };

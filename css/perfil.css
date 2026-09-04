@@ -683,7 +683,7 @@ input, select, textarea { font-family: var(--ff-b); font-size: 14px; color: var(
   font-family: var(--ff-d);
   font-style: normal;
   font-size: 1.05rem;
-  color: var(--gold-lt);
+  color: var(--green);
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }

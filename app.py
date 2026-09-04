@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, send_from_directory
+import base64
 from dotenv import load_dotenv
 import mysql.connector
 import os as _os
@@ -88,6 +89,7 @@ def serializar_usuario(row):
             'tamanhoTexto':  row['pref_tamanho_texto'],
             'reduceMotion':  bool(row['pref_reduce_motion']),
         },
+        'fotoUrl':   row.get('foto_url') or None,
         'createdAt': row['created_at'].isoformat() if row.get('created_at') else None,
     }
 
@@ -2487,6 +2489,10 @@ def listar_reservas_produtos():
         filtros.append('agendamento_id = %s')
         params.append(request.args['agendamentoId'])
 
+    if request.args.get('clienteTelE164'):
+        filtros.append('cliente_telefone_e164 = %s')
+        params.append(request.args['clienteTelE164'])
+
     if request.args.get('search'):
         filtros.append('(cliente_nome LIKE %s OR numero LIKE %s)')
         termo = f"%{request.args['search']}%"
@@ -4601,6 +4607,46 @@ def alterar_senha():
         cursor.close()
         conn.close()
 
+@app.route('/api/auth/avatar', methods=['POST'])
+def atualizar_avatar():
+    """Recebe a foto em base64 (data URI), salva no DB e devolve a URL."""
+    token = token_do_request()
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        usuario = usuario_do_token(cursor, token)
+        if not usuario:
+            return jsonify({'error': 'Não autenticado.'}), 401
+
+        dados = request.get_json(silent=True) or {}
+        data_uri = dados.get('dataUri', '').strip()
+
+        if not data_uri:
+            return jsonify({'error': 'dataUri obrigatório.'}), 400
+
+        # Aceita apenas imagens
+        if not data_uri.startswith('data:image/'):
+            return jsonify({'error': 'Formato inválido. Envie uma imagem.'}), 400
+
+        # Limita tamanho: ~600 KB em base64 ≈ 450 KB real
+        if len(data_uri) > 200_000:
+            return jsonify({'error': 'Imagem muito grande. Tente outra foto.'}), 413
+
+        cursor.execute(
+            'UPDATE usuarios SET foto_url = %s WHERE id = %s',
+            (data_uri, usuario['id'])
+        )
+        conn.commit()
+
+        cursor.execute('SELECT * FROM usuarios WHERE id = %s', (usuario['id'],))
+        return jsonify({'usuario': serializar_usuario(cursor.fetchone())}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'Erro ao salvar avatar: {e}'}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == '__main__':
     try:

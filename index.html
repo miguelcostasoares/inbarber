@@ -2141,6 +2141,51 @@
     })();
   </script>
 
+  <!-- ═══ MODAL DE LOGIN RÁPIDO ═══ -->
+  <div class="auth-modal-backdrop" id="auth-modal-backdrop" role="dialog" aria-modal="true"
+       aria-labelledby="auth-modal-title" aria-hidden="true">
+    <div class="auth-modal" id="auth-modal">
+      <div class="auth-modal-puller" aria-hidden="true"></div>
+
+      <div class="auth-modal-head">
+        <div>
+          <h2 class="auth-modal-title" id="auth-modal-title">Entre para<br><em>agendar</em></h2>
+          <p class="auth-modal-sub">Acesse a sua conta e finalize o agendamento em segundos.</p>
+        </div>
+        <button class="auth-modal-close" id="auth-modal-close" aria-label="Fechar">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <line x1="1" y1="1" x2="13" y2="13"/>
+            <line x1="13" y1="1" x2="1" y2="13"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="auth-modal-fields">
+        <div class="auth-modal-field">
+          <label class="auth-modal-label" for="auth-modal-email">E-mail</label>
+          <input class="auth-modal-input" id="auth-modal-email" type="email"
+                 placeholder="seu@email.com" autocomplete="email" inputmode="email">
+        </div>
+        <div class="auth-modal-field">
+          <label class="auth-modal-label" for="auth-modal-senha">Senha</label>
+          <input class="auth-modal-input" id="auth-modal-senha" type="password"
+                 placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <p class="auth-modal-error" id="auth-modal-error" role="alert"></p>
+      </div>
+
+      <button class="auth-modal-btn" id="auth-modal-submit">
+        <span class="auth-modal-btn-spinner" aria-hidden="true"></span>
+        <span class="auth-modal-btn-label">Entrar e agendar</span>
+      </button>
+
+      <p class="auth-modal-footer">
+        Não tem conta?
+        <a href="/perfil.html">Cadastre-se aqui</a>
+      </p>
+    </div>
+  </div>
+
 </body>
 
 </html>

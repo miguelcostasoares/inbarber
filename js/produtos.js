@@ -383,8 +383,18 @@
       var btn = e.target.closest('[data-add]');
       if (!btn) return;
       e.preventDefault();
-      D.carrinho.adicionar(btn.dataset.add, 1);
-      window.location.href = 'produtos.html?cat=todos';
+      var prodId = btn.dataset.add;
+
+      function adicionarEIr() {
+        D.carrinho.adicionar(prodId, 1);
+        window.location.href = 'produtos.html?cat=todos';
+      }
+
+      if (window.AuthModal) {
+        window.AuthModal.guard(adicionarEIr);
+      } else {
+        adicionarEIr();
+      }
     });
 
     document.addEventListener('i18n:change', renderLanding);
@@ -688,7 +698,15 @@
     if (backdrop) backdrop.addEventListener('click', fecharSheet);
 
     var cta = $('#cart-cta');
-    if (cta) cta.addEventListener('click', abrirModal);
+    if (cta) {
+      cta.addEventListener('click', function () {
+        if (window.AuthModal) {
+          window.AuthModal.guard(abrirModal);
+        } else {
+          abrirModal();
+        }
+      });
+    }
 
     document.addEventListener('carrinho:change', function () { renderCarrinho(); });
   }
@@ -862,17 +880,35 @@
   function preencherComPerfil() {
     var nome = $('#f-nome'), tel = $('#f-tel');
     if (!nome || !tel) return;
+
+    /* 1. Preenche imediatamente com o que já estiver guardado localmente
+          (última reserva feita — evita a pessoa digitar o nome de novo) */
     try {
       var guardado = JSON.parse(localStorage.getItem(K_CLIENTE) || 'null');
-      var perfil   = JSON.parse(localStorage.getItem('inbarber.profile') || 'null')
-                  || JSON.parse(localStorage.getItem('inbarber_user') || 'null');
-      var fonte = guardado || perfil;
-      if (!fonte) return;
-      if (!nome.value) nome.value = limparNome(fonte.nome || fonte.name || '');
-      if (!tel.value && telefone) {
-        telefone.definir(fonte.e164 || fonte.tel || fonte.telefone || fonte.phone || '');
+      if (guardado) {
+        if (!nome.value) nome.value = limparNome(guardado.nome || '');
+        if (!tel.value && telefone) {
+          telefone.definir(guardado.e164 || guardado.tel || '');
+        }
       }
     } catch (_) {}
+
+    /* 2. Enriquece com os dados reais da conta, se houver token */
+    var token = '';
+    try { token = localStorage.getItem('inbarber_token') || ''; } catch (_) {}
+    if (!token || !window.InBarberAPI) return;
+
+    window.InBarberAPI.getMe && window.InBarberAPI.getMe()
+      .then(function (data) {
+        var u = (data && data.usuario) || {};
+        if (!nome.value && (u.primeiroNome || u.nomeCompleto)) {
+          nome.value = limparNome(u.nomeCompleto || u.primeiroNome || '');
+        }
+        if (!tel.value && u.telefone && telefone) {
+          telefone.definir(u.telefone);
+        }
+      })
+      .catch(function () { /* silencia — campos já estão com o guardado local */ });
   }
 
   function guardarCliente(nome) {

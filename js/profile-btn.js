@@ -9,13 +9,8 @@
 (function () {
   'use strict';
 
-  var KEY_USER    = 'inbarber_user';        /* sessão simulada        */
-  var KEY_PROFILE = 'inbarber.profile';     /* dados da página perfil */
-  var KEY_AVATAR  = 'inbarber.avatar';      /* foto em dataURL        */
-
-  /* Cliente de demonstração — o mesmo que aparece em perfil.html */
-  var DEMO_NAME  = 'Ricardo Almeida';
-  var DEMO_EMAIL = 'ricardo.almeida@email.com';
+  var KEY_TOKEN   = 'inbarber_token';       /* token de sessão real   */
+  var API_BASE    = 'http://127.0.0.1:8000/api';
 
   /* ─── i18n mínimo (segue a chave 'lang' do resto do site) ─── */
   var STR = {
@@ -32,31 +27,37 @@
   function t(k) { return STR[lang()][k]; }
 
   /* ─── LEITURA DE ESTADO ─────────────────────────────────── */
-  function read(key) {
-    try { return JSON.parse(localStorage.getItem(key)); } catch (_) { return null; }
+  function getToken() {
+    try { return localStorage.getItem(KEY_TOKEN) || ''; } catch (_) { return ''; }
   }
 
-  function getIdentity() {
-    var profile = read(KEY_PROFILE);
-    var session = read(KEY_USER);
-    var name = '', email = '';
-
-    if (profile && (profile['f-first'] || profile['f-last'])) {
-      name  = ((profile['f-first'] || '') + ' ' + (profile['f-last'] || '')).trim();
-      email = profile['f-email'] || '';
+  function loadIdentity(callback) {
+    var token = getToken();
+    if (!token) {
+      callback({ loggedIn: false, name: '', email: '', photo: null });
+      return;
     }
-    if (!name && session && session.name)  name  = session.name;
-    if (!email && session && session.email) email = session.email;
-
-    var photo = null;
-    try { photo = localStorage.getItem(KEY_AVATAR); } catch (_) {}
-
-    return {
-      loggedIn: true,
-      name: name || DEMO_NAME,
-      email: email || DEMO_EMAIL,
-      photo: photo
-    };
+    fetch(API_BASE + '/auth/me', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      }
+    })
+    .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+    .then(function (data) {
+      var u = data.usuario || {};
+      callback({
+        loggedIn: true,
+        name:  u.nomeCompleto || ((u.primeiroNome || '') + ' ' + (u.sobrenome || '')).trim(),
+        email: u.email  || '',
+        photo: u.fotoUrl || null
+      });
+    })
+    .catch(function () {
+      try { localStorage.removeItem(KEY_TOKEN); } catch (_) {}
+      callback({ loggedIn: false, name: '', email: '', photo: null });
+    });
   }
 
   function initials(name) {
@@ -124,29 +125,43 @@
     return menu;
   }
 
-  function logout() {
-    try {
-      localStorage.removeItem(KEY_USER);
-      localStorage.removeItem(KEY_PROFILE);
-      localStorage.removeItem(KEY_AVATAR);
-      sessionStorage.removeItem('booking_datetime');
-      sessionStorage.removeItem('svc_selected');
-      sessionStorage.removeItem('svc_barber');
-    } catch (_) {}
-    window.location.href = '/index.html';
+    function logout() {
+    var token = getToken();
+
+    function clearAndRedirect() {
+      try { localStorage.removeItem(KEY_TOKEN); } catch (_) {}
+      try {
+        sessionStorage.removeItem('slot_preselected');
+        sessionStorage.removeItem('barber_selected');
+        sessionStorage.removeItem('selected_barber');
+        sessionStorage.removeItem('svc_selected');
+      } catch (_) {}
+      window.location.href = '/index.html';
+    }
+
+    if (!token) { clearAndRedirect(); return; }
+
+    fetch(API_BASE + '/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      }
+    })
+    .then(clearAndRedirect, clearAndRedirect);
   }
 
   /* ─── LIGAÇÃO BOTÃO ↔ MENU ──────────────────────────────── */
   function wire(btn) {
-    var id = getIdentity();
-    paintButton(btn, id);
+    var idPending = { loggedIn: false, name: '', email: '', photo: null };
+    paintButton(btn, idPending);
 
     var wrap = document.createElement('div');
     wrap.className = 'profile-menu-wrap';
     btn.parentNode.insertBefore(wrap, btn);
     wrap.appendChild(btn);
 
-    var menu = buildMenu(id);
+    var menu = buildMenu(idPending);
     wrap.appendChild(menu);
 
     btn.setAttribute('aria-haspopup', 'menu');
@@ -199,14 +214,26 @@
       }, 60);
     });
 
-    menu.addEventListener('click', function (e) {
-      var item = e.target.closest('.profile-menu-item');
-      if (!item) return;
-      e.preventDefault();
-      e.stopPropagation();
-      closeMenu(false);
-      if (item.dataset.action === 'logout') logout();
-      else window.location.href = '/perfil.html';
+    function bindMenuClick() {
+      menu.addEventListener('click', function (e) {
+        var item = e.target.closest('.profile-menu-item');
+        if (!item) return;
+        e.preventDefault();
+        e.stopPropagation();
+        closeMenu(false);
+        if (item.dataset.action === 'logout') logout();
+        else window.location.href = '/perfil.html';
+      });
+    }
+
+    bindMenuClick();
+
+    /* Hidrata botão e menu assim que a API responder */
+    loadIdentity(function (id) {
+      paintButton(btn, id);
+      var fresh = buildMenu(id);
+      menu.innerHTML = fresh.innerHTML;
+      bindMenuClick();
     });
   }
 

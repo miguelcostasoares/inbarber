@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
 <link rel="stylesheet" href="/css/perfil.css">
 <link rel="stylesheet" href="/css/profile-btn.css">
 </head>
@@ -68,15 +69,15 @@
 
     <div class="acct-stats">
       <div class="acct-stat">
-        <span class="acct-stat-num">24</span>
+        <span class="acct-stat-num" id="stat-appts">—</span>
         <span class="acct-stat-label" data-i18n="stat.appts">Agendamentos</span>
       </div>
       <div class="acct-stat">
-        <span class="acct-stat-num">2023</span>
+        <span class="acct-stat-num" id="stat-since">—</span>
         <span class="acct-stat-label" data-i18n="stat.since">Cliente desde</span>
       </div>
       <div class="acct-stat">
-        <span class="acct-stat-num acct-stat-num--sm">12 ago</span>
+        <span class="acct-stat-num acct-stat-num--sm" id="stat-last">—</span>
         <span class="acct-stat-label" data-i18n="stat.last">Última visita</span>
       </div>
     </div>
@@ -184,9 +185,6 @@
             <label class="form-label" for="p-barber" data-i18n="acc.fav_barber">Barbeiro preferido</label>
             <select class="form-input form-select js-pref" id="p-barber" data-pref="barber">
               <option value="" data-i18n="acc.no_pref">Sem preferência</option>
-              <option value="daniel">Daniel</option>
-              <option value="rafael">Rafael</option>
-              <option value="marcos">Marcos</option>
             </select>
           </div>
 
@@ -549,37 +547,8 @@
           </div>
         </div>
 
-        <div class="row">
-          <span class="row-icon row-icon--green">
-            <svg viewBox="0 0 20 20"><rect x="6" y="2.5" width="8" height="15" rx="2"/><path d="M9 15h2"/></svg>
-          </span>
-          <span class="row-text">
-            <strong>iPhone 14 — Safari</strong>
-            <small data-i18n="sec.this_device">Porto, Portugal · este dispositivo</small>
-          </span>
-          <span class="session-dot" aria-hidden="true"></span>
-        </div>
-
-        <div class="row">
-          <span class="row-icon">
-            <svg viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="10" rx="1.5"/><path d="M7 17h6"/></svg>
-          </span>
-          <span class="row-text">
-            <strong>MacBook Pro — Chrome</strong>
-            <small data-i18n="sec.session_2">Porto, Portugal · há 2 dias</small>
-          </span>
-          <button class="btn btn--ghost btn--sm js-revoke" data-i18n="sec.revoke">Terminar</button>
-        </div>
-
-        <div class="row">
-          <span class="row-icon">
-            <svg viewBox="0 0 20 20"><rect x="4" y="3" width="12" height="14" rx="2"/><path d="M8.5 14.5h3"/></svg>
-          </span>
-          <span class="row-text">
-            <strong>Galaxy Tab — Chrome</strong>
-            <small data-i18n="sec.session_3">Lisboa, Portugal · há 3 semanas</small>
-          </span>
-          <button class="btn btn--ghost btn--sm js-revoke" data-i18n="sec.revoke">Terminar</button>
+        <div id="sessions-list">
+          <!-- preenchido por initSessions() em perfil.js -->
         </div>
 
         <div class="card-foot">

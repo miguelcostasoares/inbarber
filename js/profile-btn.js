@@ -235,6 +235,16 @@
       menu.innerHTML = fresh.innerHTML;
       bindMenuClick();
     });
+
+    /* Refresca quando o login rápido da landing conclui */
+    document.addEventListener('inbarber:login', function () {
+      loadIdentity(function (id) {
+        paintButton(btn, id);
+        var fresh = buildMenu(id);
+        menu.innerHTML = fresh.innerHTML;
+        bindMenuClick();
+      });
+    });
   }
 
   /* ─── BOOT ──────────────────────────────────────────────── */

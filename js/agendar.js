@@ -434,82 +434,14 @@
       if (summaryCta)    { summaryCta.disabled = false; summaryCta.setAttribute('aria-disabled','false'); }
     }
 
-    /* ── Modal de dados do cliente ── */
-    const clientOverlay  = document.getElementById('client-modal-overlay');
-    const clientNameInp  = document.getElementById('client-name-input');
-    const clientPhoneInp = document.getElementById('client-phone-input');
-    const clientCta      = document.getElementById('client-modal-cta');
-    const clientCancel   = document.getElementById('client-modal-cancel');
-    const clientError    = document.getElementById('client-modal-error');
-    const clientSpinner  = document.getElementById('client-modal-spinner');
-
-    function openClientModal() {
-      // Pré-preenche se já tiver dados salvos (ex: login)
-      clientNameInp.value  = localStorage.getItem('client_name')  || '';
-      clientPhoneInp.value = localStorage.getItem('client_phone') || '';
-      clientError.textContent = '';
-      clientNameInp.classList.remove('error');
-      clientPhoneInp.classList.remove('error');
-      validateClientForm();
-      clientOverlay.setAttribute('aria-hidden', 'false');
-      clientOverlay.classList.add('open');
-      document.body.style.overflow = 'hidden';
-      // Foca no primeiro campo vazio
-      setTimeout(() => {
-        (clientNameInp.value ? clientPhoneInp : clientNameInp).focus();
-      }, 320);
-    }
-
-    function closeClientModal() {
-      clientOverlay.classList.remove('open');
-      clientOverlay.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-    }
-
-    function validateClientForm() {
-      const nameOk  = clientNameInp.value.trim().length >= 2;
-      const phoneOk = clientPhoneInp.value.replace(/\D/g, '').length >= 10;
-      clientCta.disabled = !(nameOk && phoneOk);
-      clientCta.setAttribute('aria-disabled', clientCta.disabled ? 'true' : 'false');
-    }
-
-    function phoneFormat(val) {
-      const n = val.replace(/\D/g, '').slice(0, 11);
-      if (n.length <= 2)  return n;
-      if (n.length <= 6)  return `(${n.slice(0,2)}) ${n.slice(2)}`;
-      if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
-      return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
-    }
-
-    if (clientNameInp)  clientNameInp.addEventListener('input',  validateClientForm);
-    if (clientPhoneInp) {
-      clientPhoneInp.addEventListener('input', () => {
-        clientPhoneInp.value = phoneFormat(clientPhoneInp.value);
-        validateClientForm();
-      });
-    }
-    if (clientCancel) clientCancel.addEventListener('click', closeClientModal);
-    if (clientOverlay) {
-      clientOverlay.addEventListener('click', e => {
-        if (e.target === clientOverlay) closeClientModal();
-      });
-    }
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && clientOverlay && clientOverlay.classList.contains('open')) {
-        closeClientModal();
-      }
-    });
-
     /* ── Monta payload e cria agendamento ── */
-    async function submitAppointment(clientName, clientPhone) {
+    async function submitAppointment() {
       const svcs = services.slice().sort((a, b) => parseInt(b.dur, 10) - parseInt(a.dur, 10));
       const primarySvc = svcs[0];
       const extraNames = svcs.slice(1).map(s => s.name).join(', ');
       const barberId   = (barber && barber.id !== 'qualquer') ? barber.id : null;
 
       const payload = {
-        client:    clientName,
-        phone:     clientPhone,
         date:      selectedDateStr,
         time:      selectedTime,
         serviceId: primarySvc ? primarySvc.id : '',
@@ -519,10 +451,7 @@
 
       const appt = await InBarberAPI.createAppointment(payload);
 
-      // Salva dados do cliente para próximas visitas (evita redigitar)
       try {
-        localStorage.setItem('client_name',  clientName);
-        localStorage.setItem('client_phone', clientPhone);
         sessionStorage.setItem('booking_result', JSON.stringify({
           id:   appt.id,
           date: selectedDateStr,
@@ -533,71 +462,18 @@
       window.location.href = 'confirmacao.html';
     }
 
-    /* ── CTA do modal: finalizar agendamento ── */
-    if (clientCta) {
-      clientCta.addEventListener('click', async () => {
-        const clientName  = clientNameInp.value.trim();
-        const clientPhone = clientPhoneInp.value.trim();
-
-        // Validação visual
-        let hasErr = false;
-        if (clientName.length < 2) {
-          clientNameInp.classList.add('error');
-          hasErr = true;
-        } else {
-          clientNameInp.classList.remove('error');
-        }
-        if (clientPhoneInp.value.replace(/\D/g, '').length < 10) {
-          clientPhoneInp.classList.add('error');
-          hasErr = true;
-        } else {
-          clientPhoneInp.classList.remove('error');
-        }
-        if (hasErr) {
-          clientError.textContent = 'Preencha nome e telefone para continuar.';
-          return;
-        }
-
-        clientError.textContent = '';
-        clientCta.classList.add('loading');
-        clientCta.disabled = true;
-
-        try {
-          await submitAppointment(clientName, clientPhone);
-        } catch (err) {
-          clientCta.classList.remove('loading');
-          clientCta.disabled = false;
-          clientCta.setAttribute('aria-disabled', 'false');
-          clientError.textContent = err?.message || 'Erro ao criar agendamento. Tente novamente.';
-        }
-      });
-    }
-
-    /* ── CTA confirmar — verifica dados e abre modal se necessário ── */
+    /* ── CTA confirmar ── */
     if (summaryCta) {
       summaryCta.addEventListener('click', () => {
         if (!selectedDateStr || !selectedTime || summaryCta.disabled) return;
-
-        const savedName  = localStorage.getItem('client_name')  || '';
-        const savedPhone = localStorage.getItem('client_phone') || '';
-        const phoneDigits = savedPhone.replace(/\D/g, '');
-
-        // Se já tem nome e telefone válidos (ex: veio do login), cria direto
-        if (savedName.trim().length >= 2 && phoneDigits.length >= 10) {
-          summaryCta.disabled = true;
-          summaryCta.setAttribute('aria-disabled', 'true');
-          submitAppointment(savedName.trim(), savedPhone.trim())
-            .catch(err => {
-              summaryCta.disabled = false;
-              summaryCta.setAttribute('aria-disabled', 'false');
-              clientError && (clientError.textContent = '');
-              alert(err?.message || 'Erro ao criar agendamento. Tente novamente.');
-            });
-          return;
-        }
-
-        // Não tem dados → abre modal
-        openClientModal();
+        summaryCta.disabled = true;
+        summaryCta.setAttribute('aria-disabled', 'true');
+        submitAppointment()
+          .catch(err => {
+            summaryCta.disabled = false;
+            summaryCta.setAttribute('aria-disabled', 'false');
+            alert(err?.message || 'Erro ao criar agendamento. Tente novamente.');
+          });
       });
     }
 

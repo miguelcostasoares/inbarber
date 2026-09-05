@@ -1701,11 +1701,33 @@
     }
 
     /* ── Abre / fecha ── */
-    function open(onSuccess) {
+    const MODAL_TEXTS = {
+      agendamento: {
+        titulo:  'Entre para<br><em>agendar</em>',
+        sub:     'Acesse a sua conta e finalize o agendamento em segundos.',
+        submit:  'Entrar e agendar'
+      },
+      produto: {
+        titulo:  'Entre para<br><em>reservar</em>',
+        sub:     'Acesse a sua conta e finalize a reserva do produto em segundos.',
+        submit:  'Entrar e reservar'
+      }
+    };
+
+    function open(onSuccess, contexto) {
       afterLoginFn = onSuccess || null;
       clearError();
       emailEl.value = '';
       senhaEl.value = '';
+
+      const txt = MODAL_TEXTS[contexto] || MODAL_TEXTS.agendamento;
+      const titleEl  = document.getElementById('auth-modal-title');
+      const subEl    = backdrop.querySelector('.auth-modal-sub');
+      const labelEl  = submitBtn.querySelector('.auth-modal-btn-label');
+      if (titleEl)  titleEl.innerHTML  = txt.titulo;
+      if (subEl)    subEl.textContent  = txt.sub;
+      if (labelEl)  labelEl.textContent = txt.submit;
+
       backdrop.classList.add('open');
       backdrop.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
@@ -1716,7 +1738,6 @@
       backdrop.classList.remove('open');
       backdrop.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
-      afterLoginFn = null;
     }
 
     /* ── Erro ── */
@@ -1758,8 +1779,11 @@
         const data = await InBarberAPI.login({ email, senha });
         if (data && data.token) {
           try { localStorage.setItem('inbarber_token', data.token); } catch (_) {}
+          const fn = afterLoginFn;
+          afterLoginFn = null;
           close();
-          if (typeof afterLoginFn === 'function') afterLoginFn();
+          document.dispatchEvent(new CustomEvent('inbarber:login'));
+          if (typeof fn === 'function') fn();
         } else {
           showError('Resposta inesperada do servidor. Tente novamente.');
         }
@@ -1791,9 +1815,9 @@
     });
 
     /* ── Guard: executa fn se logado, senão abre o modal ── */
-    function guard(fn) {
+    function guard(fn, contexto) {
       if (isLoggedIn()) { fn(); return; }
-      open(fn);
+      open(fn, contexto);
     }
 
     var api = { isLoggedIn: isLoggedIn, open: open, close: close, guard: guard };

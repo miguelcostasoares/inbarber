@@ -391,7 +391,7 @@
       }
 
       if (window.AuthModal) {
-        window.AuthModal.guard(adicionarEIr);
+        window.AuthModal.guard(adicionarEIr, 'produto');
       } else {
         adicionarEIr();
       }

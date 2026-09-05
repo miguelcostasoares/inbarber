@@ -1,6 +1,20 @@
 (function () {
   "use strict";
 
+  /* ── Guard de autenticação ──────────────────────────────────
+     Se não há token, volta para servicos.html onde o AuthModal
+     da landing já existe e intercepta o login rápido.
+     O estado (svc_selected, barber_selected) fica no
+     sessionStorage e é restaurado automaticamente ao retornar.
+  ─────────────────────────────────────────────────────────── */
+  (function guardAuth() {
+    try {
+      if (!localStorage.getItem('inbarber_token')) {
+        window.location.replace('servicos.html');
+      }
+    } catch (_) {}
+  })();
+
   /* ════════════════════════════════════════
      DADOS
   ════════════════════════════════════════ */

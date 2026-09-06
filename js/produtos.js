@@ -701,7 +701,7 @@
     if (cta) {
       cta.addEventListener('click', function () {
         if (window.AuthModal) {
-          window.AuthModal.guard(abrirModal);
+          window.AuthModal.guard(abrirModal, 'produto');
         } else {
           abrirModal();
         }

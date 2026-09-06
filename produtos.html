@@ -246,9 +246,35 @@
 <!-- ══ TOAST ══ -->
 <div class="prod-toast" id="prod-toast" role="status" aria-live="polite"></div>
 
+<!-- ══ MODAL DE LOGIN RÁPIDO ══ -->
+<div class="auth-modal-backdrop" id="auth-modal-backdrop" aria-hidden="true">
+  <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+    <button class="auth-modal-close" id="auth-modal-close" type="button" aria-label="Fechar">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <path d="M4 4l8 8M12 4l-8 8"/>
+      </svg>
+    </button>
+    <p class="auth-modal-eyebrow">Acesso rápido</p>
+    <h2 class="auth-modal-title" id="auth-modal-title">Entre para<br><em>reservar</em></h2>
+    <p class="auth-modal-sub">Acesse a sua conta e finalize a reserva do produto em segundos.</p>
+    <div class="auth-modal-fields">
+      <input class="auth-modal-input" id="auth-modal-email" type="email"
+             placeholder="E-mail" autocomplete="email" inputmode="email"/>
+      <input class="auth-modal-input" id="auth-modal-senha" type="password"
+             placeholder="Senha" autocomplete="current-password"/>
+    </div>
+    <p class="auth-modal-error" id="auth-modal-error" aria-live="polite"></p>
+    <button class="auth-modal-submit" id="auth-modal-submit" type="button">
+      <span class="auth-modal-btn-label">Entrar e reservar</span>
+      <span class="auth-modal-spinner" aria-hidden="true"></span>
+    </button>
+  </div>
+</div>
+
 <script src="/js/api.js"></script>
 <script src="/js/i18n.js"></script>
 <script src="/js/telefone.js"></script>
+<script src="/js/app.js"></script>
 <script src="/js/produtos.js" defer></script>
 <script src="/js/profile-btn.js"></script>
 </body>

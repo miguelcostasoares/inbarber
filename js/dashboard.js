@@ -115,6 +115,45 @@ function getStatusLabel(status) {
   return map[status] || status;
 }
 
+function formatPhone(phone) {
+  if (!phone) return '';
+  const n = phone.replace(/\D/g, '');
+  if (n.length === 11) return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`;
+  if (n.length === 10) return `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}`;
+  return phone;
+}
+
+function getTodayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// Paleta de cores determinística para avatares de barbeiro
+const BARBER_COLOR_PALETTE = [
+  { bg: 'rgba(191,160,106,0.2)', fg: 'var(--gold-lt)' },
+  { bg: 'var(--blue-bg)',        fg: 'var(--blue)' },
+  { bg: 'var(--green-bg)',       fg: 'var(--green)' },
+  { bg: 'rgba(224,84,84,0.16)', fg: 'var(--red)' },
+  { bg: 'rgba(155,114,207,0.18)', fg: '#9B72CF' },
+  { bg: 'rgba(224,146,74,0.18)', fg: '#E0924A' },
+];
+
+function getBarberColor(id) {
+  if (!id) return BARBER_COLOR_PALETTE[0];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return BARBER_COLOR_PALETTE[hash % BARBER_COLOR_PALETTE.length];
+}
+
+function barberAvatarStyle(id) {
+  const c = getBarberColor(id);
+  return `background:${c.bg};color:${c.fg}`;
+}
+
+
+/* ─── 4. HEADER ─────────────────────────────────────────── */
+
 /**
  * Retorna os botões de ação rápida conforme status
  */
@@ -1147,50 +1186,397 @@ function updatePendingAlerts() {
 
 /* ─── 10. MODAL ─────────────────────────────────────────── */
 
+// Cache local de disponibilidade (barbeiro+data+duração) para evitar
+// rebuscar quando só muda o serviço sem trocar barbeiro/data.
+let _availabilityCache = { barberId: null, date: null, durationMin: null, available: [], occupied: [] };
+
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.hidden = false;
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    const first = el.querySelector('input:not([type=hidden]), select, textarea, button');
+    if (first) first.focus();
+  }, 50);
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.hidden = true;
+  document.body.style.overflow = '';
+}
+
+function showConflict(msg) {
+  const el = document.getElementById('modalConflict');
+  document.getElementById('conflictMsg').textContent = msg;
+  el.hidden = false;
+}
+
+function hideConflict() {
+  document.getElementById('modalConflict').hidden = true;
+}
+
+function updateModalSummary(serviceId) {
+  const svc = getService(serviceId);
+  const summaryEl = document.getElementById('modalSummary');
+  const hint = document.getElementById('footerSummaryHint');
+  if (!svc || !svc.price) {
+    summaryEl.hidden = true;
+    if (hint) hint.textContent = '';
+    return;
+  }
+  summaryEl.hidden = false;
+  document.getElementById('summaryService').textContent  = svc.name;
+  document.getElementById('summaryDuration').textContent = `${svc.duration} min`;
+  document.getElementById('summaryPrice').textContent    = formatCurrency(svc.price);
+  if (hint) hint.textContent = `${svc.name} · ${svc.duration} min · ${formatCurrency(svc.price)}`;
+}
+
+function populateServicePicker(selectedId) {
+  const picker = document.getElementById('servicePicker');
+  if (!picker) return;
+  if (!DB.services.length) {
+    picker.innerHTML = `<span style="color:var(--muted);font-size:13px">Carregando serviços…</span>`;
+    return;
+  }
+  picker.innerHTML = DB.services.map(svc => `
+    <button type="button"
+            class="service-option ${svc.id === selectedId ? 'is-selected' : ''}"
+            data-service-id="${svc.id}"
+            role="radio"
+            aria-checked="${String(svc.id === selectedId)}"
+            onclick="selectService('${svc.id}')">
+      <span class="service-option__dot" style="background:${svc.color}" aria-hidden="true"></span>
+      <span class="service-option__name">${svc.name}</span>
+      <span class="service-option__price">${formatCurrency(svc.price)} · ${svc.duration}min</span>
+    </button>`).join('');
+}
+
+function selectService(id) {
+  document.querySelectorAll('.service-option').forEach(el => {
+    const sel = el.dataset.serviceId === id;
+    el.classList.toggle('is-selected', sel);
+    el.setAttribute('aria-checked', String(sel));
+  });
+  updateModalSummary(id);
+
+  // Recalcula slots levando em conta a nova duração do serviço
+  const selectedBarberEl = document.querySelector('.barber-option.is-selected');
+  const barberId = selectedBarberEl?.dataset.barberId || null;
+  const date = document.getElementById('apptDate')?.value || null;
+  const currentTime = document.getElementById('apptTime')?.value || null;
+  if (barberId && date) {
+    _availabilityCache.durationMin = null; // invalida cache de duração
+    loadBarberAvailability(barberId, date, currentTime);
+  }
+  checkConflict();
+}
+
+function populateBarberPicker(selectedId) {
+  const picker = document.getElementById('barberPicker');
+  if (!picker) return;
+  if (!DB.barbers.length) {
+    picker.innerHTML = `<span style="color:var(--muted);font-size:13px">Carregando barbeiros…</span>`;
+    return;
+  }
+  picker.innerHTML = DB.barbers.map(b => `
+    <button type="button"
+            class="barber-option ${b.id === selectedId ? 'is-selected' : ''}"
+            data-barber-id="${b.id}"
+            role="radio"
+            aria-checked="${String(b.id === selectedId)}"
+            onclick="selectBarber('${b.id}')">
+      <div class="barber-option__avatar" style="${barberAvatarStyle(b.id)}" aria-hidden="true">${b.avatar}</div>
+      <div>
+        <div class="barber-option__name">${b.name}</div>
+      </div>
+    </button>`).join('');
+}
+
+function selectBarber(id) {
+  document.querySelectorAll('.barber-option').forEach(el => {
+    const sel = el.dataset.barberId === id;
+    el.classList.toggle('is-selected', sel);
+    el.setAttribute('aria-checked', String(sel));
+  });
+  const date = document.getElementById('apptDate')?.value || getTodayStr();
+  document.getElementById('apptDate').value = date;
+  loadBarberAvailability(id, date);
+  checkConflict();
+}
+
+async function loadBarberAvailability(barberId, date, selectedTime = null) {
+  const sel = document.getElementById('apptTime');
+  if (!sel) return;
+
+  if (!barberId || !date) {
+    sel.innerHTML = `<option value="">Selecione o barbeiro primeiro</option>`;
+    return;
+  }
+
+  // Duração do serviço selecionado no momento
+  const selectedSvcEl = document.querySelector('.service-option.is-selected');
+  const svc = selectedSvcEl ? getService(selectedSvcEl.dataset.serviceId) : null;
+  const durationMin = svc ? svc.duration : 30;
+
+  // Usa cache se barbeiro, data e duração não mudaram
+  if (_availabilityCache.barberId === barberId &&
+      _availabilityCache.date    === date &&
+      _availabilityCache.durationMin === durationMin) {
+    _renderTimeSelect(sel, _availabilityCache.available, _availabilityCache.occupied, selectedTime);
+    return;
+  }
+
+  sel.innerHTML = `<option value="">Carregando horários…</option>`;
+  sel.disabled = true;
+
+  try {
+    const result = await InBarberAPI.getBarberAvailability(barberId, date, durationMin);
+    _availabilityCache = { barberId, date, durationMin, available: result.available || [], occupied: result.occupied || [] };
+
+    if (result.closed) {
+      sel.innerHTML = `<option value="">Barbearia fechada neste dia</option>`;
+      sel.disabled = true;
+      return;
+    }
+
+    _renderTimeSelect(sel, _availabilityCache.available, _availabilityCache.occupied, selectedTime);
+  } catch (err) {
+    // Fallback: slots locais sem verificação de ocupação
+    sel.disabled = false;
+    const slots = [];
+    for (let h = CONFIG.openTime; h < CONFIG.closeTime; h++) {
+      slots.push(`${String(h).padStart(2,'0')}:00`);
+      slots.push(`${String(h).padStart(2,'0')}:30`);
+    }
+    sel.innerHTML = `<option value="">Selecionar</option>` +
+      slots.map(t => `<option value="${t}" ${t === selectedTime ? 'selected' : ''}>${t}</option>`).join('');
+    showToast('Não foi possível verificar disponibilidade. Verifique conflitos manualmente.', 'error');
+  } finally {
+    sel.disabled = false;
+  }
+}
+
+function _renderTimeSelect(sel, available, occupied, selectedTime) {
+  const allSlots = [...available, ...occupied].sort();
+  if (!allSlots.length) {
+    sel.innerHTML = `<option value="">Sem horários disponíveis</option>`;
+    return;
+  }
+  sel.innerHTML = `<option value="">Selecionar</option>` +
+    allSlots.map(t => {
+      if (occupied.includes(t)) {
+        return `<option value="${t}" disabled style="color:var(--muted,#888)">${t} — ocupado</option>`;
+      }
+      return `<option value="${t}" ${t === selectedTime ? 'selected' : ''}>${t}</option>`;
+    }).join('');
+}
+
+function checkConflict() {
+  const selectedBarberEl = document.querySelector('.barber-option.is-selected');
+  const selectedServiceEl = document.querySelector('.service-option.is-selected');
+  const barberId  = selectedBarberEl?.dataset.barberId  || null;
+  const serviceId = selectedServiceEl?.dataset.serviceId || null;
+  const date = document.getElementById('apptDate')?.value || null;
+  const time = document.getElementById('apptTime')?.value || null;
+
+  if (!barberId || !time || !date) { hideConflict(); return; }
+
+  // Verifica pelo cache de disponibilidade real do backend
+  if (_availabilityCache.barberId === barberId &&
+      _availabilityCache.date    === date &&
+      _availabilityCache.occupied.includes(time)) {
+    const barberName = getBarber(barberId)?.name || 'este barbeiro';
+    showConflict(`Horário indisponível para ${barberName} neste serviço/horário.`);
+    return;
+  }
+
+  hideConflict();
+}
+
+function getFormData() {
+  const selectedService = document.querySelector('.service-option.is-selected');
+  const selectedBarber  = document.querySelector('.barber-option.is-selected');
+  const formaPagamentoRaw = document.getElementById('apptFormaPagamento').value;
+  return {
+    client:           document.getElementById('apptClient').value.trim(),
+    phone:            document.getElementById('apptPhone').value.trim(),
+    date:             document.getElementById('apptDate').value,
+    time:             document.getElementById('apptTime').value,
+    serviceId:        selectedService?.dataset.serviceId || '',
+    barberId:         selectedBarber?.dataset.barberId   || '',
+    notes:            document.getElementById('apptNotes').value.trim(),
+    formaPagamentoId: formaPagamentoRaw ? Number(formaPagamentoRaw) : null,
+  };
+}
+
+async function saveAppt() {
+  const data = getFormData();
+
+  if (!data.barberId)  { showToast('Selecione um barbeiro.', 'error'); return; }
+  if (!data.date)      { showToast('Selecione a data.', 'error'); return; }
+  if (!data.time)      { showToast('Selecione o horário.', 'error'); return; }
+
+  // Rejeita slot ocupado segundo o cache de disponibilidade real
+  if (_availabilityCache.barberId === data.barberId &&
+      _availabilityCache.date    === data.date &&
+      _availabilityCache.occupied.includes(data.time)) {
+    showConflict(`Horário ${data.time} já está ocupado para ${getBarber(data.barberId)?.name || 'este barbeiro'}.`);
+    return;
+  }
+
+  if (!data.serviceId) { showToast('Selecione um serviço.', 'error'); return; }
+  if (!data.client)    { showToast('Informe o nome do cliente.', 'error'); return; }
+
+  // Trava botão para evitar duplo clique
+  const saveBtn = document.getElementById('apptModalSave');
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    await InBarberAPI.createAppointment({
+      client:           data.client,
+      phone:            data.phone,
+      date:             data.date,
+      time:             data.time,
+      serviceId:        data.serviceId,
+      barberId:         data.barberId,
+      notes:            data.notes,
+      formaPagamentoId: data.formaPagamentoId,
+    });
+    showToast(`Agendamento de ${data.client} criado com sucesso.`, 'success');
+  } catch (err) {
+    if (err.status === 409) {
+      showConflict(err.message);
+    } else {
+      showToast(err.message || 'Erro ao salvar agendamento.', 'error');
+    }
+    return;
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+
+  closeModal('apptModalOverlay');
+
+  // Recarrega a agenda do dia para refletir o novo agendamento
+  try {
+    const payload = await InBarberAPI.getDashboard();
+    DB.appointments = payload.agenda || [];
+    initAgenda();
+  } catch (_) { /* falha silenciosa — o toast de sucesso já foi exibido */ }
+}
+
+function populateFormaPagamentoSelect() {
+  const sel = document.getElementById('apptFormaPagamento');
+  if (!sel) return;
+  const formas = DB.modal?.formasPagamento || [];
+  if (!formas.length) return;
+  sel.innerHTML = `<option value="">Selecionar...</option>` +
+    formas.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
+}
+
+function initClientAutocomplete() {
+  const input = document.getElementById('apptClient');
+  const list  = document.getElementById('autocompleteList');
+  if (!input || !list) return;
+
+  let _acTimer = null;
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    if (q.length < 2) { list.hidden = true; return; }
+
+    clearTimeout(_acTimer);
+    _acTimer = setTimeout(async () => {
+      let matches = [];
+      try {
+        matches = await InBarberAPI.searchClients(q);
+      } catch (_) {
+        list.hidden = true;
+        return;
+      }
+      if (!matches.length) { list.hidden = true; return; }
+      list.innerHTML = matches.slice(0, 6).map((c, i) => `
+        <li class="autocomplete-item"
+            role="option"
+            id="ac-${i}"
+            onclick="selectClient('${c.name}','${c.phone || ''}')">
+          ${c.name} <span style="color:var(--muted);margin-left:6px;font-size:11px">${formatPhone(c.phone)}</span>
+        </li>`).join('');
+      list.hidden = false;
+    }, 250);
+  });
+
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !list.contains(e.target)) list.hidden = true;
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') list.hidden = true;
+  });
+}
+
+function selectClient(name, phone) {
+  document.getElementById('apptClient').value = name;
+  document.getElementById('apptPhone').value  = phone ? formatPhone(phone) : '';
+  document.getElementById('autocompleteList').hidden = true;
+}
+
 function initModal() {
-  const overlay = document.getElementById('modalOverlay');
-  const openBtns = [
+  // Abre modal — botões do header e topbar
+  [
     document.getElementById('newAppointmentBtn'),
     document.getElementById('topbarNewBtn'),
-  ];
-  const closeBtn = document.getElementById('modalClose');
-  const cancelBtn = document.getElementById('modalCancel');
+  ].forEach(btn => btn && btn.addEventListener('click', () => {
+    // Reseta o formulário
+    document.getElementById('apptId').value              = '';
+    document.getElementById('apptClient').value          = '';
+    document.getElementById('apptPhone').value           = '';
+    document.getElementById('apptNotes').value           = '';
+    document.getElementById('apptFormaPagamento').value  = '';
+    document.getElementById('apptDate').value            = getTodayStr();
+    document.getElementById('apptTime').innerHTML        = `<option value="">Selecione o barbeiro primeiro</option>`;
+    hideConflict();
+    document.getElementById('modalSummary').hidden       = true;
+    document.getElementById('footerSummaryHint').textContent = '';
+    _availabilityCache = { barberId: null, date: null, durationMin: null, available: [], occupied: [] };
 
-  function openModal() {
-    overlay.removeAttribute('hidden');
-    document.body.style.overflow = 'hidden';
-    // Focus no primeiro campo
-    setTimeout(() => {
-      const firstInput = overlay.querySelector('input, select, textarea');
-      if (firstInput) firstInput.focus();
-    }, 50);
-  }
+    populateServicePicker(null);
+    populateBarberPicker(null);
+    openModal('apptModalOverlay');
+  }));
 
-  function closeModal() {
-    overlay.setAttribute('hidden', '');
-    document.body.style.overflow = '';
-  }
-
-  openBtns.forEach(btn => btn && btn.addEventListener('click', openModal));
-  closeBtn && closeBtn.addEventListener('click', closeModal);
-  cancelBtn && cancelBtn.addEventListener('click', closeModal);
+  // Fecha
+  document.getElementById('apptModalClose')?.addEventListener('click',  () => closeModal('apptModalOverlay'));
+  document.getElementById('apptModalCancel')?.addEventListener('click', () => closeModal('apptModalOverlay'));
 
   // Fecha clicando fora
-  overlay && overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closeModal();
+  document.getElementById('apptModalOverlay')?.addEventListener('click', e => {
+    if (e.target.id === 'apptModalOverlay') closeModal('apptModalOverlay');
   });
 
   // Fecha com Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !overlay.hasAttribute('hidden')) closeModal();
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal('apptModalOverlay');
   });
 
-  // Define data padrão como hoje
-  const dateInput = document.getElementById('apptDate');
-  if (dateInput) {
-    dateInput.value = new Date().toISOString().split('T')[0];
-  }
+  // Salva
+  document.getElementById('apptModalSave')?.addEventListener('click', saveAppt);
 
+  // Verifica conflito ao mudar data ou horário
+  document.getElementById('apptTime')?.addEventListener('change', checkConflict);
+  document.getElementById('apptDate')?.addEventListener('change', () => {
+    const selectedBarberEl = document.querySelector('.barber-option.is-selected');
+    const barberId = selectedBarberEl?.dataset.barberId || null;
+    const date = document.getElementById('apptDate').value;
+    const currentTime = document.getElementById('apptTime')?.value || null;
+    if (barberId && date) loadBarberAvailability(barberId, date, currentTime);
+    checkConflict();
+  });
+
+  // Inicializa autocomplete de clientes
+  initClientAutocomplete();
 }
 
 
@@ -1873,21 +2259,10 @@ document.addEventListener('DOMContentLoaded', () => {
       initCommissions();
       initReports();
 
-      // Popula selects do modal com dados reais
-      const serviceSelect = document.getElementById('apptService');
-      const barberSelect  = document.getElementById('apptBarber');
-      if (serviceSelect && DB.modal.services && DB.modal.services.length > 0) {
-        serviceSelect.innerHTML = '<option value="">Selecionar serviço</option>'
-          + DB.modal.services.map(s =>
-              `<option value="${s.id}">${s.name} — R$ ${s.price.toFixed(0)}</option>`
-            ).join('');
-      }
-      if (barberSelect && DB.modal.barbers && DB.modal.barbers.length > 0) {
-        barberSelect.innerHTML = '<option value="">Selecionar barbeiro</option>'
-          + DB.modal.barbers.map(b =>
-              `<option value="${b.id}">${b.name}</option>`
-            ).join('');
-      }
+      // Popula o select de forma de pagamento do modal
+      // (pickers de serviço e barbeiro são gerados via JS ao abrir o modal)
+      DB.modal.formasPagamento = DB.modal.formasPagamento || [];
+      populateFormaPagamentoSelect();
 
       // Gráficos após dados carregados e Chart.js disponível
       waitForChartJS(() => {

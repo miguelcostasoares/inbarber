@@ -84,8 +84,7 @@
      Alimenta os chips do hero e a linha "termina às" do carrinho.
      Em produção, trocar por uma chamada à agenda real.
   ════════════════════════════════════════ */
-  const BUSINESS_HOURS = {
-    /* 0 = domingo … 6 = sábado. null = encerrado. */
+  let BUSINESS_HOURS = {
     0: null,
     1: { open: 9, close: 20 },
     2: { open: 9, close: 20 },
@@ -95,6 +94,25 @@
     6: { open: 8, close: 18 }
   };
   const SLOT_MINUTES = 30;
+
+  /* Converte o formato da API { seg:{aberto,abertura,fechamento} }
+     para o formato interno { 0:null|{open,close} } */
+  const DIA_TO_DOW = { dom: 0, seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6 };
+
+  function parseHora(str) { const [h, m] = str.split(':').map(Number); return h + m / 60; }
+
+  function applyPreferences(prefs) {
+    if (!prefs || !prefs.horarios) return;
+    const h = {};
+    Object.entries(prefs.horarios).forEach(([dia, v]) => {
+      const dow = DIA_TO_DOW[dia];
+      if (dow === undefined) return;
+      h[dow] = v.aberto ? { open: parseHora(v.abertura), close: parseHora(v.fechamento) } : null;
+    });
+    if (Object.keys(h).length) BUSINESS_HOURS = h;
+  }
+
+  InBarberAPI.getPreferences().then(applyPreferences).catch(() => {});
 
   /* ════════════════════════════════════════
      SCHEDULE — disponibilidade

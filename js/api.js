@@ -1000,6 +1000,5 @@ window.InBarberAPI = {
   updateProfile,
   updatePrefs,
   updatePassword,
-  updatePassword,
   uploadAvatar,
 };

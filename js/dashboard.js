@@ -1222,7 +1222,7 @@ function updateModalSummary(serviceId) {
   const svc = getService(serviceId);
   const summaryEl = document.getElementById('modalSummary');
   const hint = document.getElementById('footerSummaryHint');
-  if (!svc || !svc.price) {
+  if (!svc) {
     summaryEl.hidden = true;
     if (hint) hint.textContent = '';
     return;
@@ -1393,6 +1393,29 @@ function checkConflict() {
     return;
   }
 
+  // Fallback local: verifica agendamentos já carregados em memória
+  if (serviceId) {
+    const svc = getService(serviceId);
+    const [h, m] = time.split(':').map(Number);
+    const startMin = h * 60 + m;
+    const endMin   = startMin + (svc ? svc.duration : 0);
+
+    const conflict = DB.appointments.some(a => {
+      if (a.barberId !== barberId || a.date !== date) return false;
+      if (a.status === 'cancelado') return false;
+      const [ah, am] = a.time.split(':').map(Number);
+      const aStart = ah * 60 + am;
+      const aSvc   = getService(a.serviceId);
+      const aEnd   = aStart + (aSvc ? aSvc.duration : 30);
+      return startMin < aEnd && endMin > aStart;
+    });
+
+    if (conflict) {
+      showConflict(`Conflito: ${getBarber(barberId)?.name} já tem agendamento próximo às ${time}.`);
+      return;
+    }
+  }
+
   hideConflict();
 }
 
@@ -1458,8 +1481,11 @@ async function saveAppt() {
   }
 
   closeModal('apptModalOverlay');
+  await _reloadAgenda();
+}
 
-  // Recarrega a agenda do dia para refletir o novo agendamento
+async function _reloadAgenda() {
+  // Recarrega apenas a agenda do dia sem re-renderizar o dashboard inteiro
   try {
     const payload = await InBarberAPI.getDashboard();
     DB.appointments = payload.agenda || [];
@@ -1541,6 +1567,13 @@ function initModal() {
     document.getElementById('modalSummary').hidden       = true;
     document.getElementById('footerSummaryHint').textContent = '';
     _availabilityCache = { barberId: null, date: null, durationMin: null, available: [], occupied: [] };
+
+    // Restaura label e ícone do botão (equalizado com a Agenda)
+    document.getElementById('apptModalSave').innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Agendar`;
 
     populateServicePicker(null);
     populateBarberPicker(null);
@@ -1708,9 +1741,10 @@ function showToast(message, type = 'success') {
 
   const colors = {
     success: { bg: 'var(--green-bg)', border: 'rgba(76,175,121,0.3)', text: 'var(--green)' },
-    blue: { bg: 'var(--blue-bg)', border: 'rgba(59,130,246,0.3)', text: 'var(--blue-lt)' },
-    gold: { bg: 'var(--blue-bg)', border: 'rgba(59,130,246,0.3)', text: 'var(--blue-lt)' }, 
-    error: { bg: 'var(--red-bg)', border: 'rgba(224,84,84,0.3)', text: 'var(--red)' },
+    blue:    { bg: 'var(--blue-bg)',  border: 'rgba(59,130,246,0.3)', text: 'var(--blue-lt)' },
+    gold:    { bg: 'var(--blue-bg)',  border: 'rgba(59,130,246,0.3)', text: 'var(--blue-lt)' },
+    warning: { bg: 'rgba(202,138,4,0.12)', border: 'rgba(202,138,4,0.35)', text: 'var(--gold)' },
+    error:   { bg: 'var(--red-bg)',   border: 'rgba(224,84,84,0.3)',  text: 'var(--red)' },
   };
 
   const c = colors[type] || colors.success;

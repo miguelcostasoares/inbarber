@@ -4210,6 +4210,14 @@ def dashboard_summary():
             for row in cursor.fetchall()
         ]
 
+        cursor.execute(
+            'SELECT id, nome FROM formas_pagamento WHERE ativo = 1 ORDER BY nome ASC'
+        )
+        formas_pagamento_modal = [
+            {'id': row['id'], 'nome': row['nome']}
+            for row in cursor.fetchall()
+        ]
+
         # ── 17. Loyalty ───────────────────────────────────────
         cursor.execute(
             '''SELECT
@@ -4285,8 +4293,9 @@ def dashboard_summary():
             },
             'reportsPreview': reports_preview,
             'modal': {
-                'barbers':  barbeiros_modal,
-                'services': servicos_modal,
+                'barbers':         barbeiros_modal,
+                'services':        servicos_modal,
+                'formasPagamento': formas_pagamento_modal,
             },
             'loyalty': loyalty,
         }), 200

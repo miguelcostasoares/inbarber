@@ -510,12 +510,8 @@
   <!-- ═══════════════════════════════════════════
        MODAL: NOVO AGENDAMENTO
   ═══════════════════════════════════════════ -->
-  <div class="modal-overlay" id="apptModalOverlay"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="apptModalTitle"
-    hidden
-    >
+  <div class="modal-overlay" id="apptModalOverlay" role="dialog" aria-modal="true" aria-labelledby="apptModalTitle"
+    hidden>
     <div class="modal" id="apptModal">
       <div class="modal__header modal__header--form">
         <div>
@@ -524,7 +520,7 @@
         </div>
         <button class="modal__close" id="apptModalClose" aria-label="Fechar">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
         </button>
       </div>
@@ -543,26 +539,14 @@
             <div class="form-group">
               <label class="form-label" for="apptClient">Cliente</label>
               <div class="autocomplete-wrap">
-                <input
-                  class="form-input"
-                  id="apptClient"
-                  type="text"
-                  placeholder="Nome do cliente"
-                  autocomplete="off"
-                  aria-autocomplete="list"
-                  aria-controls="autocompleteList"
-                />
+                <input class="form-input" id="apptClient" type="text" placeholder="Nome do cliente" autocomplete="off"
+                  aria-autocomplete="list" aria-controls="autocompleteList" />
                 <ul class="autocomplete-list" id="autocompleteList" role="listbox" hidden></ul>
               </div>
             </div>
             <div class="form-group">
               <label class="form-label" for="apptPhone">Telefone</label>
-              <input
-                class="form-input"
-                id="apptPhone"
-                type="tel"
-                placeholder="(00) 00000-0000"
-              />
+              <input class="form-input" id="apptPhone" type="tel" placeholder="(00) 00000-0000" />
             </div>
           </div>
         </div>
@@ -615,11 +599,18 @@
 
         <!-- Resumo do serviço -->
         <div class="modal-summary" id="modalSummary" hidden>
-          <span id="summaryService"></span>
-          <span class="modal-summary__sep">·</span>
-          <span id="summaryDuration"></span>
-          <span class="modal-summary__sep">·</span>
-          <span id="summaryPrice"></span>
+          <div class="modal-summary__row">
+            <span class="modal-summary__label">Serviço</span>
+            <span class="modal-summary__val" id="summaryService">—</span>
+          </div>
+          <div class="modal-summary__row">
+            <span class="modal-summary__label">Duração estimada</span>
+            <span class="modal-summary__val" id="summaryDuration">—</span>
+          </div>
+          <div class="modal-summary__row modal-summary__row--total">
+            <span class="modal-summary__label">Total</span>
+            <span class="modal-summary__val modal-summary__val--price" id="summaryPrice">R$ 0</span>
+          </div>
         </div>
       </div>
 
@@ -627,7 +618,13 @@
         <div class="modal__footer-summary" id="footerSummaryHint"></div>
         <div class="modal__footer-actions">
           <button class="btn-ghost" id="apptModalCancel">Cancelar</button>
-          <button class="btn-primary" id="apptModalSave">Agendar</button> <!-- ← com id -->
+          <button class="btn-primary" id="apptModalSave">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Agendar
+          </button>
         </div>
       </div>
     </div>

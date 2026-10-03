@@ -1750,13 +1750,13 @@ input, select, textarea {
 .cal-month-event--confirmado { border-left-color: var(--blue); }
 .cal-month-event--andamento  { border-left-color: var(--purple); }
 .cal-month-event--concluido  { border-left-color: var(--green); }
-.cal-month-event--noshow     { border-left-color: var(--red); }
+.cal-month-event--cancelado  { border-left-color: var(--red); }
 
 .cal-month-event--pendente   { background: var(--orange-bg); color: var(--orange); }
 .cal-month-event--confirmado { background: var(--blue-bg);   color: var(--blue); }
 .cal-month-event--andamento  { background: var(--purple-bg); color: var(--purple); }
 .cal-month-event--concluido  { background: var(--green-bg);  color: var(--green); }
-.cal-month-event--noshow     { background: var(--red-bg);    color: var(--red); }
+.cal-month-event--cancelado  { background: var(--red-bg);    color: var(--red); }
 
 .cal-month-more {
   font-size: 10px;
@@ -2330,7 +2330,7 @@ input, select, textarea {
 .status-badge--confirmado { color: var(--blue);   background: var(--blue-bg);   border: 1px solid var(--blue-border);   }
 .status-badge--andamento  { color: var(--purple); background: var(--purple-bg); border: 1px solid var(--purple-border); }
 .status-badge--concluido  { color: var(--green);  background: var(--green-bg);  border: 1px solid var(--green-border);  }
-.status-badge--noshow     { color: var(--red);    background: var(--red-bg);    border: 1px solid var(--red-border);    }
+.status-badge--cancelado     { color: var(--red);    background: var(--red-bg);    border: 1px solid var(--red-border);    }
 
 /* Ações inline da lista */
 .list-actions {

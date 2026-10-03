@@ -17,6 +17,13 @@ let META_BARBEARIA_TOTAL = 0;
 // Estado real de Saídas — preenchido via API (a conectar)
 let SAIDAS_DATA = [];
 
+// Estado do filtro de período global
+let FIN_PERIOD = {
+    preset: 'month',   // 'today' | 'week' | 'month' | 'custom'
+    start:  '',        // YYYY-MM-DD — resolvido em initFinPeriodFilter()
+    end:    '',        // YYYY-MM-DD — resolvido em initFinPeriodFilter()
+};
+
 // Dados do gráfico de linha por período — preenchido via API em loadLineChartData()
 let LINE_DATA = {
     dia:    { labels: [], values: [] },
@@ -845,14 +852,14 @@ function getSaidasFiltradas() {
 }
 
 async function loadSaidasData() {
-    const periodoEl = document.getElementById('saidasFiltroPeriodo');
+
     const catEl     = document.getElementById('saidasFiltroCategoria');
     const pgtoEl    = document.getElementById('saidasFiltroPgto');
 
     const filters = {
-        periodo:   periodoEl?.value  || 'mes',
-        categoria: catEl?.value      || '',
-        pgto:      pgtoEl?.value     || '',
+        periodo:   presetToApiPeriodo(FIN_PERIOD.preset),
+        categoria: catEl?.value || '',
+        pgto:      pgtoEl?.value || '',
     };
 
     try {
@@ -1252,7 +1259,7 @@ function initSaidasModals() {
     // Filtros — ao mudar qualquer filtro, busca novamente na API
     ['saidasFiltroCategoria', 'saidasFiltroPgto', 'saidasFiltroPeriodo'].forEach(filtroId => {
         document.getElementById(filtroId)?.addEventListener('change', async () => {
-            const periodoEl = document.getElementById('saidasFiltroPeriodo');
+        
             const periodoMap = {
                 dia: 'Hoje', semana: 'Esta semana', mes: 'Este mês',
                 trimestre: 'Trimestre', semestre: 'Semestre', ano: 'Este ano',
@@ -1296,7 +1303,113 @@ async function loadLineChartData(period) {
     }
 }
 
-function initPeriodFilter() {
+/* ─── Helpers de data (espelho da Agenda) ───────────────── */
+function finGetTodayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function finToStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function finGetWeekRange() {
+    const today = new Date(finGetTodayStr() + 'T00:00:00');
+    const dow = today.getDay();
+    const mon = new Date(today); mon.setDate(today.getDate() - dow);
+    const sun = new Date(mon);   sun.setDate(mon.getDate() + 6);
+    return [finToStr(mon), finToStr(sun)];
+}
+
+function finGetMonthRange() {
+    const today = new Date(finGetTodayStr() + 'T00:00:00');
+    const first = new Date(today.getFullYear(), today.getMonth(), 1);
+    const last  = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    return [finToStr(first), finToStr(last)];
+}
+
+/* ─── Converte preset → string de período aceita pelo backend ─ */
+function presetToApiPeriodo(preset) {
+    if (preset === 'today') return 'dia';
+    if (preset === 'week')  return 'semana';
+    return 'mes'; // 'month' e 'custom' — custom usa date_start/date_end, mas a visão geral ainda recebe 'mes' como fallback
+}
+
+/* ─── Recarrega todos os painéis com o período atual ───────── */
+async function reloadFinanceiro() {
+    await Promise.all([
+        loadVisaoGeralData(),
+        loadLineChartData(activePeriod),
+    ]);
+    renderLineChart(activePeriod);
+    loadSaidasData();
+    loadMetasData();
+}
+
+/* ─── Filtro global de período do Financeiro ───────────────── */
+function initFinPeriodFilter() {
+    const preset   = document.getElementById('periodPreset');
+    const custom   = document.getElementById('periodCustom');
+    const startEl  = document.getElementById('periodStart');
+    const endEl    = document.getElementById('periodEnd');
+    const applyBtn = document.getElementById('periodApply');
+
+    if (!preset || !applyBtn) return;
+
+    function applyPreset(val) {
+        FIN_PERIOD.preset = val;
+        const today = finGetTodayStr();
+        if (val === 'today') {
+            FIN_PERIOD.start = today;
+            FIN_PERIOD.end   = today;
+        } else if (val === 'week') {
+            [FIN_PERIOD.start, FIN_PERIOD.end] = finGetWeekRange();
+        } else if (val === 'month') {
+            [FIN_PERIOD.start, FIN_PERIOD.end] = finGetMonthRange();
+        }
+        // 'custom' não altera FIN_PERIOD aqui — só o botão Aplicar faz isso
+    }
+
+    function syncCustomVisibility() {
+        if (preset.value === 'custom') {
+            custom.classList.add('is-visible');
+        } else {
+            custom.classList.remove('is-visible');
+        }
+    }
+
+    // Preset aplica imediatamente (sem precisar de Aplicar), igual à Agenda
+    preset.addEventListener('change', async () => {
+        syncCustomVisibility();
+        if (preset.value !== 'custom') {
+            applyPreset(preset.value);
+            startEl.value = FIN_PERIOD.start;
+            endEl.value   = FIN_PERIOD.end;
+            await reloadFinanceiro();
+        }
+    });
+
+    // Botão Aplicar: só usado para datas customizadas
+    applyBtn.addEventListener('click', async () => {
+        const s = startEl.value;
+        const e = endEl.value;
+        if (!s || !e) { showToast('Informe data início e fim.', 'error'); return; }
+        if (s > e)    { showToast('Data início deve ser anterior ao fim.', 'error'); return; }
+        FIN_PERIOD.preset = 'custom';
+        FIN_PERIOD.start  = s;
+        FIN_PERIOD.end    = e;
+        await reloadFinanceiro();
+    });
+
+    // Aplica "Este mês" na carga inicial e pré-preenche os inputs
+    applyPreset('month');
+    startEl.value = FIN_PERIOD.start;
+    endEl.value   = FIN_PERIOD.end;
+    syncCustomVisibility();
+}
+
+/* ─── Chart-pills (gráfico de linha — período independente) ── */
+function initChartPills() {
     document.querySelectorAll('.chart-pill').forEach(btn => {
         btn.addEventListener('click', async () => {
             document.querySelectorAll('.chart-pill').forEach(b => b.classList.remove('chart-pill--active'));
@@ -1309,6 +1422,11 @@ function initPeriodFilter() {
             renderLineChart(activePeriod);
         });
     });
+}
+
+function initPeriodFilter() {
+    initFinPeriodFilter();
+    initChartPills();
 }
 
 /* ─── 9. FIN TABS ───────────────────────────────────────── */
@@ -1495,7 +1613,10 @@ function animatePaymentBars() {
  */
 async function loadVisaoGeralData() {
     try {
-        const resp = await InBarberAPI.getVisaoGeralFinanceiro({ periodo: 'mes' });
+        const params = FIN_PERIOD.preset === 'custom'
+            ? { periodo: 'mes', date_start: FIN_PERIOD.start, date_end: FIN_PERIOD.end }
+            : { periodo: presetToApiPeriodo(FIN_PERIOD.preset) };
+        const resp = await InBarberAPI.getVisaoGeralFinanceiro(params);
 
         VISAO_GERAL_KPIS = {
             faturamentoTotal:   resp.kpis?.faturamentoTotal   ?? 0,

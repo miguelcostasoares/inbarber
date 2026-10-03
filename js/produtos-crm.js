@@ -350,7 +350,7 @@
 
     if (modo) {
       modo.hidden = false;
-      modo.textContent = STATE.demo ? 'Demonstração' : 'Ligado à API';
+      
       modo.className = 'prod-mode' + (STATE.demo ? ' prod-mode--demo' : ' prod-mode--api');
     }
   }

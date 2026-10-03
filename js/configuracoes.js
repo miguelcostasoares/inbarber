@@ -15,6 +15,13 @@ const EQUIPE_STATE = {
   loading: false,
 };
 
+const CARGO_LABELS = {
+  barbeiro:      'Barbeiro',
+  recepcionista: 'Recepcionista',
+  gerente:       'Gerente',
+  dono:          'Dono',
+};
+
 /* ─── SERVIÇOS: CONFIG ──────────────────────────────────── */
 const SERVICOS_STATE = {
   servicos: [],
@@ -58,8 +65,9 @@ const PRODUTOS_FONTE = {
 };
 
 const DEFAULTS = {
-  nome: "",
+  nome:     "",
   telefone: "",
+  email:    "",
   endereco: "",
 };
 
@@ -179,6 +187,7 @@ function renderEquipe() {
         </div>
       </td>
       <td class="equipe-table__td">${escapeHtml(telefone)}</td>
+      <td class="equipe-table__td">${escapeHtml(CARGO_LABELS[b.cargo] || b.cargo || "—")}</td>
       <td class="equipe-table__td">
         <span class="badge-status ${ativo ? "badge-status--ativo" : "badge-status--inativo"}">
           ${ativo ? "Ativo" : "Inativo"}
@@ -279,34 +288,40 @@ async function loadEquipe() {
 
 /* ─── EQUIPE: MODAL ──────────────────────────────────────── */
 function openBarbeiroModal(barbeiro = null) {
-  const overlay = document.getElementById("barbeiroModalOverlay");
-  const title = document.getElementById("barbeiroModalTitle");
-  const idInput = document.getElementById("barbeiroModalId");
-  const nomeInput = document.getElementById("barbeiroModalNome");
-  const telInput = document.getElementById("barbeiroModalTelefone");
+  const overlay    = document.getElementById("barbeiroModalOverlay");
+  const title      = document.getElementById("barbeiroModalTitle");
+  const idInput    = document.getElementById("barbeiroModalId");
+  const nomeInput  = document.getElementById("barbeiroModalNome");
+  const telInput   = document.getElementById("barbeiroModalTelefone");
   const emailInput = document.getElementById("barbeiroModalEmail");
-  const statusSel = document.getElementById("barbeiroModalStatus");
-  const nascInput = document.getElementById("barbeiroModalNascimento");
-  const endInput = document.getElementById("barbeiroModalEndereco");
+  const statusSel  = document.getElementById("barbeiroModalStatus");
+  const nascInput  = document.getElementById("barbeiroModalNascimento");
+  const endInput   = document.getElementById("barbeiroModalEndereco");
+  const cargoSel   = document.getElementById("barbeiroModalCargo");
+  const obsInput   = document.getElementById("barbeiroModalObs");
 
   if (barbeiro) {
-    title.textContent = "Editar Barbeiro";
-    idInput.value = barbeiro.id;
-    nomeInput.value = barbeiro.nome || barbeiro.name || "";
-    telInput.value = barbeiro.telefone || barbeiro.phone || "";
-    emailInput.value = barbeiro.email || "";
-    statusSel.value = barbeiro.ativo ? "1" : "0";
-    nascInput.value = barbeiro.data_nascimento || "";
-    endInput.value = barbeiro.endereco || "";
+    title.textContent    = "Editar Barbeiro";
+    idInput.value        = barbeiro.id;
+    nomeInput.value      = barbeiro.nome || barbeiro.name || "";
+    telInput.value       = barbeiro.telefone || barbeiro.phone || "";
+    emailInput.value     = barbeiro.email || "";
+    statusSel.value      = barbeiro.ativo ? "1" : "0";
+    nascInput.value      = barbeiro.data_nascimento || "";
+    endInput.value       = barbeiro.endereco || "";
+    cargoSel.value       = barbeiro.cargo || "barbeiro";
+    obsInput.value       = barbeiro.observacoes || "";
   } else {
-    title.textContent = "Novo Barbeiro";
-    idInput.value = "";
-    nomeInput.value = "";
-    telInput.value = "";
-    emailInput.value = "";
-    statusSel.value = "1";
-    nascInput.value = "";
-    endInput.value = "";
+    title.textContent    = "Novo Barbeiro";
+    idInput.value        = "";
+    nomeInput.value      = "";
+    telInput.value       = "";
+    emailInput.value     = "";
+    statusSel.value      = "1";
+    nascInput.value      = "";
+    endInput.value       = "";
+    cargoSel.value       = "barbeiro";
+    obsInput.value       = "";
   }
 
   overlay.hidden = false;
@@ -319,28 +334,32 @@ function closeBarbeiroModal() {
 
 /* ─── EQUIPE: MODAL VISUALIZAR ───────────────────────────── */
 function openBarbeiroView(barbeiro) {
-  const overlay = document.getElementById("barbeiroViewOverlay");
-  const title = document.getElementById("barbeiroViewTitle");
-  const avatar = document.getElementById("barbeiroViewAvatar");
-  const nome = document.getElementById("barbeiroViewNome");
-  const badge = document.getElementById("barbeiroViewBadge");
-  const telefone = document.getElementById("barbeiroViewTelefone");
-  const email = document.getElementById("barbeiroViewEmail");
+  const overlay    = document.getElementById("barbeiroViewOverlay");
+  const title      = document.getElementById("barbeiroViewTitle");
+  const avatar     = document.getElementById("barbeiroViewAvatar");
+  const nome       = document.getElementById("barbeiroViewNome");
+  const badge      = document.getElementById("barbeiroViewBadge");
+  const telefone   = document.getElementById("barbeiroViewTelefone");
+  const email      = document.getElementById("barbeiroViewEmail");
+  const cargoEl    = document.getElementById("barbeiroViewCargo");
   const nascimento = document.getElementById("barbeiroViewNascimento");
-  const endereco = document.getElementById("barbeiroViewEndereco");
-  const btnEditar = document.getElementById("barbeiroViewEditar");
+  const endereco   = document.getElementById("barbeiroViewEndereco");
+  const obsEl      = document.getElementById("barbeiroViewObs");
+  const obsRow     = document.getElementById("barbeiroViewObsRow");
+  const btnEditar  = document.getElementById("barbeiroViewEditar");
 
   const nomeStr = barbeiro.nome || barbeiro.name || "—";
-  const ativo = !!barbeiro.ativo;
+  const ativo   = !!barbeiro.ativo;
 
-  title.textContent = nomeStr;
+  title.textContent  = nomeStr;
   avatar.textContent = initialsFrom(nomeStr);
-  nome.textContent = nomeStr;
+  nome.textContent   = nomeStr;
 
   badge.innerHTML = `<span class="badge-status ${ativo ? "badge-status--ativo" : "badge-status--inativo"}">${ativo ? "Ativo" : "Inativo"}</span>`;
 
   telefone.textContent = barbeiro.telefone || barbeiro.phone || "—";
-  email.textContent = barbeiro.email || "—";
+  email.textContent    = barbeiro.email || "—";
+  cargoEl.textContent  = CARGO_LABELS[barbeiro.cargo] || barbeiro.cargo || "—";
 
   if (barbeiro.data_nascimento) {
     const [ano, mes, dia] = barbeiro.data_nascimento.split("-");
@@ -350,6 +369,14 @@ function openBarbeiroView(barbeiro) {
   }
 
   endereco.textContent = barbeiro.endereco || "—";
+
+  if (barbeiro.observacoes) {
+    obsEl.textContent       = barbeiro.observacoes;
+    obsRow.hidden           = false;
+  } else {
+    obsEl.textContent       = "—";
+    obsRow.hidden           = true;
+  }
 
   btnEditar.dataset.id = barbeiro.id;
 
@@ -361,13 +388,15 @@ function closeBarbeiroView() {
 }
 
 async function handleSalvarBarbeiro() {
-  const id = document.getElementById("barbeiroModalId").value;
-  const nome = document.getElementById("barbeiroModalNome").value.trim();
-  const tel = document.getElementById("barbeiroModalTelefone").value.trim();
-  const email = document.getElementById("barbeiroModalEmail").value.trim();
-  const ativo = document.getElementById("barbeiroModalStatus").value === "1";
+  const id         = document.getElementById("barbeiroModalId").value;
+  const nome       = document.getElementById("barbeiroModalNome").value.trim();
+  const tel        = document.getElementById("barbeiroModalTelefone").value.trim();
+  const email      = document.getElementById("barbeiroModalEmail").value.trim();
+  const ativo      = document.getElementById("barbeiroModalStatus").value === "1";
   const nascimento = document.getElementById("barbeiroModalNascimento").value;
-  const endereco = document.getElementById("barbeiroModalEndereco").value.trim();
+  const endereco   = document.getElementById("barbeiroModalEndereco").value.trim();
+  const cargo      = document.getElementById("barbeiroModalCargo").value;
+  const observacoes = document.getElementById("barbeiroModalObs").value.trim();
 
   if (!nome) {
     flashInputError("barbeiroModalNome");
@@ -392,11 +421,13 @@ async function handleSalvarBarbeiro() {
 
   const payload = {
     nome,
-    telefone: tel,
+    telefone:        tel,
     email,
+    cargo,
+    observacoes:     observacoes || null,
     ativo,
     data_nascimento: nascimento || null,
-    endereco: endereco || null,
+    endereco:        endereco || null,
   };
 
   try {
@@ -1843,23 +1874,25 @@ function saveToStorage(data) {
 
 /* ─── 7. POPULATE FORM ──────────────────────────────────── */
 function populateForm() {
-  const { nome, telefone, endereco } = STATE.saved;
+  const { nome, telefone, email, endereco } = STATE.saved;
   document.getElementById("barbNome").value = nome;
   document.getElementById("barbTelefone").value = telefone;
+  document.getElementById("barbEmail").value = email;
   document.getElementById("barbEndereco").value = endereco;
 }
 
 function readForm() {
   return {
-    nome: document.getElementById("barbNome").value.trim(),
+    nome:     document.getElementById("barbNome").value.trim(),
     telefone: document.getElementById("barbTelefone").value.trim(),
+    email:    document.getElementById("barbEmail").value.trim(),
     endereco: document.getElementById("barbEndereco").value.trim(),
   };
 }
 
 /* ─── 8. PREVIEW (painel esquerdo) ──────────────────────── */
 function updatePreview() {
-  const { nome, telefone, endereco } = STATE.current;
+  const { nome, telefone, email, endereco } = STATE.current;
 
   // Nome grande no topo
   const previewEl = document.getElementById("previewNome");
@@ -1890,6 +1923,14 @@ function updatePreview() {
       "profile-meta-item__value" +
       (endereco ? "" : " profile-meta-item__value--empty");
   }
+
+  const metaEmail = document.getElementById("metaEmail");
+  if (metaEmail) {
+    metaEmail.textContent = email || "Não informado";
+    metaEmail.className =
+      "profile-meta-item__value" +
+      (email ? "" : " profile-meta-item__value--empty");
+  }
 }
 
 /* ─── 9. DIRTY STATE (alterações pendentes) ─────────────── */
@@ -1898,8 +1939,9 @@ function checkDirty() {
   STATE.current = current;
 
   const isDirty =
-    current.nome !== STATE.saved.nome ||
+    current.nome     !== STATE.saved.nome     ||
     current.telefone !== STATE.saved.telefone ||
+    current.email    !== STATE.saved.email    ||
     current.endereco !== STATE.saved.endereco;
 
   STATE.dirty = isDirty;
@@ -1978,6 +2020,7 @@ function handleDiscard() {
   // Restaura os valores salvos nos inputs
   document.getElementById("barbNome").value = STATE.saved.nome;
   document.getElementById("barbTelefone").value = STATE.saved.telefone;
+  document.getElementById("barbEmail").value = STATE.saved.email;
   document.getElementById("barbEndereco").value = STATE.saved.endereco;
 
   STATE.current = { ...STATE.saved };
@@ -2015,7 +2058,7 @@ function initPhoneMask() {
 
 /* ─── 13. EVENT LISTENERS ───────────────────────────────── */
 function initFormListeners() {
-  const inputs = ["barbNome", "barbTelefone", "barbEndereco"];
+  const inputs = ["barbNome", "barbTelefone", "barbEmail", "barbEndereco"];
 
   inputs.forEach((id) => {
     const el = document.getElementById(id);
@@ -2384,8 +2427,9 @@ async function loadBarbershopFromAPI() {
 
     // Sobrepõe o localStorage com o que veio do banco
     STATE.saved = {
-      nome: dados.nome || "",
+      nome:     dados.nome     || "",
       telefone: dados.telefone || "",
+      email:    dados.email    || "",
       endereco: dados.endereco || "",
     };
     STATE.current = { ...STATE.saved };

@@ -2388,3 +2388,12 @@ textarea {
     flex: 1 1 140px;
   }
 }
+
+/* ── Textarea (Observações do barbeiro) ── */
+.form-textarea {
+  resize: vertical;
+  min-height: 72px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  line-height: 1.5;
+}

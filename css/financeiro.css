@@ -640,6 +640,99 @@ textarea {
     flex-shrink: 0;
 }
 
+/* ─── 8b. PERIOD FILTER (global) ────────────────────────── */
+.period-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.period-filter__preset {
+    background-color: var(--bg-2);
+    border: 1px solid var(--divider);
+    border-radius: var(--r-md);
+    padding: 9px 32px 9px 14px;
+    font-size: 13px;
+    color: var(--cream-2);
+    cursor: pointer;
+    transition: border-color var(--dur), background var(--dur);
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B6762' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    min-width: 140px;
+}
+
+.period-filter__preset option {
+    background-color: var(--bg-2);
+    color: var(--cream-2);
+}
+
+.period-filter__preset:focus {
+    outline: none;
+    border-color: rgba(0, 71, 255, 0.5);
+    background-color: rgba(0, 71, 255, 0.05);
+}
+
+.period-filter__custom {
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-filter__custom.is-visible {
+    display: flex;
+}
+
+.period-filter__date {
+    background-color: var(--bg-2);
+    border: 1px solid var(--divider);
+    border-radius: var(--r-md);
+    padding: 9px 14px;
+    font-size: 13px;
+    color: var(--cream-2);
+    cursor: pointer;
+    transition: border-color var(--dur), background var(--dur);
+    width: 140px;
+}
+
+.period-filter__date:focus {
+    outline: none;
+    border-color: rgba(0, 71, 255, 0.5);
+    background-color: rgba(0, 71, 255, 0.05);
+}
+
+.period-filter__sep {
+    color: var(--muted);
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.period-filter__apply {
+    font-family: var(--ff-b);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: var(--r-md);
+    background: var(--gold);
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+    transition: background var(--dur) var(--ease-out), opacity var(--dur);
+    white-space: nowrap;
+}
+
+.period-filter__apply:hover {
+    background: var(--gold-dim);
+}
+
+.period-filter__apply:active {
+    opacity: 0.85;
+}
+
 /* ─── 9. FIN PANELS ─────────────────────────────────────── */
 .fin-panel {
     animation: fadeIn 180ms var(--ease-out);
@@ -2191,6 +2284,30 @@ input[type="date"].saidas-form-input::-webkit-calendar-picker-indicator {
 }
 
 @media (max-width: 900px) {
+    .period-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .period-filter__preset,
+    .period-filter__date {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .period-filter__custom.is-visible {
+        flex-direction: column;
+    }
+
+    .period-filter__sep {
+        display: none;
+    }
+
+    .period-filter__apply {
+        width: 100%;
+        text-align: center;
+    }
+
     .page-header {
         padding-top: 16px;
     }

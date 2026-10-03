@@ -1329,6 +1329,8 @@ def serializar_barbeiro(row):
         'telefone':        row['telefone'] or '',
         'phone':           row['telefone'] or '',
         'email':           row['email'] or '',
+        'cargo':           row['cargo'] or 'barbeiro',
+        'observacoes':     row['observacoes'] or '',
         'data_nascimento': str(row['data_nascimento']) if row.get('data_nascimento') else None,
         'endereco':        row['endereco'] or '',
         'avatar':          row.get('avatar'),
@@ -1345,15 +1347,15 @@ def listar_barbeiros():
     try:
         if include_inactive:
             cursor.execute(
-                '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo,
-                          comissao_pct
+                '''SELECT id, nome, telefone, email, cargo, observacoes,
+                          data_nascimento, endereco, avatar, ativo, comissao_pct
                    FROM barbeiros
                    ORDER BY nome ASC'''
             )
         else:
             cursor.execute(
-                '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo,
-                          comissao_pct
+                '''SELECT id, nome, telefone, email, cargo, observacoes,
+                          data_nascimento, endereco, avatar, ativo, comissao_pct
                    FROM barbeiros
                    WHERE ativo = 1
                    ORDER BY nome ASC'''
@@ -1383,7 +1385,10 @@ def criar_barbeiro():
     if not email:
         return jsonify({'error': 'O e-mail é obrigatório.'}), 400
 
+    cargo = (data.get('cargo') or 'barbeiro').strip()[:60] or 'barbeiro'
+
     ativo           = bool(data.get('ativo', True))
+    observacoes     = (data.get('observacoes') or '').strip() or None
     data_nascimento = (data.get('data_nascimento') or '').strip() or None
     endereco        = (data.get('endereco') or '').strip() or None
     novo_id         = 'b' + uuid.uuid4().hex[:12]
@@ -1392,13 +1397,17 @@ def criar_barbeiro():
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            '''INSERT INTO barbeiros (id, nome, telefone, email, data_nascimento, endereco, ativo)
-               VALUES (%s, %s, %s, %s, %s, %s, %s)''',
-            (novo_id, nome, telefone, email, data_nascimento, endereco, int(ativo))
+            '''INSERT INTO barbeiros
+                   (id, nome, telefone, email, cargo, observacoes,
+                    data_nascimento, endereco, ativo)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+            (novo_id, nome, telefone, email, cargo, observacoes,
+             data_nascimento, endereco, int(ativo))
         )
         conn.commit()
         cursor.execute(
-            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo
+            '''SELECT id, nome, telefone, email, cargo, observacoes,
+                      data_nascimento, endereco, avatar, ativo, comissao_pct
                FROM barbeiros WHERE id = %s''',
             (novo_id,)
         )
@@ -1485,6 +1494,15 @@ def atualizar_barbeiro(barbeiro_id):
             campos.append('email = %s')
             params.append(email.strip() if email else None)
 
+        if 'cargo' in data:
+            cargo = (data['cargo'] or 'barbeiro').strip()[:60] or 'barbeiro'
+            campos.append('cargo = %s')
+            params.append(cargo)
+
+        if 'observacoes' in data:
+            campos.append('observacoes = %s')
+            params.append((data['observacoes'] or '').strip() or None)
+
         if 'data_nascimento' in data:
             campos.append('data_nascimento = %s')
             params.append(data['data_nascimento'] or None)
@@ -1509,8 +1527,8 @@ def atualizar_barbeiro(barbeiro_id):
         conn.commit()
 
         cursor.execute(
-            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo,
-                      comissao_pct
+            '''SELECT id, nome, telefone, email, cargo, observacoes,
+                      data_nascimento, endereco, avatar, ativo, comissao_pct
                FROM barbeiros WHERE id = %s''',
             (barbeiro_id,)
         )
@@ -1546,8 +1564,8 @@ def toggle_barbeiro_status(barbeiro_id):
         conn.commit()
 
         cursor.execute(
-            '''SELECT id, nome, telefone, email, data_nascimento, endereco, avatar, ativo,
-                      comissao_pct
+            '''SELECT id, nome, telefone, email, cargo, observacoes,
+                      data_nascimento, endereco, avatar, ativo, comissao_pct
                FROM barbeiros WHERE id = %s''',
             (barbeiro_id,)
         )
@@ -2739,6 +2757,7 @@ def serializar_barbearia(row):
     return {
         'nome': row['nome'] or '',
         'telefone': row['telefone'] or '',
+        'email': row['email'] or '',
         'endereco': row['endereco'] or '',
         'logoUrl': row['logo_url'] or None,
     }
@@ -2749,11 +2768,11 @@ def buscar_barbearia():
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            "SELECT nome, telefone, endereco, logo_url FROM barbearia WHERE id = 1"
+            "SELECT nome, telefone, email, endereco, logo_url FROM barbearia WHERE id = 1"
         )
         row = cursor.fetchone()
         if not row:
-            return jsonify({'nome': '', 'telefone': '', 'endereco': '', 'logoUrl': None}), 200
+            return jsonify({'nome': '', 'telefone': '', 'email': '', 'endereco': '', 'logoUrl': None}), 200
         return jsonify(serializar_barbearia(row)),200
     except Exception as e:
         return jsonify({'error': f'Erro ao buscar dados da barbearia: {e}'}), 500
@@ -2767,28 +2786,32 @@ def salvar_barbearia():
 
     nome     = (data.get('nome')     or '').strip()
     telefone = (data.get('telefone') or '').strip()
+    email    = (data.get('email')    or '').strip()
     endereco = (data.get('endereco') or '').strip()
 
     if not nome:
         return jsonify({'error': 'O nome da barbearia é obrigatório.'}), 400
     if not telefone:
         return jsonify({'error': 'O telefone é obrigatório.'}), 400
+    if email and '@' not in email:
+        return jsonify({'error': 'E-mail inválido.'}), 400
 
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(
-            """INSERT INTO barbearia (id, nome, telefone, endereco)
-               VALUES (1, %s, %s, %s)
+            """INSERT INTO barbearia (id, nome, telefone, email, endereco)
+               VALUES (1, %s, %s, %s, %s)
                ON DUPLICATE KEY UPDATE
                  nome     = VALUES(nome),
                  telefone = VALUES(telefone),
+                 email    = VALUES(email),
                  endereco = VALUES(endereco)""",
-            (nome, telefone, endereco or None)
+            (nome, telefone, email or None, endereco or None)
         )
         conn.commit()
         cursor.execute(
-            "SELECT nome, telefone, endereco, logo_url FROM barbearia WHERE id = 1"
+            "SELECT nome, telefone, email, endereco, logo_url FROM barbearia WHERE id = 1"
         )
         return jsonify(serializar_barbearia(cursor.fetchone())), 200
     except Exception as e:
